@@ -85,16 +85,16 @@ function Hero() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,#ddd6fe_0,#ddd6fe00_34%),linear-gradient(135deg,#ffffff_0%,#f8fafc_45%,#ede9fe_100%)]" />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/78 to-[#f8fafc]/96 sm:bg-gradient-to-r sm:from-white/94 sm:via-white/78 sm:to-white/28" />
-      <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-4 py-5">
+      <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 py-4 sm:py-5">
         <a href="#" className="flex min-w-0 items-center gap-3">
           <BrandLogo showImage={hasLogoImage} />
-          <span className="shrink-0 rounded-full border border-[#ddd6fe] bg-white/85 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#5b21b6] shadow-sm backdrop-blur">
+          <span className="hidden shrink-0 rounded-full border border-[#ddd6fe] bg-white/85 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#5b21b6] shadow-sm backdrop-blur sm:inline-flex">
             Beauty Beta
           </span>
         </a>
         <a
           href="#beta"
-          className="shrink-0 rounded-full bg-white/90 px-5 py-3 text-sm font-black text-[#5b21b6] shadow-sm ring-1 ring-[#d1d5db] backdrop-blur transition-all duration-300 ease-out hover:bg-[#f5f3ff] hover:ring-[#c4b5fd]"
+          className="shrink-0 rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#5b21b6] shadow-sm ring-1 ring-[#d1d5db] backdrop-blur transition-all duration-300 hover:bg-[#f5f3ff] hover:ring-[#c4b5fd] sm:px-5 sm:py-3"
         >
           Ser fundadora
         </a>

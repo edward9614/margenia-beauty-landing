@@ -25,7 +25,7 @@ export function BrandLogo({ showImage }: BrandLogoProps) {
       width={220}
       height={64}
       priority
-      className="max-h-14 w-auto object-contain sm:max-h-16"
+      className="max-h-11 w-auto object-contain sm:max-h-14"
       onError={() => setHasImageError(true)}
     />
   );
