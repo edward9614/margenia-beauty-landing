@@ -238,13 +238,13 @@ function EcosystemPreviewSection() {
           </div>
         </div>
 
-        <div className="relative mt-8 min-h-[300px] sm:min-h-[380px] lg:hidden">
+        <div className="relative mt-5 h-[280px] overflow-hidden rounded-[28px] sm:h-[320px] lg:hidden">
           <Image
             src="/images/margenia-showcase.png"
             alt="Vista conceptual del ecosistema Margenia en dispositivos móviles"
             fill
             sizes="100vw"
-            className="object-contain object-center"
+            className="object-cover object-[74%_center]"
             priority={false}
           />
         </div>
