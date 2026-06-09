@@ -8,7 +8,7 @@ import { PriceCalculator } from "@/components/price-calculator";
 import { WaitlistForm } from "@/components/waitlist-form";
 
 const hasHeroImage = existsSync(join(process.cwd(), "public/images/hero-beauty.png"));
-const hasLogoImage = existsSync(join(process.cwd(), "public/images/logo-margenia.png"));
+const hasLogoImage = existsSync(join(process.cwd(), "public/images/logo-margenia-nav.png"));
 
 const pains = [
   "Vendes por Instagram o WhatsApp y no sabes cuánto dinero te queda.",
@@ -54,6 +54,66 @@ const ecosystemCards = [
   },
 ];
 
+type PreviewModule =
+  | {
+      variant: "stats";
+      title: string;
+      badge: string;
+      stats: [string, string][];
+      footnote: string;
+    }
+  | {
+      variant: "rows";
+      title: string;
+      badge: string;
+      rows: [string, string, string][];
+    };
+
+const previewModules: PreviewModule[] = [
+  {
+    variant: "stats",
+    title: "Tu utilidad real a la vista",
+    badge: "Preview",
+    stats: [
+      ["Ventas del mes", "$3.450.000"],
+      ["Utilidad estimada", "$1.380.000"],
+      ["Salud del negocio", "Rentable esta semana"],
+    ],
+    footnote: "4 cuentas por cobrar pendientes",
+  },
+  {
+    variant: "rows",
+    title: "Adiós al caos de productos",
+    badge: "Próximamente",
+    rows: [
+      ["Pestañina viral", "3 disp.", "Stock bajo"],
+      ["Labial nude", "18 disp.", "OK"],
+      ["Shampoo reparación", "0 disp.", "Agotado"],
+    ],
+  },
+  {
+    variant: "stats",
+    title: "Tu caja diaria sin descuadres",
+    badge: "En desarrollo",
+    stats: [
+      ["Ingresos del día", "$420.000"],
+      ["Gastos del día", "$86.000"],
+      ["Saldo estimado", "$334.000"],
+    ],
+    footnote: "Últimos movimientos listos para revisar",
+  },
+  {
+    variant: "rows",
+    title: "Combos que sí dejan ganancia",
+    badge: "Vista conceptual",
+    rows: [
+      ["Kit glow", "$89.900", "49% margen"],
+      ["Crema facial", "$32.500", "Rentable"],
+      ["Combo capilar", "$79.900", "Combo OK"],
+    ],
+  },
+];
+
 const socialLinks = [
   { label: "Instagram", href: "https://instagram.com/margenia.app", external: true },
   { label: "TikTok", href: "#" },
@@ -66,6 +126,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#f8fafc] text-[#1f2937]">
       <Hero />
       <PainSection />
+      <EcosystemPreviewSection />
       <EcosystemSection />
       <section
         id="calculadora"
@@ -202,6 +263,117 @@ function PainSection() {
   );
 }
 
+function EcosystemPreviewSection() {
+  return (
+    <section className="overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_52%,#f5f3ff_100%)] px-5 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
+              Lo que estamos construyendo
+            </p>
+            <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-5xl">
+              Controla lo que vendes, lo que gastas y lo que realmente ganas
+            </h2>
+            <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
+              Empieza hoy organizando tus precios y combos con nuestra
+              herramienta gratuita. Mientras tanto, estamos construyendo el
+              ecosistema Margenia: una plataforma para que puedas visualizar
+              inventario, caja, ventas, gastos, pagos pendientes y utilidad real
+              desde un solo lugar.
+            </p>
+            <p className="mt-4 text-base leading-7 text-[#625862]">
+              Estamos diseñando cada módulo a partir de los problemas reales que
+              viven las emprendedoras: cuentas en cuadernos, productos sin
+              control, pagos pendientes, combos hechos al ojo y dinero que entra
+              pero no siempre se ve reflejado en la ganancia.
+            </p>
+            <p className="mt-6 inline-flex rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#6d28d9]">
+              Vista previa conceptual. Algunas funciones aún están en desarrollo y se integrarán de forma progresiva en Margenia.
+            </p>
+          </div>
+
+          <div className="rounded-[28px] border border-white/80 bg-white/70 p-3 shadow-2xl shadow-[#7c3aed]/15 ring-1 ring-[#ddd6fe]/70 backdrop-blur sm:p-4">
+            <div className="rounded-[22px] border border-[#eef2f7] bg-white p-4 shadow-sm">
+              <div className="mb-4 flex items-center justify-between border-b border-[#eef2f7] pb-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[#7c3aed]">
+                    Margenia OS
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#111827]">
+                    Panel conceptual de tu negocio
+                  </p>
+                </div>
+                <span className="rounded-full bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_55%,#c026d3_100%)] px-3 py-1 text-xs font-black text-white shadow-md shadow-[#7c3aed]/20">
+                  Beta futura
+                </span>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {previewModules.map((module) => (
+                  <article
+                    key={module.title}
+                    className="rounded-2xl border border-[#e5e7eb] bg-[linear-gradient(180deg,#ffffff_0%,#fbfbff_100%)] p-4 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#c4b5fd] hover:shadow-lg hover:shadow-[#7c3aed]/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="text-base font-black text-[#111827]">
+                        {module.title}
+                      </h3>
+                      <span className="shrink-0 rounded-full bg-[#ede9fe] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[#6d28d9]">
+                        {module.badge}
+                      </span>
+                    </div>
+
+                    {module.variant === "stats" ? (
+                      <div className="mt-4 space-y-3">
+                        {module.stats.map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 ring-1 ring-[#eef2f7]"
+                          >
+                            <span className="text-xs font-bold text-[#6b7280]">
+                              {label}
+                            </span>
+                            <span className="text-sm font-black text-[#111827]">
+                              {value}
+                            </span>
+                          </div>
+                        ))}
+                        <p className="rounded-xl bg-[#fef3c7] px-3 py-2 text-xs font-black text-[#92400e]">
+                          {module.footnote}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-4 space-y-2">
+                        {module.rows.map(([name, value, status]) => (
+                          <div
+                            key={name}
+                            className="grid grid-cols-[1fr_auto] gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-[#eef2f7]"
+                          >
+                            <span className="text-xs font-black text-[#111827]">
+                              {name}
+                            </span>
+                            <span className="text-xs font-bold text-[#6b7280]">
+                              {value}
+                            </span>
+                            <span className="col-span-2 rounded-full bg-[#f5f3ff] px-2.5 py-1 text-[11px] font-black text-[#6d28d9]">
+                              {status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function EcosystemSection() {
   return (
     <section className="bg-white px-5 py-14 sm:px-6 lg:px-8">
@@ -214,9 +386,9 @@ function EcosystemSection() {
             Un ecosistema para controlar tu negocio con claridad
           </h2>
           <p className="mt-4 text-base leading-7 text-[#625862]">
-            Empezamos con precios y combos, pero Margenia está pensada para
-            ayudarte a gestionar las partes más importantes de tu emprendimiento
-            desde un solo lugar.
+            Cada módulo responde a un problema concreto del día a día: vender
+            con margen, cuidar tu inventario, ordenar la caja y entender la
+            utilidad que realmente queda.
           </p>
         </div>
 
