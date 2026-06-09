@@ -27,6 +27,33 @@ const benefits = [
   "Influencia directa en las próximas funciones de la plataforma.",
 ];
 
+const ecosystemCards = [
+  {
+    title: "Precios rentables",
+    text: "Calcula precios considerando costos, empaque, descuentos, envíos y comisiones.",
+  },
+  {
+    title: "Combos inteligentes",
+    text: "Crea promociones y kits sin perder margen.",
+  },
+  {
+    title: "Inventario simple",
+    text: "Controla qué tienes, qué se está agotando y qué productos no rotan.",
+  },
+  {
+    title: "Caja y ventas",
+    text: "Registra entradas, salidas y ventas diarias sin depender de cuadernos.",
+  },
+  {
+    title: "Gastos del negocio",
+    text: "Separa tus gastos personales de los gastos reales de tu emprendimiento.",
+  },
+  {
+    title: "Utilidad real",
+    text: "Entiende cuánto te queda después de costos, descuentos y comisiones.",
+  },
+];
+
 const socialLinks = [
   { label: "Instagram", href: "https://instagram.com/margenia.app", external: true },
   { label: "TikTok", href: "#" },
@@ -39,6 +66,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#f8fafc] text-[#1f2937]">
       <Hero />
       <PainSection />
+      <EcosystemSection />
       <section
         id="calculadora"
         className="border-y border-[#e5e7eb] bg-white px-5 py-14 sm:px-6 lg:px-8"
@@ -49,11 +77,12 @@ export default function Home() {
               Calcula antes de vender
             </p>
             <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-              Calcula tus precios y combos antes de vender.
+              Empieza con la primera herramienta gratuita de Margenia
             </h2>
             <p className="mt-4 text-base leading-7 text-[#625862]">
-              Empieza con un producto individual o arma un combo de hasta cinco
-              productos. Los resultados se actualizan al instante.
+              Antes de construir todo el ecosistema, queremos ayudarte con uno
+              de los dolores más comunes: saber si tus productos y combos
+              realmente dejan ganancia.
             </p>
           </div>
           <div className="mt-9 grid gap-6 lg:grid-cols-2">
@@ -115,12 +144,13 @@ function Hero() {
             Calculadora gratis para emprendedoras de belleza
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.03] text-[#111827] sm:text-6xl">
-            Deja de vender productos de belleza sin saber cuánto ganas
-            realmente
+            Deja de manejar tu negocio a ciegas
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#4b5563] sm:text-xl">
-            Calcula precios rentables, arma combos sin perder margen y descubre
-            si tus productos realmente te dejan utilidad.
+            Margenia nace como un ecosistema para ayudarte a controlar precios,
+            combos, inventario, caja, ventas y utilidad real desde un solo
+            lugar. Empieza gratis con nuestra calculadora para emprendedoras de
+            belleza.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
@@ -164,6 +194,47 @@ function PainSection() {
                 {index + 1}
               </span>
               <p className="mt-4 text-base leading-7 text-[#4b5563]">{pain}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EcosystemSection() {
+  return (
+    <section className="bg-white px-5 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="max-w-3xl">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
+            Lo que estamos construyendo
+          </p>
+          <h2 className="mt-3 text-3xl font-bold text-[#111827] sm:text-4xl">
+            Un ecosistema para controlar tu negocio con claridad
+          </h2>
+          <p className="mt-4 text-base leading-7 text-[#625862]">
+            Empezamos con precios y combos, pero Margenia está pensada para
+            ayudarte a gestionar las partes más importantes de tu emprendimiento
+            desde un solo lugar.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {ecosystemCards.map((card, index) => (
+            <article
+              key={card.title}
+              className="rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-5 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#c4b5fd] hover:bg-white hover:shadow-md"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_55%,#c026d3_100%)] text-sm font-black text-white shadow-md shadow-[#7c3aed]/20">
+                {index + 1}
+              </span>
+              <h3 className="mt-4 text-lg font-black text-[#111827]">
+                {card.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#4b5563]">
+                {card.text}
+              </p>
             </article>
           ))}
         </div>
@@ -228,7 +299,7 @@ function Footer() {
               cero.
             </p>
             <p className="mt-3 text-base leading-7 text-[#6b7280]">
-              Una herramienta para vender con más claridad, calcular mejor tus
+              Un ecosistema para vender con más claridad, calcular mejor tus
               precios y entender cuánto estás ganando realmente.
             </p>
           </div>
