@@ -1,5 +1,6 @@
 import { existsSync } from "fs";
 import { join } from "path";
+import type { ReactNode } from "react";
 import Image from "next/image";
 import { BrandLogo } from "@/components/brand-logo";
 import { primaryButtonClass, secondaryButtonClass } from "@/components/button-classes";
@@ -54,64 +55,27 @@ const ecosystemCards = [
   },
 ];
 
-type PreviewModule =
-  | {
-      variant: "stats";
-      title: string;
-      badge: string;
-      stats: [string, string][];
-      footnote: string;
-    }
-  | {
-      variant: "rows";
-      title: string;
-      badge: string;
-      rows: [string, string, string][];
-    };
+const dashboardStats = [
+  ["Ventas", "$3.450.000"],
+  ["Gastos", "$420.000"],
+  ["Por cobrar", "4 clientas"],
+];
 
-const previewModules: PreviewModule[] = [
-  {
-    variant: "stats",
-    title: "Utilidad real",
-    badge: "Preview",
-    stats: [
-      ["Ventas del mes", "$3.450.000"],
-      ["Utilidad estimada", "$1.380.000"],
-      ["Salud del negocio", "Rentable esta semana"],
-    ],
-    footnote: "4 cuentas por cobrar pendientes",
-  },
-  {
-    variant: "rows",
-    title: "Inventario",
-    badge: "Próximamente",
-    rows: [
-      ["Pestañina viral", "3 disp.", "Stock bajo"],
-      ["Labial nude", "18 disp.", "OK"],
-      ["Shampoo reparación", "0 disp.", "Agotado"],
-    ],
-  },
-  {
-    variant: "stats",
-    title: "Caja",
-    badge: "Beta",
-    stats: [
-      ["Ingresos del día", "$420.000"],
-      ["Gastos del día", "$86.000"],
-      ["Saldo estimado", "$334.000"],
-    ],
-    footnote: "Últimos movimientos listos para revisar",
-  },
-  {
-    variant: "rows",
-    title: "Combos",
-    badge: "Concepto",
-    rows: [
-      ["Kit glow", "$89.900", "49% margen"],
-      ["Crema facial", "$32.500", "Rentable"],
-      ["Combo capilar", "$79.900", "Combo OK"],
-    ],
-  },
+const inventoryRows = [
+  ["Pestañina viral", "3 disp.", "Stock bajo"],
+  ["Labial nude", "18 disp.", "OK"],
+  ["Shampoo reparación", "0 disp.", "Agotado"],
+];
+
+const cashMovements = [
+  ["Venta skincare", "+$120.000"],
+  ["Empaques", "-$35.000"],
+  ["Abono Natalia", "+$50.000"],
+];
+
+const comboBreakdown = [
+  ["Costo", "$45.000"],
+  ["Ganancia estimada", "$44.900"],
 ];
 
 const socialLinks = [
@@ -265,112 +229,254 @@ function PainSection() {
 
 function EcosystemPreviewSection() {
   return (
-    <section className="overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_52%,#f5f3ff_100%)] px-5 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
-              Lo que estamos construyendo
-            </p>
-            <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-5xl">
-              Controla lo que vendes, lo que gastas y lo que realmente ganas
-            </h2>
-            <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
-              Empieza hoy organizando tus precios y combos con nuestra
-              herramienta gratuita. Mientras tanto, estamos construyendo el
-              ecosistema Margenia: una plataforma para que puedas visualizar
-              inventario, caja, ventas, gastos, pagos pendientes y utilidad real
-              desde un solo lugar.
-            </p>
-            <p className="mt-4 text-base leading-7 text-[#625862]">
-              Estamos diseñando cada módulo a partir de los problemas reales que
-              viven las emprendedoras: cuentas en cuadernos, productos sin
-              control, pagos pendientes, combos hechos al ojo y dinero que entra
-              pero no siempre se ve reflejado en la ganancia.
-            </p>
-            <p className="mt-6 inline-flex rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#6d28d9]">
-              Vista previa conceptual. Algunas funciones aún están en desarrollo y se integrarán de forma progresiva en Margenia.
-            </p>
-          </div>
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_30%,#ede9fe_70%,#faf5ff_100%)] px-5 py-16 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(124,58,237,0.08)_1px,transparent_1px),linear-gradient(180deg,rgba(124,58,237,0.08)_1px,transparent_1px)] bg-[size:56px_56px] opacity-40" />
+      <div className="relative mx-auto max-w-6xl">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
+            Vista previa conceptual
+          </p>
+          <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-5xl">
+            Así estamos imaginando el ecosistema Margenia
+          </h2>
+          <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
+            Empezamos con una herramienta gratuita para precios y combos, pero
+            estamos construyendo una experiencia móvil para que puedas
+            visualizar inventario, caja, ventas, gastos, pagos pendientes y
+            utilidad real desde un solo lugar.
+          </p>
+          <p className="mt-4 text-base leading-7 text-[#625862]">
+            Una plataforma pensada para emprendedoras que quieren dejar de
+            manejar su negocio con cuentas en la cabeza.
+          </p>
+        </div>
 
-          <div className="rounded-[28px] border border-white/80 bg-white/70 p-3 shadow-2xl shadow-[#7c3aed]/15 ring-1 ring-[#ddd6fe]/70 backdrop-blur sm:p-4">
-            <div className="rounded-[22px] border border-[#eef2f7] bg-white p-4 shadow-sm sm:p-5">
-              <div className="mb-4 flex items-center justify-between gap-4 border-b border-[#eef2f7] pb-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[#7c3aed]">
-                    Margenia OS
-                  </p>
-                  <p className="mt-1 text-xs font-bold text-[#111827] sm:text-sm">
-                    Panel conceptual de tu negocio
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_55%,#c026d3_100%)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-white shadow-md shadow-[#7c3aed]/20">
-                  Beta futura
-                </span>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {previewModules.map((module) => (
-                  <article
-                    key={module.title}
-                    className="rounded-2xl border border-[#e5e7eb] bg-[linear-gradient(180deg,#ffffff_0%,#fbfbff_100%)] p-4 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#c4b5fd] hover:shadow-lg hover:shadow-[#7c3aed]/10 sm:p-5"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="truncate text-base font-black text-[#111827] sm:text-lg">
-                        {module.title}
-                      </h3>
-                      <span className="shrink-0 rounded-full bg-[#ede9fe] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-[#6d28d9] sm:text-[10px]">
-                        {module.badge}
-                      </span>
-                    </div>
-
-                    {module.variant === "stats" ? (
-                      <div className="mt-4 space-y-3">
-                        {module.stats.map(([label, value]) => (
-                          <div
-                            key={label}
-                            className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2.5 ring-1 ring-[#eef2f7]"
-                          >
-                            <span className="text-xs font-bold leading-5 text-[#6b7280]">
-                              {label}
-                            </span>
-                            <span className="text-right text-sm font-black text-[#111827]">
-                              {value}
-                            </span>
-                          </div>
-                        ))}
-                        <p className="rounded-xl bg-[#fef3c7] px-3 py-2 text-xs font-black leading-5 text-[#92400e]">
-                          {module.footnote}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="mt-4 space-y-2">
-                        {module.rows.map(([name, value, status]) => (
-                          <div
-                            key={name}
-                            className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-xl bg-white px-3 py-2.5 ring-1 ring-[#eef2f7]"
-                          >
-                            <span className="truncate text-xs font-black text-[#111827]">
-                              {name}
-                            </span>
-                            <span className="text-xs font-bold text-[#6b7280]">
-                              {value}
-                            </span>
-                            <span className="col-span-2 rounded-full bg-[#f5f3ff] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.04em] text-[#6d28d9]">
-                              {status}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </div>
+        <div className="mt-12 overflow-x-auto pb-6 [scrollbar-width:none] lg:overflow-visible lg:pb-0">
+          <div className="flex min-w-max items-center gap-5 px-1 sm:justify-center lg:min-w-0 lg:grid lg:grid-cols-4 lg:gap-4">
+            <PhoneMockup title="Inventario" badge="Próximamente" className="lg:-translate-y-4">
+              <InventoryScreen />
+            </PhoneMockup>
+            <PhoneMockup title="Resumen" badge="Preview" featured className="lg:z-10">
+              <DashboardScreen />
+            </PhoneMockup>
+            <PhoneMockup title="Caja" badge="Beta" className="lg:translate-y-6">
+              <CashScreen />
+            </PhoneMockup>
+            <PhoneMockup title="Combos" badge="Concepto" className="lg:-translate-y-2">
+              <CombosScreen />
+            </PhoneMockup>
           </div>
         </div>
+
+        <p className="mx-auto mt-4 max-w-3xl rounded-full border border-[#ddd6fe] bg-white/75 px-4 py-3 text-center text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] shadow-sm backdrop-blur">
+          Vista previa conceptual. Algunas funciones aún están en desarrollo y se integrarán de forma progresiva en Margenia.
+        </p>
       </div>
     </section>
+  );
+}
+
+function PhoneMockup({
+  title,
+  badge,
+  children,
+  featured = false,
+  className = "",
+}: {
+  title: string;
+  badge: string;
+  children: ReactNode;
+  featured?: boolean;
+  className?: string;
+}) {
+  return (
+    <article
+      className={`w-[238px] shrink-0 rounded-[2.1rem] bg-[#111827] p-2 shadow-2xl shadow-[#4f46e5]/25 ring-1 ring-white/70 ${featured ? "sm:w-[270px] lg:scale-105" : "sm:w-[245px]"} ${className}`}
+    >
+      <div className="relative aspect-[9/19] overflow-hidden rounded-[1.7rem] bg-[#f8fafc]">
+        <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827]" />
+        <div className="flex items-center justify-between px-5 pt-8 text-[10px] font-black text-[#111827]">
+          <span>9:41</span>
+          <div className="flex items-center gap-1">
+            <span className="h-1.5 w-3 rounded-full bg-[#111827]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
+          </div>
+        </div>
+        <div className="flex items-center justify-between px-5 pt-5">
+          <h3 className="text-lg font-black text-[#111827]">{title}</h3>
+          <span className="rounded-full bg-[#ede9fe] px-2 py-1 text-[9px] font-black uppercase tracking-[0.08em] text-[#6d28d9]">
+            {badge}
+          </span>
+        </div>
+        <div className="px-5 pb-16 pt-4">{children}</div>
+        <BottomNav />
+      </div>
+    </article>
+  );
+}
+
+function DashboardScreen() {
+  return (
+    <div>
+      <p className="text-sm font-bold text-[#6b7280]">Hola, Laura</p>
+      <div className="mt-3 rounded-3xl bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_55%,#c026d3_100%)] p-4 text-white shadow-lg shadow-[#7c3aed]/25">
+        <p className="text-xs font-bold opacity-85">Utilidad estimada</p>
+        <p className="mt-2 text-2xl font-black">$1.380.000</p>
+      </div>
+      <div className="mt-3 grid gap-2">
+        {dashboardStats.map(([label, value]) => (
+          <MiniStatCard key={label} label={label} value={value} />
+        ))}
+      </div>
+      <MiniChart />
+    </div>
+  );
+}
+
+function InventoryScreen() {
+  return (
+    <div>
+      <div className="rounded-full bg-white px-3 py-2 text-xs font-bold text-[#9ca3af] ring-1 ring-[#e5e7eb]">
+        Buscar producto
+      </div>
+      <div className="mt-4 space-y-2">
+        {inventoryRows.map(([name, amount, status]) => (
+          <MiniRow key={name} label={name} value={amount} status={status} />
+        ))}
+      </div>
+      <div className="mt-4 rounded-2xl bg-[#faf5ff] p-3 ring-1 ring-[#ddd6fe]">
+        <p className="text-xs font-bold text-[#6b7280]">Dinero quieto</p>
+        <p className="mt-1 text-lg font-black text-[#6d28d9]">$420.000</p>
+      </div>
+    </div>
+  );
+}
+
+function CashScreen() {
+  return (
+    <div>
+      <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#e5e7eb]">
+        <p className="text-xs font-bold text-[#6b7280]">Saldo del día</p>
+        <p className="mt-2 text-2xl font-black text-[#111827]">$334.000</p>
+      </div>
+      <div className="mt-4 space-y-2">
+        {cashMovements.map(([label, value]) => (
+          <div
+            key={label}
+            className="flex items-center justify-between rounded-2xl bg-white px-3 py-2.5 ring-1 ring-[#e5e7eb]"
+          >
+            <span className="text-xs font-black text-[#111827]">{label}</span>
+            <span className={`text-xs font-black ${value.startsWith("+") ? "text-[#047857]" : "text-[#b91c1c]"}`}>
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 rounded-full bg-[#111827] px-4 py-3 text-center text-xs font-black text-white">
+        + Registrar movimiento
+      </div>
+    </div>
+  );
+}
+
+function CombosScreen() {
+  return (
+    <div>
+      <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#e5e7eb]">
+        <p className="text-sm font-black text-[#111827]">Kit glow</p>
+        <div className="mt-3 flex items-end justify-between">
+          <div>
+            <p className="text-xs font-bold text-[#6b7280]">Precio sugerido</p>
+            <p className="mt-1 text-2xl font-black text-[#111827]">$89.900</p>
+          </div>
+          <span className="rounded-full bg-[#dcfce7] px-3 py-1 text-xs font-black text-[#047857]">
+            49%
+          </span>
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        {comboBreakdown.map(([label, value]) => (
+          <MiniStatCard key={label} label={label} value={value} />
+        ))}
+      </div>
+      <p className="mt-4 rounded-2xl bg-[#ecfdf5] px-3 py-2 text-center text-xs font-black text-[#047857] ring-1 ring-[#bbf7d0]">
+        Combo rentable
+      </p>
+    </div>
+  );
+}
+
+function MiniStatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl bg-white px-3 py-2.5 ring-1 ring-[#e5e7eb]">
+      <span className="text-xs font-bold text-[#6b7280]">{label}</span>
+      <span className="text-xs font-black text-[#111827]">{value}</span>
+    </div>
+  );
+}
+
+function MiniRow({
+  label,
+  value,
+  status,
+}: {
+  label: string;
+  value: string;
+  status: string;
+}) {
+  const isLow = status === "Stock bajo";
+  const isOut = status === "Agotado";
+
+  return (
+    <div className="rounded-2xl bg-white px-3 py-2.5 ring-1 ring-[#e5e7eb]">
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-xs font-black text-[#111827]">{label}</span>
+        <span className="shrink-0 text-xs font-bold text-[#6b7280]">{value}</span>
+      </div>
+      <span
+        className={`mt-2 inline-flex rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.04em] ${
+          isOut
+            ? "bg-[#fee2e2] text-[#b91c1c]"
+            : isLow
+              ? "bg-[#fef3c7] text-[#92400e]"
+              : "bg-[#dcfce7] text-[#047857]"
+        }`}
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
+
+function MiniChart() {
+  const bars = ["h-8", "h-12", "h-10", "h-16", "h-14", "h-20"];
+
+  return (
+    <div className="mt-4 rounded-3xl bg-white p-4 ring-1 ring-[#e5e7eb]">
+      <div className="flex h-24 items-end gap-2">
+        {bars.map((height, index) => (
+          <span
+            key={`${height}-${index}`}
+            className={`${height} flex-1 rounded-t-full bg-[linear-gradient(180deg,#c026d3_0%,#7c3aed_55%,#4f46e5_100%)]`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BottomNav() {
+  return (
+    <div className="absolute inset-x-5 bottom-4 rounded-full bg-white/90 px-4 py-3 shadow-lg shadow-[#111827]/5 ring-1 ring-[#e5e7eb] backdrop-blur">
+      <div className="flex items-center justify-between">
+        {[0, 1, 2, 3].map((item) => (
+          <span
+            key={item}
+            className={`h-2.5 w-2.5 rounded-full ${item === 0 ? "bg-[#7c3aed]" : "bg-[#d1d5db]"}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
