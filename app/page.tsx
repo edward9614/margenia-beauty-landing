@@ -254,13 +254,13 @@ function EcosystemPreviewSection() {
 
         <div className="-mx-5 mt-12 overflow-x-auto px-5 pb-8 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[720px] lg:overflow-visible lg:pb-0">
           <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
-            <div className="absolute bottom-4 left-1/2 hidden h-24 w-[74%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.18),rgba(124,58,237,0.26),rgba(192,38,211,0.16))] blur-3xl lg:block" />
+            <div className="absolute bottom-8 left-1/2 hidden h-20 w-[68%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.13),rgba(124,58,237,0.2),rgba(192,38,211,0.12))] blur-3xl lg:block" />
             <PhoneMockup
               title="Resumen"
               badge="Preview"
               featured
               side="both"
-              className="lg:absolute lg:left-1/2 lg:top-2 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-4deg)_rotateX(3deg)_translateZ(80px)_scale(1.04)]"
+              className="lg:absolute lg:left-1/2 lg:top-2 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-3deg)_rotateX(2deg)_translateZ(72px)_scale(1.04)]"
             >
               <DashboardScreen />
             </PhoneMockup>
@@ -268,7 +268,7 @@ function EcosystemPreviewSection() {
               title="Inventario"
               badge="Próximamente"
               side="right"
-              className="lg:absolute lg:left-[5%] lg:top-32 lg:z-20 lg:[transform:rotateY(28deg)_rotateX(6deg)_rotateZ(-7deg)_translateZ(10px)_scale(0.9)]"
+              className="lg:absolute lg:left-[6%] lg:top-32 lg:z-20 lg:[transform:rotateY(18deg)_rotateX(4deg)_rotateZ(-5deg)_translateZ(8px)_scale(0.91)]"
             >
               <InventoryScreen />
             </PhoneMockup>
@@ -276,7 +276,7 @@ function EcosystemPreviewSection() {
               title="Caja"
               badge="Beta"
               side="left"
-              className="lg:absolute lg:left-[56%] lg:top-40 lg:z-30 lg:[transform:rotateY(-12deg)_rotateX(4deg)_translateZ(0px)_scale(0.88)]"
+              className="lg:absolute lg:left-[56%] lg:top-40 lg:z-30 lg:[transform:rotateY(-8deg)_rotateX(3deg)_translateZ(0px)_scale(0.89)]"
             >
               <CashScreen />
             </PhoneMockup>
@@ -284,7 +284,7 @@ function EcosystemPreviewSection() {
               title="Combos"
               badge="Concepto"
               side="left"
-              className="lg:absolute lg:right-[3%] lg:top-30 lg:z-20 lg:[transform:rotateY(-28deg)_rotateX(6deg)_rotateZ(7deg)_translateZ(10px)_scale(0.9)]"
+              className="lg:absolute lg:right-[4%] lg:top-32 lg:z-20 lg:[transform:rotateY(-18deg)_rotateX(4deg)_rotateZ(5deg)_translateZ(8px)_scale(0.91)]"
             >
               <CombosScreen />
             </PhoneMockup>
@@ -322,18 +322,19 @@ function PhoneMockup({
       className={`relative w-[238px] shrink-0 rounded-[2.45rem] [transform-style:preserve-3d] [will-change:transform] ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
     >
       {featured ? (
-        <div className="absolute -inset-8 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.26),rgba(124,58,237,0.24),rgba(192,38,211,0.2))] blur-3xl" />
+        <div className="absolute -inset-7 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.2),rgba(124,58,237,0.2),rgba(192,38,211,0.15))] blur-3xl" />
       ) : null}
-      <div className="absolute inset-0 rounded-[2.45rem] bg-[#030712] opacity-80 shadow-[0_38px_90px_rgba(17,24,39,0.3),0_16px_38px_rgba(124,58,237,0.2)] lg:[transform:translate3d(14px,18px,-24px)]" />
-      <div
-        className={`absolute -left-3 top-9 bottom-9 hidden w-5 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_45%,#030712_100%)] shadow-[inset_4px_0_8px_rgba(255,255,255,0.08)] lg:block lg:[transform-origin:right_center] lg:[transform:rotateY(-86deg)_translateZ(18px)] ${showLeftSide ? "opacity-100" : "opacity-35"}`}
-      />
-      <div
-        className={`absolute -right-3 top-9 bottom-9 hidden w-5 rounded-r-[2rem] bg-[linear-gradient(180deg,#111827_0%,#374151_42%,#030712_100%)] shadow-[inset_-4px_0_8px_rgba(255,255,255,0.08)] lg:block lg:[transform-origin:left_center] lg:[transform:rotateY(86deg)_translateZ(18px)] ${showRightSide ? "opacity-100" : "opacity-35"}`}
-      />
-      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_42%,#374151_100%)] p-2 shadow-[0_35px_80px_rgba(17,24,39,0.28),0_12px_30px_rgba(124,58,237,0.18)] ring-1 ring-white/70 lg:[transform:translateZ(24px)]">
+      <div className="absolute inset-x-5 bottom-[-18px] h-10 rounded-[999px] bg-[rgba(17,24,39,0.22)] blur-2xl lg:[transform:translateZ(-22px)]" />
+      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_46%,#374151_100%)] p-2 shadow-[0_34px_78px_rgba(17,24,39,0.24),0_14px_32px_rgba(124,58,237,0.15)] ring-1 ring-white/70 lg:[transform:translateZ(18px)]">
+        <div className="absolute inset-0 -z-10 rounded-[2.35rem] bg-[#030712] opacity-60 lg:[transform:translate3d(7px,10px,-12px)]" />
+        <div
+          className={`pointer-events-none absolute inset-y-7 -left-1.5 w-3 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_48%,#030712_100%)] shadow-[inset_2px_0_5px_rgba(255,255,255,0.08)] ${showLeftSide ? "opacity-90" : "opacity-25"}`}
+        />
+        <div
+          className={`pointer-events-none absolute inset-y-7 -right-1.5 w-3 rounded-r-[2rem] bg-[linear-gradient(180deg,#111827_0%,#374151_42%,#030712_100%)] shadow-[inset_-2px_0_5px_rgba(255,255,255,0.08)] ${showRightSide ? "opacity-90" : "opacity-25"}`}
+        />
         <div className="pointer-events-none absolute inset-1 rounded-[2rem] ring-1 ring-white/10" />
-        <div className="relative aspect-[9/19] overflow-hidden rounded-[1.82rem] bg-[#f8fafc] ring-1 ring-white/20">
+        <div className="relative z-10 aspect-[9/19] overflow-hidden rounded-[1.82rem] bg-[#f8fafc] ring-1 ring-white/20">
           <div className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827] shadow-sm">
             <span className="absolute right-3 top-1.5 h-2 w-2 rounded-full bg-[#374151]" />
           </div>
