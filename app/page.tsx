@@ -229,71 +229,69 @@ function PainSection() {
 
 function EcosystemPreviewSection() {
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_28%,#ede9fe_64%,#faf5ff_100%)] px-5 py-16 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_28%,#ede9fe_64%,#faf5ff_100%)] px-5 py-12 sm:px-6 lg:px-8 lg:py-10">
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(124,58,237,0.07)_1px,transparent_1px),linear-gradient(180deg,rgba(124,58,237,0.07)_1px,transparent_1px)] bg-[size:58px_58px] opacity-40" />
       <div className="absolute inset-x-0 top-1/3 h-72 bg-[linear-gradient(90deg,rgba(79,70,229,0)_0%,rgba(124,58,237,0.18)_42%,rgba(192,38,211,0.14)_58%,rgba(79,70,229,0)_100%)] blur-3xl" />
       <div className="relative mx-auto max-w-6xl">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
-            Vista previa conceptual
-          </p>
-          <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-5xl">
-            Así estamos imaginando el ecosistema Margenia
-          </h2>
-          <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
-            Empezamos con una herramienta gratuita para precios y combos, pero
-            estamos construyendo una experiencia móvil para que puedas
-            visualizar inventario, caja, ventas, gastos, pagos pendientes y
-            utilidad real desde un solo lugar.
-          </p>
-          <p className="mt-4 text-base leading-7 text-[#625862]">
-            Una plataforma pensada para emprendedoras que quieren dejar de
-            manejar su negocio con cuentas en la cabeza.
-          </p>
-        </div>
+        <div className="grid gap-8 lg:grid-cols-[0.4fr_0.6fr] lg:items-center">
+          <div className="max-w-xl lg:max-w-none">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
+              Vista previa conceptual
+            </p>
+            <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-4xl lg:text-5xl">
+              Así se verá Margenia
+            </h2>
+            <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
+              Empezamos con una herramienta gratuita para precios y combos.
+              Ahora estamos diseñando una experiencia móvil para ayudarte a
+              visualizar inventario, caja, ventas, gastos y utilidad real desde
+              un solo lugar.
+            </p>
+            <p className="mt-5 rounded-2xl border border-[#ddd6fe] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] shadow-sm backdrop-blur">
+              Vista previa conceptual. Algunas funciones aún están en
+              desarrollo.
+            </p>
+          </div>
 
-        <div className="-mx-5 mt-12 overflow-x-auto px-5 pb-8 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[720px] lg:overflow-visible lg:pb-0">
-          <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
-            <div className="absolute bottom-8 left-1/2 hidden h-20 w-[68%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.13),rgba(124,58,237,0.2),rgba(192,38,211,0.12))] blur-3xl lg:block" />
-            <PhoneMockup
-              title="Resumen"
-              badge="Preview"
-              featured
-              side="both"
-              className="lg:absolute lg:left-1/2 lg:top-2 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-3deg)_rotateX(2deg)_translateZ(72px)_scale(1.04)]"
-            >
-              <DashboardScreen />
-            </PhoneMockup>
-            <PhoneMockup
-              title="Inventario"
-              badge="Próximamente"
-              side="right"
-              className="lg:absolute lg:left-[6%] lg:top-32 lg:z-20 lg:[transform:rotateY(18deg)_rotateX(4deg)_rotateZ(-5deg)_translateZ(8px)_scale(0.91)]"
-            >
-              <InventoryScreen />
-            </PhoneMockup>
-            <PhoneMockup
-              title="Caja"
-              badge="Beta"
-              side="left"
-              className="lg:absolute lg:left-[56%] lg:top-40 lg:z-30 lg:[transform:rotateY(-8deg)_rotateX(3deg)_translateZ(0px)_scale(0.89)]"
-            >
-              <CashScreen />
-            </PhoneMockup>
-            <PhoneMockup
-              title="Combos"
-              badge="Concepto"
-              side="left"
-              className="lg:absolute lg:right-[4%] lg:top-32 lg:z-20 lg:[transform:rotateY(-18deg)_rotateX(4deg)_rotateZ(5deg)_translateZ(8px)_scale(0.91)]"
-            >
-              <CombosScreen />
-            </PhoneMockup>
+          <div className="-mx-5 overflow-x-auto px-5 pb-7 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[610px] lg:overflow-visible lg:pb-0">
+            <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
+              <div className="absolute bottom-12 left-1/2 hidden h-16 w-[72%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.12),rgba(124,58,237,0.18),rgba(192,38,211,0.11))] blur-3xl lg:block" />
+              <PhoneMockup
+                title="Resumen"
+                badge="Preview"
+                featured
+                side="both"
+                className="lg:absolute lg:left-[43%] lg:top-0 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-3deg)_rotateX(2deg)_translateZ(72px)_scale(0.98)]"
+              >
+                <DashboardScreen />
+              </PhoneMockup>
+              <PhoneMockup
+                title="Inventario"
+                badge="Próximamente"
+                side="right"
+                className="lg:absolute lg:left-0 lg:top-28 lg:z-20 lg:[transform:rotateY(18deg)_rotateX(4deg)_rotateZ(-5deg)_translateZ(8px)_scale(0.82)]"
+              >
+                <InventoryScreen />
+              </PhoneMockup>
+              <PhoneMockup
+                title="Caja"
+                badge="Beta"
+                side="left"
+                className="lg:absolute lg:left-[56%] lg:top-32 lg:z-30 lg:[transform:rotateY(-8deg)_rotateX(3deg)_translateZ(0px)_scale(0.82)]"
+              >
+                <CashScreen />
+              </PhoneMockup>
+              <PhoneMockup
+                title="Combos"
+                badge="Concepto"
+                side="left"
+                className="lg:absolute lg:right-0 lg:top-24 lg:z-20 lg:[transform:rotateY(-18deg)_rotateX(4deg)_rotateZ(5deg)_translateZ(8px)_scale(0.82)]"
+              >
+                <CombosScreen />
+              </PhoneMockup>
+            </div>
           </div>
         </div>
-
-        <p className="mx-auto mt-4 max-w-3xl rounded-full border border-[#ddd6fe] bg-white/75 px-4 py-3 text-center text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] shadow-sm backdrop-blur">
-          Vista previa conceptual. Algunas funciones aún están en desarrollo y se integrarán de forma progresiva en Margenia.
-        </p>
       </div>
     </section>
   );
