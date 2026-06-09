@@ -253,7 +253,7 @@ function EcosystemPreviewSection() {
             </p>
           </div>
 
-          <div className="-mx-5 overflow-x-auto px-5 pb-7 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[610px] lg:overflow-visible lg:pb-0">
+          <div className="-mx-5 overflow-x-auto px-5 pb-7 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[560px] lg:overflow-visible lg:pb-0">
             <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
               <div className="absolute bottom-12 left-1/2 hidden h-16 w-[72%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.12),rgba(124,58,237,0.18),rgba(192,38,211,0.11))] blur-3xl lg:block" />
               <PhoneMockup
@@ -261,7 +261,7 @@ function EcosystemPreviewSection() {
                 badge="Preview"
                 featured
                 side="both"
-                className="lg:absolute lg:left-[46%] lg:top-0 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-3deg)_rotateX(2deg)_translateZ(72px)_scale(0.98)]"
+                className="lg:absolute lg:left-1/2 lg:top-0 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-1deg)_rotateX(1deg)_translateZ(64px)_scale(0.96)]"
               >
                 <DashboardScreen />
               </PhoneMockup>
@@ -269,7 +269,7 @@ function EcosystemPreviewSection() {
                 title="Inventario"
                 badge="Próximamente"
                 side="right"
-                className="lg:absolute lg:left-0 lg:top-32 lg:z-20 lg:[transform:rotateY(14deg)_rotateX(3deg)_rotateZ(-4deg)_translateZ(4px)_scale(0.78)]"
+                className="lg:absolute lg:left-[-2%] lg:top-32 lg:z-20 lg:[transform:rotateY(8deg)_rotateX(2deg)_rotateZ(-3deg)_translateZ(2px)_scale(0.72)]"
               >
                 <InventoryScreen />
               </PhoneMockup>
@@ -277,7 +277,7 @@ function EcosystemPreviewSection() {
                 title="Caja"
                 badge="Beta"
                 side="left"
-                className="lg:absolute lg:left-[52%] lg:top-56 lg:z-10 lg:[transform:rotateY(-6deg)_rotateX(2deg)_translateZ(-8px)_scale(0.68)]"
+                className="lg:absolute lg:left-[46%] lg:top-52 lg:z-10 lg:opacity-90 lg:[transform:rotateY(-4deg)_rotateX(1deg)_translateZ(-12px)_scale(0.62)]"
               >
                 <CashScreen />
               </PhoneMockup>
@@ -285,7 +285,7 @@ function EcosystemPreviewSection() {
                 title="Combos"
                 badge="Concepto"
                 side="left"
-                className="lg:absolute lg:left-[68%] lg:top-32 lg:z-20 lg:[transform:rotateY(-14deg)_rotateX(3deg)_rotateZ(4deg)_translateZ(4px)_scale(0.78)]"
+                className="lg:absolute lg:right-[-2%] lg:top-32 lg:z-20 lg:[transform:rotateY(-8deg)_rotateX(2deg)_rotateZ(3deg)_translateZ(2px)_scale(0.72)]"
               >
                 <CombosScreen />
               </PhoneMockup>
