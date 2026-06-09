@@ -229,8 +229,9 @@ function PainSection() {
 
 function EcosystemPreviewSection() {
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_30%,#ede9fe_70%,#faf5ff_100%)] px-5 py-16 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(124,58,237,0.08)_1px,transparent_1px),linear-gradient(180deg,rgba(124,58,237,0.08)_1px,transparent_1px)] bg-[size:56px_56px] opacity-40" />
+    <section className="relative overflow-hidden bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_28%,#ede9fe_64%,#faf5ff_100%)] px-5 py-16 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(124,58,237,0.07)_1px,transparent_1px),linear-gradient(180deg,rgba(124,58,237,0.07)_1px,transparent_1px)] bg-[size:58px_58px] opacity-40" />
+      <div className="absolute inset-x-0 top-1/3 h-72 bg-[linear-gradient(90deg,rgba(79,70,229,0)_0%,rgba(124,58,237,0.18)_42%,rgba(192,38,211,0.14)_58%,rgba(79,70,229,0)_100%)] blur-3xl" />
       <div className="relative mx-auto max-w-6xl">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
@@ -251,18 +252,36 @@ function EcosystemPreviewSection() {
           </p>
         </div>
 
-        <div className="mt-12 overflow-x-auto pb-6 [scrollbar-width:none] lg:overflow-visible lg:pb-0">
-          <div className="flex min-w-max items-center gap-5 px-1 sm:justify-center lg:min-w-0 lg:grid lg:grid-cols-4 lg:gap-4">
-            <PhoneMockup title="Inventario" badge="Próximamente" className="lg:-translate-y-4">
-              <InventoryScreen />
-            </PhoneMockup>
-            <PhoneMockup title="Resumen" badge="Preview" featured className="lg:z-10">
+        <div className="-mx-5 mt-12 overflow-x-auto px-5 pb-8 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[700px] lg:overflow-visible lg:pb-0">
+          <div className="relative flex min-w-max items-center gap-5 px-1 sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
+            <div className="absolute bottom-4 left-1/2 hidden h-24 w-[74%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.18),rgba(124,58,237,0.26),rgba(192,38,211,0.16))] blur-3xl lg:block" />
+            <PhoneMockup
+              title="Resumen"
+              badge="Preview"
+              featured
+              className="lg:absolute lg:left-1/2 lg:top-2 lg:z-40 lg:-translate-x-1/2 lg:scale-105"
+            >
               <DashboardScreen />
             </PhoneMockup>
-            <PhoneMockup title="Caja" badge="Beta" className="lg:translate-y-6">
+            <PhoneMockup
+              title="Inventario"
+              badge="Próximamente"
+              className="lg:absolute lg:left-[6%] lg:top-28 lg:z-20 lg:-rotate-6 lg:scale-90"
+            >
+              <InventoryScreen />
+            </PhoneMockup>
+            <PhoneMockup
+              title="Caja"
+              badge="Beta"
+              className="lg:absolute lg:left-[56%] lg:top-32 lg:z-30 lg:scale-[0.9]"
+            >
               <CashScreen />
             </PhoneMockup>
-            <PhoneMockup title="Combos" badge="Concepto" className="lg:-translate-y-2">
+            <PhoneMockup
+              title="Combos"
+              badge="Concepto"
+              className="lg:absolute lg:right-[4%] lg:top-24 lg:z-20 lg:rotate-6 lg:scale-90"
+            >
               <CombosScreen />
             </PhoneMockup>
           </div>
@@ -291,9 +310,13 @@ function PhoneMockup({
 }) {
   return (
     <article
-      className={`w-[238px] shrink-0 rounded-[2.1rem] bg-[#111827] p-2 shadow-2xl shadow-[#4f46e5]/25 ring-1 ring-white/70 ${featured ? "sm:w-[270px] lg:scale-105" : "sm:w-[245px]"} ${className}`}
+      className={`relative w-[238px] shrink-0 rounded-[2.25rem] bg-[#111827] p-2 shadow-[0_34px_90px_rgba(79,70,229,0.28)] ring-1 ring-white/70 transition-transform duration-500 ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
     >
-      <div className="relative aspect-[9/19] overflow-hidden rounded-[1.7rem] bg-[#f8fafc]">
+      {featured ? (
+        <div className="absolute -inset-5 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.22),rgba(124,58,237,0.22),rgba(192,38,211,0.18))] blur-3xl" />
+      ) : null}
+      <div className="pointer-events-none absolute inset-1 rounded-[1.95rem] ring-1 ring-white/10" />
+      <div className="relative aspect-[9/19] overflow-hidden rounded-[1.75rem] bg-[#f8fafc] ring-1 ring-white/20">
         <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827]" />
         <div className="flex items-center justify-between px-5 pt-8 text-[10px] font-black text-[#111827]">
           <span>9:41</span>
