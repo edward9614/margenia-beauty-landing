@@ -252,35 +252,39 @@ function EcosystemPreviewSection() {
           </p>
         </div>
 
-        <div className="-mx-5 mt-12 overflow-x-auto px-5 pb-8 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[700px] lg:overflow-visible lg:pb-0">
-          <div className="relative flex min-w-max items-center gap-5 px-1 sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
+        <div className="-mx-5 mt-12 overflow-x-auto px-5 pb-8 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[720px] lg:overflow-visible lg:pb-0">
+          <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
             <div className="absolute bottom-4 left-1/2 hidden h-24 w-[74%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.18),rgba(124,58,237,0.26),rgba(192,38,211,0.16))] blur-3xl lg:block" />
             <PhoneMockup
               title="Resumen"
               badge="Preview"
               featured
-              className="lg:absolute lg:left-1/2 lg:top-2 lg:z-40 lg:-translate-x-1/2 lg:scale-105"
+              side="both"
+              className="lg:absolute lg:left-1/2 lg:top-2 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-4deg)_rotateX(3deg)_translateZ(80px)_scale(1.04)]"
             >
               <DashboardScreen />
             </PhoneMockup>
             <PhoneMockup
               title="Inventario"
               badge="Próximamente"
-              className="lg:absolute lg:left-[6%] lg:top-28 lg:z-20 lg:-rotate-6 lg:scale-90"
+              side="right"
+              className="lg:absolute lg:left-[5%] lg:top-32 lg:z-20 lg:[transform:rotateY(28deg)_rotateX(6deg)_rotateZ(-7deg)_translateZ(10px)_scale(0.9)]"
             >
               <InventoryScreen />
             </PhoneMockup>
             <PhoneMockup
               title="Caja"
               badge="Beta"
-              className="lg:absolute lg:left-[56%] lg:top-32 lg:z-30 lg:scale-[0.9]"
+              side="left"
+              className="lg:absolute lg:left-[56%] lg:top-40 lg:z-30 lg:[transform:rotateY(-12deg)_rotateX(4deg)_translateZ(0px)_scale(0.88)]"
             >
               <CashScreen />
             </PhoneMockup>
             <PhoneMockup
               title="Combos"
               badge="Concepto"
-              className="lg:absolute lg:right-[4%] lg:top-24 lg:z-20 lg:rotate-6 lg:scale-90"
+              side="left"
+              className="lg:absolute lg:right-[3%] lg:top-30 lg:z-20 lg:[transform:rotateY(-28deg)_rotateX(6deg)_rotateZ(7deg)_translateZ(10px)_scale(0.9)]"
             >
               <CombosScreen />
             </PhoneMockup>
@@ -300,39 +304,55 @@ function PhoneMockup({
   badge,
   children,
   featured = false,
+  side = "both",
   className = "",
 }: {
   title: string;
   badge: string;
   children: ReactNode;
   featured?: boolean;
+  side?: "left" | "right" | "both";
   className?: string;
 }) {
+  const showLeftSide = side === "left" || side === "both";
+  const showRightSide = side === "right" || side === "both";
+
   return (
     <article
-      className={`relative w-[238px] shrink-0 rounded-[2.25rem] bg-[#111827] p-2 shadow-[0_34px_90px_rgba(79,70,229,0.28)] ring-1 ring-white/70 transition-transform duration-500 ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
+      className={`relative w-[238px] shrink-0 rounded-[2.45rem] [transform-style:preserve-3d] [will-change:transform] ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
     >
       {featured ? (
-        <div className="absolute -inset-5 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.22),rgba(124,58,237,0.22),rgba(192,38,211,0.18))] blur-3xl" />
+        <div className="absolute -inset-8 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.26),rgba(124,58,237,0.24),rgba(192,38,211,0.2))] blur-3xl" />
       ) : null}
-      <div className="pointer-events-none absolute inset-1 rounded-[1.95rem] ring-1 ring-white/10" />
-      <div className="relative aspect-[9/19] overflow-hidden rounded-[1.75rem] bg-[#f8fafc] ring-1 ring-white/20">
-        <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827]" />
-        <div className="flex items-center justify-between px-5 pt-8 text-[10px] font-black text-[#111827]">
-          <span>9:41</span>
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-3 rounded-full bg-[#111827]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
+      <div className="absolute inset-0 rounded-[2.45rem] bg-[#030712] opacity-80 shadow-[0_38px_90px_rgba(17,24,39,0.3),0_16px_38px_rgba(124,58,237,0.2)] lg:[transform:translate3d(14px,18px,-24px)]" />
+      <div
+        className={`absolute -left-3 top-9 bottom-9 hidden w-5 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_45%,#030712_100%)] shadow-[inset_4px_0_8px_rgba(255,255,255,0.08)] lg:block lg:[transform-origin:right_center] lg:[transform:rotateY(-86deg)_translateZ(18px)] ${showLeftSide ? "opacity-100" : "opacity-35"}`}
+      />
+      <div
+        className={`absolute -right-3 top-9 bottom-9 hidden w-5 rounded-r-[2rem] bg-[linear-gradient(180deg,#111827_0%,#374151_42%,#030712_100%)] shadow-[inset_-4px_0_8px_rgba(255,255,255,0.08)] lg:block lg:[transform-origin:left_center] lg:[transform:rotateY(86deg)_translateZ(18px)] ${showRightSide ? "opacity-100" : "opacity-35"}`}
+      />
+      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_42%,#374151_100%)] p-2 shadow-[0_35px_80px_rgba(17,24,39,0.28),0_12px_30px_rgba(124,58,237,0.18)] ring-1 ring-white/70 lg:[transform:translateZ(24px)]">
+        <div className="pointer-events-none absolute inset-1 rounded-[2rem] ring-1 ring-white/10" />
+        <div className="relative aspect-[9/19] overflow-hidden rounded-[1.82rem] bg-[#f8fafc] ring-1 ring-white/20">
+          <div className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827] shadow-sm">
+            <span className="absolute right-3 top-1.5 h-2 w-2 rounded-full bg-[#374151]" />
           </div>
+          <div className="flex items-center justify-between px-5 pt-8 text-[10px] font-black text-[#111827]">
+            <span>9:41</span>
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-3 rounded-full bg-[#111827]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between px-5 pt-5">
+            <h3 className="text-lg font-black text-[#111827]">{title}</h3>
+            <span className="rounded-full bg-[#ede9fe] px-2 py-1 text-[9px] font-black uppercase tracking-[0.08em] text-[#6d28d9]">
+              {badge}
+            </span>
+          </div>
+          <div className="px-5 pb-16 pt-4">{children}</div>
+          <BottomNav />
         </div>
-        <div className="flex items-center justify-between px-5 pt-5">
-          <h3 className="text-lg font-black text-[#111827]">{title}</h3>
-          <span className="rounded-full bg-[#ede9fe] px-2 py-1 text-[9px] font-black uppercase tracking-[0.08em] text-[#6d28d9]">
-            {badge}
-          </span>
-        </div>
-        <div className="px-5 pb-16 pt-4">{children}</div>
-        <BottomNav />
       </div>
     </article>
   );
