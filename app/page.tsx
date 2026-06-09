@@ -28,7 +28,7 @@ const benefits = [
 ];
 
 const socialLinks = [
-  { label: "Instagram", href: "#" },
+  { label: "Instagram", href: "https://instagram.com/margenia.app", external: true },
   { label: "TikTok", href: "#" },
   { label: "WhatsApp", href: "#" },
   { label: "Correo", href: "mailto:hola@margenia.com" },
@@ -92,12 +92,22 @@ function Hero() {
             Beauty Beta
           </span>
         </a>
-        <a
-          href="#beta"
-          className="shrink-0 rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#5b21b6] shadow-sm ring-1 ring-[#d1d5db] backdrop-blur transition-all duration-300 hover:bg-[#f5f3ff] hover:ring-[#c4b5fd] sm:px-5 sm:py-3"
-        >
-          Ser fundadora
-        </a>
+        <div className="flex shrink-0 items-center gap-4">
+          <a
+            href="https://instagram.com/margenia.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden text-sm font-bold text-[#5b21b6] transition hover:text-[#7c3aed] sm:inline-flex"
+          >
+            Instagram
+          </a>
+          <a
+            href="#beta"
+            className="rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#5b21b6] shadow-sm ring-1 ring-[#d1d5db] backdrop-blur transition-all duration-300 hover:bg-[#f5f3ff] hover:ring-[#c4b5fd] sm:px-5 sm:py-3"
+          >
+            Ser fundadora
+          </a>
+        </div>
       </nav>
       <div className="relative z-10 mx-auto flex min-h-[78svh] max-w-6xl items-center">
         <div className="max-w-3xl pt-12">
@@ -230,6 +240,8 @@ function Footer() {
               <a
                 key={link.label}
                 href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
                 className="rounded-full bg-[#f9fafb] px-4 py-2 text-sm font-bold text-[#374151] ring-1 ring-[#e5e7eb] transition-all duration-300 ease-out hover:bg-[#f5f3ff] hover:text-[#6d28d9] hover:ring-[#c4b5fd]"
               >
                 {link.label}
