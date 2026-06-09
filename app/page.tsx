@@ -236,20 +236,20 @@ function EcosystemPreviewSection() {
         <div className="grid gap-8 lg:grid-cols-[0.4fr_0.6fr] lg:items-center">
           <div className="max-w-xl lg:max-w-none">
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
-              Vista previa conceptual
+              Margenia está tomando forma
             </p>
             <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-4xl lg:text-5xl">
-              Así se verá Margenia
+              El control que tu negocio necesitaba está naciendo aquí
             </h2>
             <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
-              Empezamos con una herramienta gratuita para precios y combos.
-              Ahora estamos diseñando una experiencia móvil para ayudarte a
-              visualizar inventario, caja, ventas, gastos y utilidad real desde
-              un solo lugar.
+              Empezamos ayudándote a calcular precios y combos rentables. Ahora
+              estamos desarrollando un ecosistema para que puedas ver tus
+              ventas, inventario, caja, gastos, pagos pendientes y utilidad real
+              con la claridad que tu negocio merece.
             </p>
             <p className="mt-5 rounded-2xl border border-[#ddd6fe] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] shadow-sm backdrop-blur">
-              Vista previa conceptual. Algunas funciones aún están en
-              desarrollo.
+              Vista previa conceptual. Algunas funciones están en desarrollo y
+              se integrarán progresivamente en Margenia.
             </p>
           </div>
 
@@ -261,7 +261,7 @@ function EcosystemPreviewSection() {
                 badge="Preview"
                 featured
                 side="both"
-                className="lg:absolute lg:left-[43%] lg:top-0 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-3deg)_rotateX(2deg)_translateZ(72px)_scale(0.98)]"
+                className="lg:absolute lg:left-[46%] lg:top-0 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-3deg)_rotateX(2deg)_translateZ(72px)_scale(0.98)]"
               >
                 <DashboardScreen />
               </PhoneMockup>
@@ -269,7 +269,7 @@ function EcosystemPreviewSection() {
                 title="Inventario"
                 badge="Próximamente"
                 side="right"
-                className="lg:absolute lg:left-0 lg:top-28 lg:z-20 lg:[transform:rotateY(18deg)_rotateX(4deg)_rotateZ(-5deg)_translateZ(8px)_scale(0.82)]"
+                className="lg:absolute lg:left-0 lg:top-32 lg:z-20 lg:[transform:rotateY(14deg)_rotateX(3deg)_rotateZ(-4deg)_translateZ(4px)_scale(0.78)]"
               >
                 <InventoryScreen />
               </PhoneMockup>
@@ -277,7 +277,7 @@ function EcosystemPreviewSection() {
                 title="Caja"
                 badge="Beta"
                 side="left"
-                className="lg:absolute lg:left-[56%] lg:top-32 lg:z-30 lg:[transform:rotateY(-8deg)_rotateX(3deg)_translateZ(0px)_scale(0.82)]"
+                className="lg:absolute lg:left-[52%] lg:top-56 lg:z-10 lg:[transform:rotateY(-6deg)_rotateX(2deg)_translateZ(-8px)_scale(0.68)]"
               >
                 <CashScreen />
               </PhoneMockup>
@@ -285,7 +285,7 @@ function EcosystemPreviewSection() {
                 title="Combos"
                 badge="Concepto"
                 side="left"
-                className="lg:absolute lg:right-0 lg:top-24 lg:z-20 lg:[transform:rotateY(-18deg)_rotateX(4deg)_rotateZ(5deg)_translateZ(8px)_scale(0.82)]"
+                className="lg:absolute lg:left-[68%] lg:top-32 lg:z-20 lg:[transform:rotateY(-14deg)_rotateX(3deg)_rotateZ(4deg)_translateZ(4px)_scale(0.78)]"
               >
                 <CombosScreen />
               </PhoneMockup>
