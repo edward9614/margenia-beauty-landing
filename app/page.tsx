@@ -1,6 +1,5 @@
 import { existsSync } from "fs";
 import { join } from "path";
-import type { ReactNode } from "react";
 import Image from "next/image";
 import { BrandLogo } from "@/components/brand-logo";
 import { primaryButtonClass, secondaryButtonClass } from "@/components/button-classes";
@@ -53,29 +52,6 @@ const ecosystemCards = [
     title: "Utilidad real",
     text: "Entiende cuánto te queda después de costos, descuentos y comisiones.",
   },
-];
-
-const dashboardStats = [
-  ["Ventas", "$3.450.000"],
-  ["Gastos", "$420.000"],
-  ["Por cobrar", "4 clientas"],
-];
-
-const inventoryRows = [
-  ["Pestañina viral", "3 disp.", "Stock bajo"],
-  ["Labial nude", "18 disp.", "OK"],
-  ["Shampoo reparación", "0 disp.", "Agotado"],
-];
-
-const cashMovements = [
-  ["Venta skincare", "+$120.000"],
-  ["Empaques", "-$35.000"],
-  ["Abono Natalia", "+$50.000"],
-];
-
-const comboBreakdown = [
-  ["Costo", "$45.000"],
-  ["Ganancia estimada", "$44.900"],
 ];
 
 const socialLinks = [
@@ -253,266 +229,19 @@ function EcosystemPreviewSection() {
             </p>
           </div>
 
-          <div className="-mx-5 overflow-x-auto px-5 pb-7 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[560px] lg:overflow-visible lg:pb-0">
-            <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
-              <PhoneMockup
-                title="Resumen"
-                badge="Preview"
-                featured
-                side="both"
-                className="lg:absolute lg:left-1/2 lg:top-0 lg:z-40 lg:[transform:translateX(-50%)_rotateY(-1deg)_rotateX(1deg)_translateZ(64px)_scale(0.96)]"
-              >
-                <DashboardScreen />
-              </PhoneMockup>
-              <PhoneMockup
-                title="Inventario"
-                badge="Próximamente"
-                side="right"
-                className="lg:absolute lg:left-[-2%] lg:top-32 lg:z-20 lg:[transform:rotateY(8deg)_rotateX(2deg)_rotateZ(-3deg)_translateZ(2px)_scale(0.72)]"
-              >
-                <InventoryScreen />
-              </PhoneMockup>
-              <PhoneMockup
-                title="Caja"
-                badge="Beta"
-                side="left"
-                className="lg:absolute lg:left-[46%] lg:top-52 lg:z-10 lg:opacity-90 lg:[transform:rotateY(-4deg)_rotateX(1deg)_translateZ(-12px)_scale(0.62)]"
-              >
-                <CashScreen />
-              </PhoneMockup>
-              <PhoneMockup
-                title="Combos"
-                badge="Concepto"
-                side="left"
-                className="lg:absolute lg:right-[-2%] lg:top-32 lg:z-20 lg:[transform:rotateY(-8deg)_rotateX(2deg)_rotateZ(3deg)_translateZ(2px)_scale(0.72)]"
-              >
-                <CombosScreen />
-              </PhoneMockup>
-            </div>
+          <div className="relative min-h-[340px] sm:min-h-[460px] lg:min-h-[560px]">
+            <Image
+              src="/images/margenia-showcase.png"
+              alt="Vista conceptual del ecosistema Margenia en dispositivos móviles"
+              fill
+              sizes="(min-width: 1024px) 60vw, 100vw"
+              className="object-contain object-center lg:object-right"
+              priority={false}
+            />
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function PhoneMockup({
-  title,
-  badge,
-  children,
-  featured = false,
-  side = "both",
-  className = "",
-}: {
-  title: string;
-  badge: string;
-  children: ReactNode;
-  featured?: boolean;
-  side?: "left" | "right" | "both";
-  className?: string;
-}) {
-  const showLeftSide = side === "left" || side === "both";
-  const showRightSide = side === "right" || side === "both";
-
-  return (
-    <article
-      className={`relative w-[238px] shrink-0 rounded-[2.45rem] [transform-style:preserve-3d] [will-change:transform] ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
-    >
-      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_46%,#374151_100%)] p-2 ring-1 ring-white/70 lg:[transform:translateZ(18px)]">
-        <div
-          className={`pointer-events-none absolute inset-y-7 -left-1.5 w-3 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_48%,#030712_100%)] ${showLeftSide ? "opacity-70" : "opacity-15"}`}
-        />
-        <div
-          className={`pointer-events-none absolute inset-y-7 -right-1.5 w-3 rounded-r-[2rem] bg-[linear-gradient(180deg,#111827_0%,#374151_42%,#030712_100%)] ${showRightSide ? "opacity-70" : "opacity-15"}`}
-        />
-        <div className="pointer-events-none absolute inset-1 rounded-[2rem] ring-1 ring-white/10" />
-        <div className="relative z-10 aspect-[9/19] overflow-hidden rounded-[1.82rem] bg-[#f8fafc] ring-1 ring-white/20">
-          <div className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827]">
-            <span className="absolute right-3 top-1.5 h-2 w-2 rounded-full bg-[#374151]" />
-          </div>
-          <div className="flex items-center justify-between px-5 pt-8 text-[10px] font-black text-[#111827]">
-            <span>9:41</span>
-            <div className="flex items-center gap-1">
-              <span className="h-1.5 w-3 rounded-full bg-[#111827]" />
-              <span className="h-1.5 w-1.5 rounded-full bg-[#111827]" />
-            </div>
-          </div>
-          <div className="flex items-center justify-between px-5 pt-5">
-            <h3 className="text-lg font-black text-[#111827]">{title}</h3>
-            <span className="rounded-full bg-[#ede9fe] px-2 py-1 text-[9px] font-black uppercase tracking-[0.08em] text-[#6d28d9]">
-              {badge}
-            </span>
-          </div>
-          <div className="px-5 pb-16 pt-4">{children}</div>
-          <BottomNav />
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function DashboardScreen() {
-  return (
-    <div>
-      <p className="text-sm font-bold text-[#6b7280]">Hola, Laura</p>
-      <div className="mt-3 rounded-3xl bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_55%,#c026d3_100%)] p-4 text-white shadow-lg shadow-[#7c3aed]/25">
-        <p className="text-xs font-bold opacity-85">Utilidad estimada</p>
-        <p className="mt-2 text-2xl font-black">$1.380.000</p>
-      </div>
-      <div className="mt-3 grid gap-2">
-        {dashboardStats.map(([label, value]) => (
-          <MiniStatCard key={label} label={label} value={value} />
-        ))}
-      </div>
-      <MiniChart />
-    </div>
-  );
-}
-
-function InventoryScreen() {
-  return (
-    <div>
-      <div className="rounded-full bg-white px-3 py-2 text-xs font-bold text-[#9ca3af] ring-1 ring-[#e5e7eb]">
-        Buscar producto
-      </div>
-      <div className="mt-4 space-y-2">
-        {inventoryRows.map(([name, amount, status]) => (
-          <MiniRow key={name} label={name} value={amount} status={status} />
-        ))}
-      </div>
-      <div className="mt-4 rounded-2xl bg-[#faf5ff] p-3 ring-1 ring-[#ddd6fe]">
-        <p className="text-xs font-bold text-[#6b7280]">Dinero quieto</p>
-        <p className="mt-1 text-lg font-black text-[#6d28d9]">$420.000</p>
-      </div>
-    </div>
-  );
-}
-
-function CashScreen() {
-  return (
-    <div>
-      <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#e5e7eb]">
-        <p className="text-xs font-bold text-[#6b7280]">Saldo del día</p>
-        <p className="mt-2 text-2xl font-black text-[#111827]">$334.000</p>
-      </div>
-      <div className="mt-4 space-y-2">
-        {cashMovements.map(([label, value]) => (
-          <div
-            key={label}
-            className="flex items-center justify-between rounded-2xl bg-white px-3 py-2.5 ring-1 ring-[#e5e7eb]"
-          >
-            <span className="text-xs font-black text-[#111827]">{label}</span>
-            <span className={`text-xs font-black ${value.startsWith("+") ? "text-[#047857]" : "text-[#b91c1c]"}`}>
-              {value}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 rounded-full bg-[#111827] px-4 py-3 text-center text-xs font-black text-white">
-        + Registrar movimiento
-      </div>
-    </div>
-  );
-}
-
-function CombosScreen() {
-  return (
-    <div>
-      <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#e5e7eb]">
-        <p className="text-sm font-black text-[#111827]">Kit glow</p>
-        <div className="mt-3 flex items-end justify-between">
-          <div>
-            <p className="text-xs font-bold text-[#6b7280]">Precio sugerido</p>
-            <p className="mt-1 text-2xl font-black text-[#111827]">$89.900</p>
-          </div>
-          <span className="rounded-full bg-[#dcfce7] px-3 py-1 text-xs font-black text-[#047857]">
-            49%
-          </span>
-        </div>
-      </div>
-      <div className="mt-4 space-y-2">
-        {comboBreakdown.map(([label, value]) => (
-          <MiniStatCard key={label} label={label} value={value} />
-        ))}
-      </div>
-      <p className="mt-4 rounded-2xl bg-[#ecfdf5] px-3 py-2 text-center text-xs font-black text-[#047857] ring-1 ring-[#bbf7d0]">
-        Combo rentable
-      </p>
-    </div>
-  );
-}
-
-function MiniStatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl bg-white px-3 py-2.5 ring-1 ring-[#e5e7eb]">
-      <span className="text-xs font-bold text-[#6b7280]">{label}</span>
-      <span className="text-xs font-black text-[#111827]">{value}</span>
-    </div>
-  );
-}
-
-function MiniRow({
-  label,
-  value,
-  status,
-}: {
-  label: string;
-  value: string;
-  status: string;
-}) {
-  const isLow = status === "Stock bajo";
-  const isOut = status === "Agotado";
-
-  return (
-    <div className="rounded-2xl bg-white px-3 py-2.5 ring-1 ring-[#e5e7eb]">
-      <div className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs font-black text-[#111827]">{label}</span>
-        <span className="shrink-0 text-xs font-bold text-[#6b7280]">{value}</span>
-      </div>
-      <span
-        className={`mt-2 inline-flex rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.04em] ${
-          isOut
-            ? "bg-[#fee2e2] text-[#b91c1c]"
-            : isLow
-              ? "bg-[#fef3c7] text-[#92400e]"
-              : "bg-[#dcfce7] text-[#047857]"
-        }`}
-      >
-        {status}
-      </span>
-    </div>
-  );
-}
-
-function MiniChart() {
-  const bars = ["h-8", "h-12", "h-10", "h-16", "h-14", "h-20"];
-
-  return (
-    <div className="mt-4 rounded-3xl bg-white p-4 ring-1 ring-[#e5e7eb]">
-      <div className="flex h-24 items-end gap-2">
-        {bars.map((height, index) => (
-          <span
-            key={`${height}-${index}`}
-            className={`${height} flex-1 rounded-t-full bg-[linear-gradient(180deg,#c026d3_0%,#7c3aed_55%,#4f46e5_100%)]`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function BottomNav() {
-  return (
-    <div className="absolute inset-x-5 bottom-4 rounded-full bg-white/90 px-4 py-3 shadow-lg shadow-[#111827]/5 ring-1 ring-[#e5e7eb] backdrop-blur">
-      <div className="flex items-center justify-between">
-        {[0, 1, 2, 3].map((item) => (
-          <span
-            key={item}
-            className={`h-2.5 w-2.5 rounded-full ${item === 0 ? "bg-[#7c3aed]" : "bg-[#d1d5db]"}`}
-          />
-        ))}
-      </div>
-    </div>
   );
 }
 
