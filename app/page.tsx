@@ -255,7 +255,7 @@ function EcosystemPreviewSection() {
 
           <div className="-mx-5 overflow-x-auto px-5 pb-7 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[560px] lg:overflow-visible lg:pb-0">
             <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
-              <div className="absolute bottom-12 left-1/2 hidden h-16 w-[72%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.12),rgba(124,58,237,0.18),rgba(192,38,211,0.11))] blur-3xl lg:block" />
+              <div className="absolute bottom-12 left-1/2 hidden h-14 w-[70%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.08),rgba(124,58,237,0.12),rgba(192,38,211,0.08))] blur-3xl lg:block" />
               <PhoneMockup
                 title="Resumen"
                 badge="Preview"
@@ -320,11 +320,10 @@ function PhoneMockup({
       className={`relative w-[238px] shrink-0 rounded-[2.45rem] [transform-style:preserve-3d] [will-change:transform] ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
     >
       {featured ? (
-        <div className="absolute -inset-7 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.2),rgba(124,58,237,0.2),rgba(192,38,211,0.15))] blur-3xl" />
+        <div className="absolute -inset-7 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.12),rgba(124,58,237,0.14),rgba(192,38,211,0.1))] blur-3xl" />
       ) : null}
-      <div className="absolute inset-x-5 bottom-[-18px] h-10 rounded-[999px] bg-[rgba(17,24,39,0.22)] blur-2xl lg:[transform:translateZ(-22px)]" />
-      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_46%,#374151_100%)] p-2 shadow-[0_34px_78px_rgba(17,24,39,0.24),0_14px_32px_rgba(124,58,237,0.15)] ring-1 ring-white/70 lg:[transform:translateZ(18px)]">
-        <div className="absolute inset-0 -z-10 rounded-[2.35rem] bg-[#030712] opacity-60 lg:[transform:translate3d(7px,10px,-12px)]" />
+      <div className="absolute inset-x-8 bottom-[-16px] h-9 rounded-[999px] bg-[rgba(79,70,229,0.12)] blur-2xl lg:[transform:translateZ(-18px)]" />
+      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_46%,#374151_100%)] p-2 shadow-[0_28px_64px_rgba(17,24,39,0.16),0_10px_26px_rgba(124,58,237,0.1)] ring-1 ring-white/70 lg:[transform:translateZ(18px)]">
         <div
           className={`pointer-events-none absolute inset-y-7 -left-1.5 w-3 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_48%,#030712_100%)] shadow-[inset_2px_0_5px_rgba(255,255,255,0.08)] ${showLeftSide ? "opacity-90" : "opacity-25"}`}
         />
