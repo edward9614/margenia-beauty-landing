@@ -20,10 +20,10 @@ const pains = [
 ];
 
 const benefits = [
-  "Acceso anticipado a la beta antes del lanzamiento público.",
+  "Acceso anticipado al ecosistema Margenia antes del lanzamiento público.",
   "Precio fundador con beneficio especial por entrar primero.",
-  "Plantilla premium para calcular precios y combos rentables.",
-  "Acompañamiento cercano para ayudarte a usar Margenia desde el inicio.",
+  "Primer acceso a funciones de inventario, caja, ventas, combos y utilidad real.",
+  "Acompañamiento cercano para adaptar Margenia a negocios reales como el tuyo.",
   "Influencia directa en las próximas funciones de la plataforma.",
 ];
 
@@ -184,9 +184,10 @@ function FounderBeta() {
             Beta Fundadoras
           </h2>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#f6e8ef]">
-            Únete al grupo de fundadoras y entra antes que nadie a Margenia.
-            Accede primero, paga menos y obtén beneficios exclusivos mientras
-            construimos la herramienta contigo.
+            Únete al grupo de fundadoras y entra antes que nadie al ecosistema
+            Margenia. Estamos creando una plataforma para que emprendedoras
+            puedan controlar precios, ventas, inventario, caja, combos, gastos
+            y utilidad real desde un solo lugar.
           </p>
           <div className="mt-7 inline-flex rounded-full bg-white px-5 py-3 text-xl font-black text-[#6d28d9]">
             Precio especial de fundadora: &#36;49.900 COP por 3 meses
