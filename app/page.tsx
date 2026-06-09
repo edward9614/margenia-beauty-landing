@@ -247,7 +247,7 @@ function EcosystemPreviewSection() {
               ventas, inventario, caja, gastos, pagos pendientes y utilidad real
               con la claridad que tu negocio merece.
             </p>
-            <p className="mt-5 rounded-2xl border border-[#ddd6fe] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] shadow-sm backdrop-blur">
+            <p className="mt-5 rounded-2xl border border-[#ddd6fe] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] backdrop-blur">
               Vista previa conceptual. Algunas funciones están en desarrollo y
               se integrarán progresivamente en Margenia.
             </p>
@@ -255,7 +255,6 @@ function EcosystemPreviewSection() {
 
           <div className="-mx-5 overflow-x-auto px-5 pb-7 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:h-[560px] lg:overflow-visible lg:pb-0">
             <div className="relative flex min-w-max items-center gap-5 px-1 [perspective:1200px] [perspective-origin:center_center] [transform-style:preserve-3d] sm:justify-center lg:h-full lg:min-w-0 lg:block lg:px-0">
-              <div className="absolute bottom-12 left-1/2 hidden h-14 w-[70%] -translate-x-1/2 rounded-[999px] bg-[linear-gradient(90deg,rgba(79,70,229,0.08),rgba(124,58,237,0.12),rgba(192,38,211,0.08))] blur-3xl lg:block" />
               <PhoneMockup
                 title="Resumen"
                 badge="Preview"
@@ -319,20 +318,16 @@ function PhoneMockup({
     <article
       className={`relative w-[238px] shrink-0 rounded-[2.45rem] [transform-style:preserve-3d] [will-change:transform] ${featured ? "sm:w-[292px]" : "sm:w-[245px]"} ${className}`}
     >
-      {featured ? (
-        <div className="absolute -inset-7 -z-10 bg-[linear-gradient(135deg,rgba(79,70,229,0.12),rgba(124,58,237,0.14),rgba(192,38,211,0.1))] blur-3xl" />
-      ) : null}
-      <div className="absolute inset-x-8 bottom-[-16px] h-9 rounded-[999px] bg-[rgba(79,70,229,0.12)] blur-2xl lg:[transform:translateZ(-18px)]" />
-      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_46%,#374151_100%)] p-2 shadow-[0_28px_64px_rgba(17,24,39,0.16),0_10px_26px_rgba(124,58,237,0.1)] ring-1 ring-white/70 lg:[transform:translateZ(18px)]">
+      <div className="relative rounded-[2.35rem] bg-[linear-gradient(145deg,#030712_0%,#111827_46%,#374151_100%)] p-2 ring-1 ring-white/70 lg:[transform:translateZ(18px)]">
         <div
-          className={`pointer-events-none absolute inset-y-7 -left-1.5 w-3 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_48%,#030712_100%)] shadow-[inset_2px_0_5px_rgba(255,255,255,0.08)] ${showLeftSide ? "opacity-90" : "opacity-25"}`}
+          className={`pointer-events-none absolute inset-y-7 -left-1.5 w-3 rounded-l-[2rem] bg-[linear-gradient(180deg,#374151_0%,#111827_48%,#030712_100%)] ${showLeftSide ? "opacity-70" : "opacity-15"}`}
         />
         <div
-          className={`pointer-events-none absolute inset-y-7 -right-1.5 w-3 rounded-r-[2rem] bg-[linear-gradient(180deg,#111827_0%,#374151_42%,#030712_100%)] shadow-[inset_-2px_0_5px_rgba(255,255,255,0.08)] ${showRightSide ? "opacity-90" : "opacity-25"}`}
+          className={`pointer-events-none absolute inset-y-7 -right-1.5 w-3 rounded-r-[2rem] bg-[linear-gradient(180deg,#111827_0%,#374151_42%,#030712_100%)] ${showRightSide ? "opacity-70" : "opacity-15"}`}
         />
         <div className="pointer-events-none absolute inset-1 rounded-[2rem] ring-1 ring-white/10" />
         <div className="relative z-10 aspect-[9/19] overflow-hidden rounded-[1.82rem] bg-[#f8fafc] ring-1 ring-white/20">
-          <div className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827] shadow-sm">
+          <div className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#111827]">
             <span className="absolute right-3 top-1.5 h-2 w-2 rounded-full bg-[#374151]" />
           </div>
           <div className="flex items-center justify-between px-5 pt-8 text-[10px] font-black text-[#111827]">
