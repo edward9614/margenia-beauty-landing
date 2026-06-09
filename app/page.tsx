@@ -205,37 +205,40 @@ function PainSection() {
 
 function EcosystemPreviewSection() {
   return (
-    <section className="relative overflow-hidden bg-[#f8fafc] px-5 py-12 sm:px-6 lg:min-h-[580px] lg:px-8 lg:py-0">
-      <Image
-        src="/images/margenia-showcase.png"
-        alt="Vista conceptual del ecosistema Margenia en dispositivos móviles"
-        fill
-        sizes="100vw"
-        className="hidden object-cover object-right lg:block"
-        priority={false}
-      />
-      <div className="absolute inset-0 hidden bg-gradient-to-r from-[#f8fafc] via-[#f8fafc]/85 to-transparent lg:block" />
-      <div className="relative z-10 mx-auto max-w-6xl lg:flex lg:min-h-[580px] lg:items-center">
-        <div className="max-w-xl">
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
-            Margenia está tomando forma
-          </p>
-          <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-4xl lg:text-5xl">
-            El control que tu negocio necesitaba está naciendo aquí
-          </h2>
-          <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
-            Empezamos ayudándote a calcular precios y combos rentables. Ahora
-            estamos desarrollando un ecosistema para que puedas ver tus ventas,
-            inventario, caja, gastos, pagos pendientes y utilidad real con la
-            claridad que tu negocio merece.
-          </p>
-          <p className="mt-5 rounded-2xl border border-[#ddd6fe] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] backdrop-blur">
-            Vista previa conceptual. Algunas funciones están en desarrollo y se
-            integrarán progresivamente en Margenia.
-          </p>
+    <section className="bg-[#f8fafc] px-5 py-10 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-6xl overflow-hidden lg:min-h-[500px]">
+        <Image
+          src="/images/margenia-showcase.png"
+          alt="Vista conceptual del ecosistema Margenia en dispositivos móviles"
+          fill
+          sizes="(min-width: 1024px) 1152px, 100vw"
+          className="hidden object-cover object-right lg:block"
+          priority={false}
+        />
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-[#f8fafc] via-[#f8fafc]/90 to-transparent lg:block" />
+
+        <div className="relative z-10 lg:flex lg:min-h-[500px] lg:items-center">
+          <div className="max-w-lg">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
+              Margenia está tomando forma
+            </p>
+            <h2 className="mt-3 text-3xl font-black leading-tight text-[#111827] sm:text-4xl lg:text-[2.8rem]">
+              El control que tu negocio necesitaba está naciendo aquí
+            </h2>
+            <p className="mt-5 text-base leading-7 text-[#4b5563] sm:text-lg">
+              Empezamos ayudándote a calcular precios y combos rentables. Ahora
+              estamos desarrollando un ecosistema para que puedas ver tus ventas,
+              inventario, caja, gastos, pagos pendientes y utilidad real con la
+              claridad que tu negocio merece.
+            </p>
+            <p className="mt-5 rounded-2xl border border-[#ddd6fe] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] backdrop-blur">
+              Vista previa conceptual. Algunas funciones están en desarrollo y se
+              integrarán progresivamente en Margenia.
+            </p>
+          </div>
         </div>
 
-        <div className="relative mt-8 min-h-[330px] sm:min-h-[440px] lg:hidden">
+        <div className="relative mt-8 min-h-[300px] sm:min-h-[380px] lg:hidden">
           <Image
             src="/images/margenia-showcase.png"
             alt="Vista conceptual del ecosistema Margenia en dispositivos móviles"
