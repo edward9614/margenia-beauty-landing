@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { primaryButtonClass } from "@/components/button-classes";
 import { Field, InstagramField, SelectField } from "@/components/field";
+import { trackEvent } from "@/lib/analytics";
 
 const controlOptions = [
   "Cuaderno",
@@ -88,6 +89,11 @@ export function WaitlistForm() {
         return;
       }
 
+      trackEvent("submit_lead", {
+        location: "waitlist_form",
+        intent: form.intent || "lista_espera",
+        wants_beta: form.wantsBeta,
+      });
       setMessage("¡Listo! Te avisaremos cuando abramos la beta de Margenia Beauty.");
       setForm(initialForm);
     } catch {

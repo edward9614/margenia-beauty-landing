@@ -5,6 +5,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { primaryButtonClass, secondaryButtonClass } from "@/components/button-classes";
 import { ComboCalculator } from "@/components/combo-calculator";
 import { PriceCalculator } from "@/components/price-calculator";
+import { TrackedLink } from "@/components/tracked-link";
 import { WaitlistForm } from "@/components/waitlist-form";
 
 const hasHeroImage = existsSync(join(process.cwd(), "public/images/hero-beauty.png"));
@@ -123,20 +124,36 @@ function Hero() {
           </span>
         </a>
         <div className="flex shrink-0 items-center gap-4">
-          <a
+          <TrackedLink
             href="https://instagram.com/margenia.app"
             target="_blank"
             rel="noopener noreferrer"
+            events={[
+              {
+                name: "click_instagram",
+                params: { location: "navbar", cta_text: "Instagram" },
+              },
+            ]}
             className="hidden text-sm font-bold text-[#5b21b6] transition hover:text-[#7c3aed] sm:inline-flex"
           >
             Instagram
-          </a>
-          <a
+          </TrackedLink>
+          <TrackedLink
             href="#beta"
+            events={[
+              {
+                name: "click_beta",
+                params: { location: "navbar", cta_text: "Ser fundadora" },
+              },
+              {
+                name: "click_fundadora",
+                params: { location: "navbar", cta_text: "Ser fundadora" },
+              },
+            ]}
             className="rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#5b21b6] shadow-sm ring-1 ring-[#d1d5db] backdrop-blur transition-all duration-300 hover:bg-[#f5f3ff] hover:ring-[#c4b5fd] sm:px-5 sm:py-3"
           >
             Ser fundadora
-          </a>
+          </TrackedLink>
         </div>
       </nav>
       <div className="relative z-10 mx-auto flex min-h-[78svh] max-w-6xl items-center">
@@ -154,18 +171,33 @@ function Hero() {
             belleza.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <a
+            <TrackedLink
               href="#calculadora"
+              events={[
+                {
+                  name: "click_calculadora",
+                  params: {
+                    location: "hero",
+                    cta_text: "Calcular mi precio gratis",
+                  },
+                },
+              ]}
               className={primaryButtonClass}
             >
               Calcular mi precio gratis
-            </a>
-            <a
-              href="#lista-espera"
+            </TrackedLink>
+            <TrackedLink
+              href="#beta"
+              events={[
+                {
+                  name: "click_beta",
+                  params: { location: "hero", cta_text: "Unirme a la beta" },
+                },
+              ]}
               className={secondaryButtonClass}
             >
               Unirme a la beta
-            </a>
+            </TrackedLink>
           </div>
         </div>
       </div>
@@ -324,12 +356,28 @@ function FounderBeta() {
               </li>
             ))}
           </ul>
-          <a
+          <TrackedLink
             href="?intent=fundadora#lista-espera"
+            events={[
+              {
+                name: "click_beta",
+                params: {
+                  location: "founder_beta",
+                  cta_text: "Quiero mi acceso fundador",
+                },
+              },
+              {
+                name: "click_fundadora",
+                params: {
+                  location: "founder_beta",
+                  cta_text: "Quiero mi acceso fundador",
+                },
+              },
+            ]}
             className={`mt-7 block ${primaryButtonClass}`}
           >
             Quiero mi acceso fundador
-          </a>
+          </TrackedLink>
         </div>
       </div>
     </section>
@@ -359,17 +407,35 @@ function Footer() {
             aria-label="Redes sociales"
             className="flex flex-wrap gap-3 md:justify-end"
           >
-            {socialLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target={link.external ? "_blank" : undefined}
-                rel={link.external ? "noopener noreferrer" : undefined}
-                className="rounded-full bg-[#f9fafb] px-4 py-2 text-sm font-bold text-[#374151] ring-1 ring-[#e5e7eb] transition-all duration-300 ease-out hover:bg-[#f5f3ff] hover:text-[#6d28d9] hover:ring-[#c4b5fd]"
-              >
-                {link.label}
-              </a>
-            ))}
+            {socialLinks.map((link) =>
+              link.label === "Instagram" ? (
+                <TrackedLink
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  events={[
+                    {
+                      name: "click_instagram",
+                      params: { location: "footer", cta_text: "Instagram" },
+                    },
+                  ]}
+                  className="rounded-full bg-[#f9fafb] px-4 py-2 text-sm font-bold text-[#374151] ring-1 ring-[#e5e7eb] transition-all duration-300 ease-out hover:bg-[#f5f3ff] hover:text-[#6d28d9] hover:ring-[#c4b5fd]"
+                >
+                  {link.label}
+                </TrackedLink>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                  className="rounded-full bg-[#f9fafb] px-4 py-2 text-sm font-bold text-[#374151] ring-1 ring-[#e5e7eb] transition-all duration-300 ease-out hover:bg-[#f5f3ff] hover:text-[#6d28d9] hover:ring-[#c4b5fd]"
+                >
+                  {link.label}
+                </a>
+              ),
+            )}
           </nav>
         </div>
 
