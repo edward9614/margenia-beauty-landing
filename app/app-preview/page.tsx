@@ -25,7 +25,7 @@ const metrics = [
     title: "Ventas del mes",
     value: "$3.450.000",
     detail: "42 ventas registradas",
-    accent: "bg-[#ede9fe] text-[#6d28d9]",
+    accent: "bg-[#EFF6FF] text-[#0891B2]",
   },
   {
     title: "Utilidad estimada",
@@ -94,7 +94,7 @@ export default function AppPreviewPage() {
             <section id="inicio" className="scroll-mt-24">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-sm font-black uppercase tracking-[0.14em] text-[#7c3aed]">
+                  <p className="text-sm font-black uppercase tracking-[0.14em] text-[#06B6D4]">
                     Inicio
                   </p>
                   <h1 className="mt-2 text-3xl font-black sm:text-4xl">
@@ -104,7 +104,7 @@ export default function AppPreviewPage() {
                     Visualiza lo que vendes, lo que gastas y cuánto estás ganando realmente.
                   </p>
                 </div>
-                <span className="inline-flex w-fit rounded-full bg-[#ede9fe] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9]">
+                <span className="inline-flex w-fit rounded-full bg-[#EFF6FF] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#0891B2]">
                   Datos de ejemplo
                 </span>
               </div>
@@ -140,8 +140,8 @@ function PreviewSidebar() {
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-[#e5e7eb] bg-white px-4 py-6 lg:flex lg:flex-col">
       <Brand />
 
-      <div className="mt-8 rounded-lg border border-[#ddd6fe] bg-[#f5f3ff] p-4">
-        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#6d28d9]">
+      <div className="mt-8 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] p-4">
+        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#0891B2]">
           Negocio activo
         </p>
         <p className="mt-2 text-sm font-black">Glow Beauty Store</p>
@@ -156,12 +156,12 @@ function PreviewSidebar() {
             className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition ${
               index === 0
                 ? "bg-[#111827] text-white"
-                : "text-[#4b5563] hover:bg-[#f5f3ff] hover:text-[#6d28d9]"
+                : "text-[#4b5563] hover:bg-[#EFF6FF] hover:text-[#0891B2]"
             }`}
           >
             <span
               aria-hidden="true"
-              className={`h-2.5 w-2.5 rounded-full ${index === 0 ? "bg-[#c4b5fd]" : "bg-[#d1d5db]"}`}
+              className={`h-2.5 w-2.5 rounded-full ${index === 0 ? "bg-[#BFDBFE]" : "bg-[#d1d5db]"}`}
             />
             {item.label}
           </a>
@@ -190,10 +190,10 @@ function PreviewHeader() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <span className="hidden rounded-full bg-[#ede9fe] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#6d28d9] sm:inline-flex">
+          <span className="hidden rounded-full bg-[#EFF6FF] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#0891B2] sm:inline-flex">
             Beta preview
           </span>
-          <span className="rounded-full border border-[#ddd6fe] bg-white px-3 py-2 text-xs font-black text-[#5b21b6]">
+          <span className="rounded-full border border-[#BFDBFE] bg-white px-3 py-2 text-xs font-black text-[#2563EB]">
             Vista conceptual
           </span>
         </div>
@@ -205,13 +205,13 @@ function PreviewHeader() {
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="grid h-9 w-9 place-items-center rounded-lg bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_55%,#c026d3_100%)] text-sm font-black text-white">
+      <span className="grid h-9 w-9 place-items-center rounded-lg bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_55%,#06B6D4_100%)] text-sm font-black text-white">
         M
       </span>
       <div>
         <p className="text-lg font-black leading-none">Margenia</p>
-        <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#7c3aed]">
-          Beauty beta
+        <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#06B6D4]">
+          Beta
         </p>
       </div>
     </div>
@@ -258,7 +258,7 @@ function UtilityCard() {
     <section id="utilidad" className="scroll-mt-24 rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#7c3aed]">Rentabilidad</p>
+          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#06B6D4]">Rentabilidad</p>
           <h2 className="mt-2 text-2xl font-black">Utilidad real</h2>
         </div>
         <span className="rounded-full bg-[#dcfce7] px-3 py-1.5 text-xs font-black text-[#047857]">
@@ -271,7 +271,7 @@ function UtilityCard() {
           {utilityRows.map(([label, value], index) => (
             <div key={label} className="flex items-center justify-between gap-4 border-b border-[#f0f1f4] pb-3 last:border-0">
               <span className="text-sm font-bold text-[#6b7280]">{label}</span>
-              <span className={`text-sm font-black ${index === 3 ? "text-[#6d28d9]" : "text-[#111827]"}`}>
+              <span className={`text-sm font-black ${index === 3 ? "text-[#0891B2]" : "text-[#111827]"}`}>
                 {value}
               </span>
             </div>
@@ -283,7 +283,7 @@ function UtilityCard() {
             {bars.map((height, index) => (
               <span
                 key={`${height}-${index}`}
-                className="flex-1 rounded-t-sm bg-[linear-gradient(180deg,#c026d3_0%,#7c3aed_60%,#4f46e5_100%)]"
+                className="flex-1 rounded-t-sm bg-[linear-gradient(180deg,#06B6D4_0%,#06B6D4_60%,#2563EB_100%)]"
                 style={{ height: `${height}%` }}
               />
             ))}
@@ -307,7 +307,7 @@ function PendingPayments() {
     <section className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#c026d3]">Cobros</p>
+          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#06B6D4]">Cobros</p>
           <h2 className="mt-2 text-2xl font-black">Pagos pendientes</h2>
         </div>
         <span className="rounded-full bg-[#fef3c7] px-3 py-1.5 text-xs font-black text-[#92400e]">4 pendientes</span>
@@ -317,7 +317,7 @@ function PendingPayments() {
         {pendingPayments.map(([name, amount, concept]) => (
           <div key={name} className="grid grid-cols-[1fr_auto] gap-1 rounded-lg bg-[#f8fafc] px-3 py-3">
             <p className="text-sm font-black">{name}</p>
-            <p className="text-sm font-black text-[#6d28d9]">{amount}</p>
+            <p className="text-sm font-black text-[#0891B2]">{amount}</p>
             <p className="col-span-2 text-xs text-[#6b7280]">{concept}</p>
           </div>
         ))}
@@ -335,7 +335,7 @@ function ProductTable() {
     <section id="productos" className="scroll-mt-24 rounded-lg border border-[#e5e7eb] bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-[#e5e7eb] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
-          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#4f46e5]">Catálogo</p>
+          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">Catálogo</p>
           <h2 className="mt-2 text-2xl font-black">Productos recientes</h2>
         </div>
         <span className="w-fit rounded-full bg-[#f3f4f6] px-3 py-1.5 text-xs font-black text-[#4b5563]">42 productos</span>
@@ -371,14 +371,14 @@ function ComboSection() {
   return (
     <section id="combos" className="scroll-mt-24">
       <div>
-        <p className="text-sm font-black uppercase tracking-[0.12em] text-[#7c3aed]">Promociones</p>
+        <p className="text-sm font-black uppercase tracking-[0.12em] text-[#06B6D4]">Promociones</p>
         <h2 className="mt-2 text-2xl font-black">Combos rentables</h2>
       </div>
       <div className="mt-5 grid gap-4 md:grid-cols-3">
         {combos.map(([name, price, margin, status], index) => (
           <article key={name} className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#ede9fe] text-xs font-black text-[#6d28d9]">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#EFF6FF] text-xs font-black text-[#0891B2]">
                 {index + 1}
               </span>
               <StatusBadge status={status} />
@@ -388,7 +388,7 @@ function ComboSection() {
             <p className="mt-1 text-2xl font-black">{price}</p>
             <div className="mt-4 flex items-center justify-between border-t border-[#eef0f3] pt-4">
               <span className="text-sm text-[#6b7280]">Margen estimado</span>
-              <span className="text-sm font-black text-[#6d28d9]">{margin}</span>
+              <span className="text-sm font-black text-[#0891B2]">{margin}</span>
             </div>
           </article>
         ))}
@@ -403,7 +403,7 @@ function CashSection() {
       <div className="rounded-lg bg-[#111827] p-5 text-white sm:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.12em] text-[#c4b5fd]">Hoy</p>
+            <p className="text-sm font-black uppercase tracking-[0.12em] text-[#BFDBFE]">Hoy</p>
             <h2 className="mt-2 text-2xl font-black">Caja del día</h2>
           </div>
           <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black">Preview</span>
@@ -423,7 +423,7 @@ function CashSection() {
         </div>
         <button
           type="button"
-          className="mt-6 w-full rounded-full bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_50%,#c026d3_100%)] px-4 py-3 text-sm font-black text-white"
+          className="mt-6 w-full rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_50%,#06B6D4_100%)] px-4 py-3 text-sm font-black text-white"
         >
           + Registrar movimiento
         </button>
@@ -456,7 +456,7 @@ function InventorySection() {
   return (
     <section id="inventario" className="scroll-mt-24 rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm sm:p-6">
       <div className="max-w-2xl">
-        <p className="text-sm font-black uppercase tracking-[0.12em] text-[#4f46e5]">Control de stock</p>
+        <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">Control de stock</p>
         <h2 className="mt-2 text-2xl font-black">Inventario inteligente</h2>
         <p className="mt-3 text-sm leading-6 text-[#6b7280]">
           Identifica productos que se agotan rápido y productos que llevan tiempo sin moverse.
@@ -466,7 +466,7 @@ function InventorySection() {
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {inventoryMetrics.map(([label, value], index) => (
           <div key={label} className="rounded-lg bg-[#f8fafc] p-4 ring-1 ring-[#e5e7eb]">
-            <span className={`block h-1.5 w-12 rounded-full ${index === 0 ? 'bg-[#4f46e5]' : index === 1 ? 'bg-[#f59e0b]' : index === 2 ? 'bg-[#ef4444]' : 'bg-[#c026d3]'}`} />
+            <span className={`block h-1.5 w-12 rounded-full ${index === 0 ? 'bg-[#2563EB]' : index === 1 ? 'bg-[#f59e0b]' : index === 2 ? 'bg-[#ef4444]' : 'bg-[#06B6D4]'}`} />
             <p className="mt-4 text-sm font-bold text-[#6b7280]">{label}</p>
             <p className="mt-2 text-2xl font-black">{value}</p>
           </div>
@@ -478,7 +478,7 @@ function InventorySection() {
 
 function PreviewBanner() {
   return (
-    <section id="preview" className="scroll-mt-24 overflow-hidden rounded-lg bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_48%,#c026d3_100%)] px-5 py-8 text-white sm:px-8 sm:py-10">
+    <section id="preview" className="scroll-mt-24 overflow-hidden rounded-lg bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_48%,#06B6D4_100%)] px-5 py-8 text-white sm:px-8 sm:py-10">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl">
           <span className="inline-flex rounded-full bg-white/15 px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em]">
@@ -491,7 +491,7 @@ function PreviewBanner() {
         </div>
         <Link
           href="/"
-          className="shrink-0 rounded-full bg-white px-5 py-3 text-center text-sm font-black text-[#5b21b6] transition hover:bg-[#f5f3ff]"
+          className="shrink-0 rounded-full bg-white px-5 py-3 text-center text-sm font-black text-[#2563EB] transition hover:bg-[#EFF6FF]"
         >
           Volver a la landing
         </Link>
@@ -526,10 +526,10 @@ function MobileBottomNav() {
           key={item.label}
           href={item.href}
           className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[11px] font-black ${
-            index === 0 ? "bg-[#f5f3ff] text-[#6d28d9]" : "text-[#6b7280]"
+            index === 0 ? "bg-[#EFF6FF] text-[#0891B2]" : "text-[#6b7280]"
           }`}
         >
-          <span className={`h-2 w-2 rounded-full ${index === 0 ? "bg-[#7c3aed]" : "bg-[#d1d5db]"}`} />
+          <span className={`h-2 w-2 rounded-full ${index === 0 ? "bg-[#06B6D4]" : "bg-[#d1d5db]"}`} />
           <span className="truncate">{item.label}</span>
         </a>
       ))}

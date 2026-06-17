@@ -74,7 +74,7 @@ export default function Home() {
       >
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
               Primera herramienta gratuita
             </p>
             <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
@@ -84,7 +84,7 @@ export default function Home() {
               Configura tus costos, descuentos y margen deseado. Margenia te
               muestra al instante si tu precio es rentable.
             </p>
-            <p className="mt-3 text-sm font-bold text-[#4F46E5]">
+            <p className="mt-3 text-sm font-bold text-[#2563EB]">
               Esta calculadora es el primer paso del ecosistema Margenia para
               ayudarte a vender con más claridad.
             </p>
@@ -114,14 +114,14 @@ function Hero() {
           sizes="100vw"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,#C7D2FE_0,#C7D2FE00_34%),linear-gradient(135deg,#ffffff_0%,#f8fafc_45%,#EEF2FF_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,#BFDBFE_0,#BFDBFE00_34%),linear-gradient(135deg,#ffffff_0%,#f8fafc_45%,#EFF6FF_100%)]" />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/78 to-[#f8fafc]/96 sm:bg-gradient-to-r sm:from-white/94 sm:via-white/78 sm:to-white/28" />
       <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 py-4 sm:py-5">
         <a href="#" className="flex min-w-0 items-center gap-3">
           <BrandLogo showImage={hasLogoImage} />
-          <span className="hidden shrink-0 rounded-full border border-[#C7D2FE] bg-white/85 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#4F46E5] shadow-sm backdrop-blur sm:inline-flex">
-            Beauty Beta
+          <span className="hidden shrink-0 rounded-full border border-[#BFDBFE] bg-white/85 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#2563EB] shadow-sm backdrop-blur sm:inline-flex">
+            Beta
           </span>
         </a>
         <div className="flex shrink-0 items-center gap-4">
@@ -135,7 +135,7 @@ function Hero() {
                 params: { location: "navbar", cta_text: "Instagram" },
               },
             ]}
-            className="hidden text-sm font-bold text-[#4F46E5] transition hover:text-[#4338CA] sm:inline-flex"
+            className="hidden text-sm font-bold text-[#2563EB] transition hover:text-[#1D4ED8] sm:inline-flex"
           >
             Instagram
           </TrackedLink>
@@ -151,7 +151,7 @@ function Hero() {
                 params: { location: "navbar", cta_text: "Ser fundadora" },
               },
             ]}
-            className="rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#4F46E5] shadow-sm ring-1 ring-[#E2E8F0] backdrop-blur transition-all duration-300 hover:bg-[#EEF2FF] hover:text-[#4338CA] hover:ring-[#C7D2FE] sm:px-5 sm:py-3"
+            className="rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#2563EB] shadow-sm ring-1 ring-[#E2E8F0] backdrop-blur transition-all duration-300 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#BFDBFE] sm:px-5 sm:py-3"
           >
             Ser fundadora
           </TrackedLink>
@@ -159,7 +159,7 @@ function Hero() {
       </nav>
       <div className="relative z-10 mx-auto flex min-h-[78svh] max-w-6xl items-center">
         <div className="max-w-3xl pt-12">
-          <p className="inline-flex rounded-full bg-[#EEF2FF]/90 px-4 py-2 text-sm font-bold text-[#4F46E5]">
+          <p className="inline-flex rounded-full bg-[#EFF6FF]/90 px-4 py-2 text-sm font-bold text-[#2563EB]">
             Calculadora gratis para emprendedoras de belleza
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.03] text-[#0F172A] sm:text-6xl">
@@ -211,7 +211,7 @@ function PainSection() {
     <section className="bg-[#f8fafc] px-5 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl">
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
             Lo que pasa todos los días
           </p>
           <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
@@ -224,7 +224,7 @@ function PainSection() {
               key={pain}
               className="rounded-lg border border-[#E2E8F0] bg-white p-5 shadow-sm"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF2FF] text-sm font-black text-[#4F46E5]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF6FF] text-sm font-black text-[#2563EB]">
                 {index + 1}
               </span>
               <p className="mt-4 text-base leading-7 text-[#475569]">{pain}</p>
@@ -252,7 +252,7 @@ function EcosystemPreviewSection() {
 
         <div className="relative z-10 lg:flex lg:min-h-[500px] lg:items-center">
           <div className="max-w-lg">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
               Margenia está tomando forma
             </p>
             <h2 className="mt-3 text-3xl font-black leading-tight text-[#0F172A] sm:text-4xl lg:text-[2.8rem]">
@@ -264,7 +264,7 @@ function EcosystemPreviewSection() {
               inventario, caja, gastos, pagos pendientes y utilidad real con la
               claridad que tu negocio merece.
             </p>
-            <p className="mt-5 rounded-2xl border border-[#C7D2FE] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#4F46E5] backdrop-blur">
+            <p className="mt-5 rounded-2xl border border-[#BFDBFE] bg-white/75 px-4 py-3 text-xs font-black uppercase tracking-[0.1em] text-[#2563EB] backdrop-blur">
               Vista previa conceptual. Algunas funciones están en desarrollo y se
               integrarán progresivamente en Margenia.
             </p>
@@ -291,7 +291,7 @@ function EcosystemSection() {
     <section className="bg-white px-5 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div className="max-w-3xl">
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
             Lo que estamos construyendo
           </p>
           <h2 className="mt-3 text-3xl font-bold text-[#0F172A] sm:text-4xl">
@@ -308,9 +308,9 @@ function EcosystemSection() {
           {ecosystemCards.map((card, index) => (
             <article
               key={card.title}
-              className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#C7D2FE] hover:bg-white hover:shadow-md"
+              className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[#BFDBFE] hover:bg-white hover:shadow-md"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#4F46E5_0%,#7C3AED_100%)] text-sm font-black text-white shadow-md shadow-[#4F46E5]/20">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] text-sm font-black text-white shadow-md shadow-[#2563EB]/20">
                 {index + 1}
               </span>
               <h3 className="mt-4 text-lg font-black text-[#0F172A]">
@@ -332,7 +332,7 @@ function FounderBeta() {
     <section id="beta" className="bg-[#0F172A] px-5 py-14 text-white sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#C7D2FE]">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#BFDBFE]">
             PREVENTA
           </p>
           <h2 className="mt-3 text-3xl font-black sm:text-5xl">
@@ -344,7 +344,7 @@ function FounderBeta() {
             puedan controlar precios, ventas, inventario, caja, combos, gastos
             y utilidad real desde un solo lugar.
           </p>
-          <div className="mt-7 inline-flex rounded-full bg-white px-5 py-3 text-xl font-black text-[#4F46E5]">
+          <div className="mt-7 inline-flex rounded-full bg-white px-5 py-3 text-xl font-black text-[#2563EB]">
             Precio especial de fundadora: &#36;49.900 COP por 3 meses
           </div>
         </div>
@@ -352,7 +352,7 @@ function FounderBeta() {
           <ul className="space-y-3">
             {benefits.map((benefit) => (
               <li key={benefit} className="flex gap-3 text-base">
-                <span className="mt-1 h-3 w-3 rounded-full bg-[#4F46E5]" />
+                <span className="mt-1 h-3 w-3 rounded-full bg-[#2563EB]" />
                 <span>{benefit}</span>
               </li>
             ))}
@@ -421,7 +421,7 @@ function Footer() {
                       params: { location: "footer", cta_text: "Instagram" },
                     },
                   ]}
-                  className="rounded-full bg-[#F8FAFC] px-4 py-2 text-sm font-bold text-[#475569] ring-1 ring-[#E2E8F0] transition-all duration-300 ease-out hover:bg-[#EEF2FF] hover:text-[#4338CA] hover:ring-[#C7D2FE]"
+                  className="rounded-full bg-[#F8FAFC] px-4 py-2 text-sm font-bold text-[#475569] ring-1 ring-[#E2E8F0] transition-all duration-300 ease-out hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#BFDBFE]"
                 >
                   {link.label}
                 </TrackedLink>
@@ -431,7 +431,7 @@ function Footer() {
                   href={link.href}
                   target={link.external ? "_blank" : undefined}
                   rel={link.external ? "noopener noreferrer" : undefined}
-                  className="rounded-full bg-[#F8FAFC] px-4 py-2 text-sm font-bold text-[#475569] ring-1 ring-[#E2E8F0] transition-all duration-300 ease-out hover:bg-[#EEF2FF] hover:text-[#4338CA] hover:ring-[#C7D2FE]"
+                  className="rounded-full bg-[#F8FAFC] px-4 py-2 text-sm font-bold text-[#475569] ring-1 ring-[#E2E8F0] transition-all duration-300 ease-out hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#BFDBFE]"
                 >
                   {link.label}
                 </a>

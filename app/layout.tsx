@@ -3,9 +3,9 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Margenia Beauty",
+  title: "Margenia",
   description:
-    "Calculadora gratuita de precios y combos rentables para emprendedoras de belleza.",
+    "Ecosistema para emprendedores que venden productos y quieren controlar precios, combos, ventas y utilidad real.",
 };
 
 export default function RootLayout({

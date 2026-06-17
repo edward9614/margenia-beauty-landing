@@ -11,7 +11,7 @@ export function Field({ label, ...props }: FieldProps) {
       <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <input
         {...props}
-        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
+        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#2563EB] focus:ring-2 focus:ring-[#BFDBFE]"
       />
     </label>
   );
@@ -33,7 +33,7 @@ export function InstagramField({
   return (
     <label className="block">
       <span className="text-sm font-bold text-[#0F172A]">{label}</span>
-      <div className="mt-2 flex w-full items-center rounded-lg border border-[#E2E8F0] bg-white shadow-sm focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#C7D2FE]">
+      <div className="mt-2 flex w-full items-center rounded-lg border border-[#E2E8F0] bg-white shadow-sm focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#BFDBFE]">
         <span className="select-none pl-4 text-[#475569]">@</span>
         <input
           {...props}
@@ -63,7 +63,7 @@ export function MoneyField({ label, value, onValueChange, ...props }: MoneyField
         inputMode="numeric"
         value={formatCOPInput(value)}
         onChange={(event) => onValueChange(String(toNumber(event.target.value)))}
-        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
+        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#2563EB] focus:ring-2 focus:ring-[#BFDBFE]"
       />
     </label>
   );
@@ -80,7 +80,7 @@ export function SelectField({ label, options, ...props }: SelectFieldProps) {
       <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <select
         {...props}
-        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
+        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm focus:border-[#2563EB] focus:ring-2 focus:ring-[#BFDBFE]"
       >
         <option value="">Selecciona una opción</option>
         {options.map((option) => (
@@ -103,7 +103,7 @@ export function TextAreaField({ label, ...props }: TextAreaFieldProps) {
       <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <textarea
         {...props}
-        className="mt-2 min-h-28 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
+        className="mt-2 min-h-28 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm focus:border-[#2563EB] focus:ring-2 focus:ring-[#BFDBFE]"
       />
     </label>
   );

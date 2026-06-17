@@ -133,7 +133,7 @@ export function ComboCalculator() {
   return (
     <article className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 shadow-sm sm:p-6">
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#4F46E5]">
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#2563EB]">
           Combos rentables
         </p>
         <h3 className="mt-2 text-2xl font-black">Calculadora de combo</h3>
@@ -148,7 +148,7 @@ export function ComboCalculator() {
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="rounded-full px-3 py-1 text-sm font-bold text-[#4F46E5] ring-1 ring-[#E2E8F0]"
+                  className="rounded-full px-3 py-1 text-sm font-bold text-[#2563EB] ring-1 ring-[#E2E8F0]"
                 >
                   Quitar
                 </button>
@@ -181,7 +181,7 @@ export function ComboCalculator() {
           type="button"
           onClick={addItem}
           disabled={items.length >= 5}
-          className="w-full rounded-full border border-[#C7D2FE] bg-white px-5 py-3 text-sm font-black text-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-full border border-[#BFDBFE] bg-white px-5 py-3 text-sm font-black text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Agregar producto
         </button>

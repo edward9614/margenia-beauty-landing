@@ -97,7 +97,7 @@ export function PriceCalculator() {
   return (
     <article className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 shadow-sm sm:p-6">
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#4F46E5]">
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#2563EB]">
           Producto individual
         </p>
         <h3 className="mt-2 text-2xl font-black">Calculadora de precio</h3>

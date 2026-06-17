@@ -94,7 +94,7 @@ export function WaitlistForm() {
         intent: form.intent || "lista_espera",
         wants_beta: form.wantsBeta,
       });
-      setMessage("¡Listo! Te avisaremos cuando abramos la beta de Margenia Beauty.");
+      setMessage("¡Listo! Te avisaremos cuando abramos la beta de Margenia.");
       setForm(initialForm);
     } catch {
       setMessage(
@@ -109,7 +109,7 @@ export function WaitlistForm() {
     <section id="lista-espera" className="bg-[#F8FAFC] px-5 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.8fr_1fr] lg:items-start">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
             Lista de espera
           </p>
           <h2 className="mt-3 text-3xl font-black sm:text-4xl">
@@ -123,7 +123,7 @@ export function WaitlistForm() {
         </div>
         <form onSubmit={submit} className="rounded-lg bg-white p-5 shadow-sm sm:p-6">
           {isFounderIntent && (
-            <div className="mb-5 rounded-lg border border-[#C7D2FE] bg-[#EEF2FF] p-4 text-sm font-bold leading-6 text-[#4F46E5]">
+            <div className="mb-5 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] p-4 text-sm font-bold leading-6 text-[#2563EB]">
               Estás aplicando para ser Fundadora. Déjanos tus datos y te
               contactaremos para activar tu acceso anticipado.
             </div>
@@ -163,7 +163,7 @@ export function WaitlistForm() {
               onChange={(event) => updateField("controlMethod", event.target.value)}
             />
             <SelectField
-              label="¿Te gustaría probar Margenia Beauty cuando esté lista?"
+              label="¿Te gustaría probar Margenia cuando esté lista?"
               required
               options={betaOptions}
               value={form.wantsBeta}

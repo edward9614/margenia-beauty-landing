@@ -22,7 +22,7 @@ type ComboProduct = {
 };
 
 const inputClass =
-  "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-base font-bold text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#4F46E5] focus:ring-4 focus:ring-[#C7D2FE]/60";
+  "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-base font-bold text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
 
 const labelClass = "text-sm font-black text-[#0F172A]";
 
@@ -113,13 +113,13 @@ function Toggle({
     <button
       type="button"
       onClick={() => onChange(!enabled)}
-      className="flex items-center justify-between gap-4 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-left shadow-sm transition hover:border-[#C7D2FE]"
+      className="flex items-center justify-between gap-4 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-left shadow-sm transition hover:border-[#BFDBFE]"
       aria-pressed={enabled}
     >
       <span className="text-sm font-black text-[#0F172A]">{label}</span>
       <span
         className={`flex h-7 w-12 items-center rounded-full p-1 transition ${
-          enabled ? "bg-[#4F46E5]" : "bg-[#CBD5E1]"
+          enabled ? "bg-[#2563EB]" : "bg-[#CBD5E1]"
         }`}
       >
         <span
@@ -345,7 +345,7 @@ export function InteractiveCalculator() {
         <section className="border-b border-[#E2E8F0] bg-[#F8FAFC] p-5 sm:p-7 lg:border-b-0 lg:border-r">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
                 Configura tu venta
               </p>
               <h3 className="mt-2 text-2xl font-black text-[#0F172A]">
@@ -375,7 +375,7 @@ export function InteractiveCalculator() {
                   className={`rounded-full px-4 py-2 text-sm font-black transition ${
                     saleType === option.value
                       ? "bg-[#0F172A] text-white shadow-sm"
-                      : "text-[#475569] hover:text-[#4F46E5]"
+                      : "text-[#475569] hover:text-[#2563EB]"
                   }`}
                 >
                   {option.label}
@@ -397,7 +397,7 @@ export function InteractiveCalculator() {
                       calcular si realmente deja ganancia.
                     </p>
                   </div>
-                  <div className="rounded-full bg-[#EEF2FF] px-4 py-2 text-sm font-black text-[#4F46E5]">
+                  <div className="rounded-full bg-[#EFF6FF] px-4 py-2 text-sm font-black text-[#2563EB]">
                     Subtotal productos: {currencyFormatter.format(productsCost)}
                   </div>
                 </div>
@@ -452,7 +452,7 @@ export function InteractiveCalculator() {
                 <button
                   type="button"
                   onClick={addComboProduct}
-                  className="mt-4 w-full rounded-2xl border border-dashed border-[#C7D2FE] bg-[#F8FAFC] px-5 py-3 text-sm font-black text-[#4F46E5] transition hover:border-[#4F46E5] hover:bg-[#EEF2FF]"
+                  className="mt-4 w-full rounded-2xl border border-dashed border-[#BFDBFE] bg-[#F8FAFC] px-5 py-3 text-sm font-black text-[#2563EB] transition hover:border-[#2563EB] hover:bg-[#EFF6FF]"
                 >
                   + Agregar producto
                 </button>
@@ -503,7 +503,7 @@ export function InteractiveCalculator() {
                   Ajusta la utilidad que quieres dejar en cada venta.
                 </p>
               </div>
-              <strong className="rounded-full bg-[#EEF2FF] px-4 py-2 text-sm text-[#4F46E5]">
+              <strong className="rounded-full bg-[#EFF6FF] px-4 py-2 text-sm text-[#2563EB]">
                 {result.desiredMargin}%
               </strong>
             </div>
@@ -521,7 +521,7 @@ export function InteractiveCalculator() {
                   sale_type: saleType,
                 });
               }}
-              className="mt-5 h-2 w-full cursor-pointer accent-[#4F46E5]"
+              className="mt-5 h-2 w-full cursor-pointer accent-[#2563EB]"
             />
             <p className="mt-3 text-sm font-bold text-[#475569]">
               Margen deseado: {result.desiredMargin}%
@@ -551,7 +551,7 @@ export function InteractiveCalculator() {
         <section className="bg-white p-5 sm:p-7">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#2563EB]">
                 Resultado en tiempo real
               </p>
               <h3 className="mt-2 text-2xl font-black text-[#0F172A]">
@@ -565,8 +565,8 @@ export function InteractiveCalculator() {
             </span>
           </div>
 
-          <div className="mt-7 rounded-[1.75rem] bg-[linear-gradient(135deg,#0F172A_0%,#1E1B4B_100%)] p-5 text-white shadow-lg shadow-[#0F172A]/15">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#C7D2FE]">
+          <div className="mt-7 rounded-[1.75rem] bg-[linear-gradient(135deg,#0F172A_0%,#1E3A8A_100%)] p-5 text-white shadow-lg shadow-[#0F172A]/15">
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#BFDBFE]">
               {saleType === "combo" ? "Precio sugerido del combo" : "Precio sugerido"}
             </p>
             <p className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
