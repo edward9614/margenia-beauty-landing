@@ -3,8 +3,7 @@ import { join } from "path";
 import Image from "next/image";
 import { BrandLogo } from "@/components/brand-logo";
 import { primaryButtonClass, secondaryButtonClass } from "@/components/button-classes";
-import { ComboCalculator } from "@/components/combo-calculator";
-import { PriceCalculator } from "@/components/price-calculator";
+import { InteractiveCalculator } from "@/components/interactive-calculator";
 import { TrackedLink } from "@/components/tracked-link";
 import { WaitlistForm } from "@/components/waitlist-form";
 
@@ -76,20 +75,22 @@ export default function Home() {
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
-              Calcula antes de vender
+              Primera herramienta gratuita
             </p>
             <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
-              Empieza con la primera herramienta gratuita de Margenia
+              Calcula cuánto deberías cobrar para ganar de verdad
             </h2>
             <p className="mt-4 text-base leading-7 text-[#475569]">
-              Antes de construir todo el ecosistema, queremos ayudarte con uno
-              de los dolores más comunes: saber si tus productos y combos
-              realmente dejan ganancia.
+              Configura tus costos, descuentos y margen deseado. Margenia te
+              muestra al instante si tu precio es rentable.
+            </p>
+            <p className="mt-3 text-sm font-bold text-[#4F46E5]">
+              Esta calculadora es el primer paso del ecosistema Margenia para
+              ayudarte a vender con más claridad.
             </p>
           </div>
-          <div className="mt-9 grid gap-6 lg:grid-cols-2">
-            <PriceCalculator />
-            <ComboCalculator />
+          <div className="mt-9">
+            <InteractiveCalculator />
           </div>
         </div>
       </section>
