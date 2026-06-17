@@ -131,9 +131,9 @@ export function ComboCalculator() {
   }
 
   return (
-    <article className="rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-5 shadow-sm sm:p-6">
+    <article className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 shadow-sm sm:p-6">
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7c3aed]">
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#4F46E5]">
           Combos rentables
         </p>
         <h3 className="mt-2 text-2xl font-black">Calculadora de combo</h3>
@@ -143,12 +143,12 @@ export function ComboCalculator() {
         {items.map((item, index) => (
           <div key={index} className="rounded-lg bg-white p-4">
             <div className="flex items-center justify-between gap-3">
-              <strong className="text-sm text-[#403840]">Producto {index + 1}</strong>
+              <strong className="text-sm text-[#0F172A]">Producto {index + 1}</strong>
               {items.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="rounded-full px-3 py-1 text-sm font-bold text-[#9d2868] ring-1 ring-[#f1dbe6]"
+                  className="rounded-full px-3 py-1 text-sm font-bold text-[#4F46E5] ring-1 ring-[#E2E8F0]"
                 >
                   Quitar
                 </button>
@@ -181,7 +181,7 @@ export function ComboCalculator() {
           type="button"
           onClick={addItem}
           disabled={items.length >= 5}
-          className="w-full rounded-full border border-[#d7b4c6] bg-white px-5 py-3 text-sm font-black text-[#7a2458] disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-full border border-[#C7D2FE] bg-white px-5 py-3 text-sm font-black text-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Agregar producto
         </button>
@@ -240,7 +240,7 @@ export function ComboCalculator() {
       </div>
 
       {alerts.length > 0 && (
-        <div className="mt-4 rounded-lg border border-[#f4c0d3] bg-[#fff0f5] p-4 text-sm font-bold text-[#8b235d]">
+        <div className="mt-4 rounded-lg border border-[#F59E0B] bg-[#FFFBEB] p-4 text-sm font-bold text-[#92400E]">
           {alerts.map((alert) => (
             <p key={alert}>{alert}</p>
           ))}

@@ -95,9 +95,9 @@ export function PriceCalculator() {
   }
 
   return (
-    <article className="rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-5 shadow-sm sm:p-6">
+    <article className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-5 shadow-sm sm:p-6">
       <div>
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#7c3aed]">
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#4F46E5]">
           Producto individual
         </p>
         <h3 className="mt-2 text-2xl font-black">Calculadora de precio</h3>
@@ -156,7 +156,7 @@ export function PriceCalculator() {
         <ResultRow label="Margen real" value={result.realMargin} percentage />
       </div>
       {alerts.length > 0 && (
-        <div className="mt-4 rounded-lg border border-[#f4c0d3] bg-[#fff0f5] p-4 text-sm font-bold text-[#8b235d]">
+        <div className="mt-4 rounded-lg border border-[#F59E0B] bg-[#FFFBEB] p-4 text-sm font-bold text-[#92400E]">
           {alerts.map((alert) => (
             <p key={alert}>{alert}</p>
           ))}

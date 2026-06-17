@@ -12,7 +12,7 @@ export function BrandLogo({ showImage }: BrandLogoProps) {
 
   if (!showImage || hasImageError) {
     return (
-      <span className="text-3xl font-black tracking-tight text-[#111827] sm:text-4xl">
+      <span className="text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
         Margenia
       </span>
     );

@@ -106,16 +106,16 @@ export function WaitlistForm() {
   };
 
   return (
-    <section id="lista-espera" className="bg-[#f3f4f6] px-5 py-14 sm:px-6 lg:px-8">
+    <section id="lista-espera" className="bg-[#F8FAFC] px-5 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.8fr_1fr] lg:items-start">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7c3aed]">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#4F46E5]">
             Lista de espera
           </p>
           <h2 className="mt-3 text-3xl font-black sm:text-4xl">
             Ayúdanos a construir una herramienta que sí entienda tu negocio.
           </h2>
-          <p className="mt-4 text-base leading-7 text-[#625862]">
+          <p className="mt-4 text-base leading-7 text-[#475569]">
             Déjanos tus datos y cuéntanos cómo controlas hoy precios, ventas y
             combos. Esta landing existe para validar interés antes de crear la
             app completa.
@@ -123,7 +123,7 @@ export function WaitlistForm() {
         </div>
         <form onSubmit={submit} className="rounded-lg bg-white p-5 shadow-sm sm:p-6">
           {isFounderIntent && (
-            <div className="mb-5 rounded-lg border border-[#ddd6fe] bg-[#f5f3ff] p-4 text-sm font-bold leading-6 text-[#5b21b6]">
+            <div className="mb-5 rounded-lg border border-[#C7D2FE] bg-[#EEF2FF] p-4 text-sm font-bold leading-6 text-[#4F46E5]">
               Estás aplicando para ser Fundadora. Déjanos tus datos y te
               contactaremos para activar tu acceso anticipado.
             </div>
@@ -178,7 +178,7 @@ export function WaitlistForm() {
             {isSubmitting ? "Enviando..." : "Unirme a la beta"}
           </button>
           {message && (
-            <p className="mt-4 rounded-lg bg-[#eefaf2] p-4 text-sm font-bold text-[#23643a]">
+            <p className="mt-4 rounded-lg bg-[#F0FDF4] p-4 text-sm font-bold text-[#166534]">
               {message}
             </p>
           )}

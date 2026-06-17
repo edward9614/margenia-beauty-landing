@@ -8,10 +8,10 @@ type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
 export function Field({ label, ...props }: FieldProps) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-[#403840]">{label}</span>
+      <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <input
         {...props}
-        className="mt-2 w-full rounded-lg border border-[#d1d5db] bg-white px-4 py-3 text-[#1f2937] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ddd6fe]"
+        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
       />
     </label>
   );
@@ -32,9 +32,9 @@ export function InstagramField({
 
   return (
     <label className="block">
-      <span className="text-sm font-bold text-[#403840]">{label}</span>
-      <div className="mt-2 flex w-full items-center rounded-lg border border-[#d1d5db] bg-white shadow-sm focus-within:border-[#7c3aed] focus-within:ring-2 focus-within:ring-[#ddd6fe]">
-        <span className="select-none pl-4 text-[#6b7280]">@</span>
+      <span className="text-sm font-bold text-[#0F172A]">{label}</span>
+      <div className="mt-2 flex w-full items-center rounded-lg border border-[#E2E8F0] bg-white shadow-sm focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#C7D2FE]">
+        <span className="select-none pl-4 text-[#475569]">@</span>
         <input
           {...props}
           value={displayValue}
@@ -42,7 +42,7 @@ export function InstagramField({
             const nextValue = event.target.value.trim().replace(/^@+/, "");
             onValueChange(nextValue ? `@${nextValue}` : "");
           }}
-          className="w-full rounded-lg border-0 bg-transparent px-1 py-3 pr-4 text-[#1f2937] placeholder:text-[#9ca3af] focus:outline-none"
+          className="w-full rounded-lg border-0 bg-transparent px-1 py-3 pr-4 text-[#0F172A] placeholder:text-[#9ca3af] focus:outline-none"
         />
       </div>
     </label>
@@ -57,13 +57,13 @@ type MoneyFieldProps = Omit<FieldProps, "type" | "inputMode" | "value" | "onChan
 export function MoneyField({ label, value, onValueChange, ...props }: MoneyFieldProps) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-[#403840]">{label}</span>
+      <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <input
         {...props}
         inputMode="numeric"
         value={formatCOPInput(value)}
         onChange={(event) => onValueChange(String(toNumber(event.target.value)))}
-        className="mt-2 w-full rounded-lg border border-[#d1d5db] bg-white px-4 py-3 text-[#1f2937] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ddd6fe]"
+        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm transition placeholder:text-[#9ca3af] focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
       />
     </label>
   );
@@ -77,10 +77,10 @@ type SelectFieldProps = SelectHTMLAttributes<HTMLSelectElement> & {
 export function SelectField({ label, options, ...props }: SelectFieldProps) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-[#403840]">{label}</span>
+      <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <select
         {...props}
-        className="mt-2 w-full rounded-lg border border-[#d1d5db] bg-white px-4 py-3 text-[#1f2937] shadow-sm focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ddd6fe]"
+        className="mt-2 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
       >
         <option value="">Selecciona una opción</option>
         {options.map((option) => (
@@ -100,10 +100,10 @@ type TextAreaFieldProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
 export function TextAreaField({ label, ...props }: TextAreaFieldProps) {
   return (
     <label className="block">
-      <span className="text-sm font-bold text-[#403840]">{label}</span>
+      <span className="text-sm font-bold text-[#0F172A]">{label}</span>
       <textarea
         {...props}
-        className="mt-2 min-h-28 w-full rounded-lg border border-[#d1d5db] bg-white px-4 py-3 text-[#1f2937] shadow-sm focus:border-[#7c3aed] focus:ring-2 focus:ring-[#ddd6fe]"
+        className="mt-2 min-h-28 w-full rounded-lg border border-[#E2E8F0] bg-white px-4 py-3 text-[#0F172A] shadow-sm focus:border-[#4F46E5] focus:ring-2 focus:ring-[#C7D2FE]"
       />
     </label>
   );
