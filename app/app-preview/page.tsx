@@ -36,7 +36,7 @@ const metrics = [
   {
     title: "Por cobrar",
     value: "$280.000",
-    detail: "4 clientas pendientes",
+    detail: "4 clientes pendientes",
     accent: "bg-[#fef3c7] text-[#92400e]",
   },
   {
@@ -48,30 +48,30 @@ const metrics = [
 ];
 
 const products = [
-  ["Pestañina viral", "$18.000", "$39.900", "3", "Stock bajo"],
-  ["Labial nude", "$9.500", "$24.900", "18", "OK"],
-  ["Shampoo reparación", "$28.000", "$59.900", "0", "Agotado"],
-  ["Serum vitamina C", "$22.000", "$49.900", "12", "OK"],
+  ["Termo acero", "$18.000", "$39.900", "3", "Stock bajo"],
+  ["Agenda premium", "$9.500", "$24.900", "18", "OK"],
+  ["Kit aromático", "$28.000", "$59.900", "0", "Agotado"],
+  ["Organizador mini", "$22.000", "$49.900", "12", "OK"],
 ];
 
 const combos = [
-  ["Kit glow", "$89.900", "49%", "Rentable"],
-  ["Rutina capilar", "$119.900", "41%", "Rentable"],
-  ["Pack labios", "$54.900", "35%", "Revisar descuento"],
+  ["Kit regalo", "$89.900", "49%", "Rentable"],
+  ["Pack oficina", "$119.900", "41%", "Rentable"],
+  ["Combo hogar", "$54.900", "35%", "Revisar descuento"],
 ];
 
 const movements = [
-  ["Venta skincare", "+$120.000"],
+  ["Venta catálogo", "+$120.000"],
   ["Empaques", "-$35.000"],
   ["Abono Natalia", "+$50.000"],
   ["Compra proveedor", "-$51.000"],
 ];
 
 const pendingPayments = [
-  ["Natalia", "$50.000", "Skincare"],
-  ["Camila", "$80.000", "Kit glow"],
-  ["Andrea", "$65.000", "Labial + serum"],
-  ["Laura", "$85.000", "Rutina capilar"],
+  ["Natalia", "$50.000", "Pedido catálogo"],
+  ["Camila", "$80.000", "Kit regalo"],
+  ["Andrea", "$65.000", "Agenda + termo"],
+  ["Laura", "$85.000", "Pack oficina"],
 ];
 
 const inventoryMetrics = [
@@ -144,8 +144,8 @@ function PreviewSidebar() {
         <p className="text-xs font-black uppercase tracking-[0.12em] text-[#0891B2]">
           Negocio activo
         </p>
-        <p className="mt-2 text-sm font-black">Glow Beauty Store</p>
-        <p className="mt-1 text-xs text-[#6b7280]">Belleza y cuidado personal</p>
+        <p className="mt-2 text-sm font-black">Tienda Aurora</p>
+        <p className="mt-1 text-xs text-[#6b7280]">Productos y accesorios</p>
       </div>
 
       <nav aria-label="Navegación de la app" className="mt-6 space-y-1">
@@ -185,7 +185,7 @@ function PreviewHeader() {
           <Brand />
         </div>
         <div className="hidden lg:block">
-          <p className="text-xs font-bold text-[#6b7280]">Glow Beauty Store</p>
+          <p className="text-xs font-bold text-[#6b7280]">Tienda Aurora</p>
           <p className="mt-0.5 text-sm font-black">Panel general</p>
         </div>
 
@@ -486,7 +486,7 @@ function PreviewBanner() {
           </span>
           <h2 className="mt-4 text-2xl font-black sm:text-3xl">Esto es una vista previa de Margenia Beta</h2>
           <p className="mt-3 text-sm leading-6 text-white/85 sm:text-base">
-            Estamos construyendo esta experiencia con emprendedoras reales. Algunas funciones están en desarrollo y se integrarán progresivamente.
+            Estamos construyendo esta experiencia con negocios reales. Algunas funciones están en desarrollo y se integrarán progresivamente.
           </p>
         </div>
         <Link

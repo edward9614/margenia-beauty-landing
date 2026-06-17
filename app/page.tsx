@@ -7,7 +7,6 @@ import { InteractiveCalculator } from "@/components/interactive-calculator";
 import { TrackedLink } from "@/components/tracked-link";
 import { WaitlistForm } from "@/components/waitlist-form";
 
-const hasHeroImage = existsSync(join(process.cwd(), "public/images/hero-beauty.png"));
 const hasLogoImage = existsSync(join(process.cwd(), "public/images/logo-margenia-nav.png"));
 
 const pains = [
@@ -15,7 +14,7 @@ const pains = [
   "Armas combos al ojo y no sabes si ganas o pierdes.",
   "Das descuentos sin saber si afectan tu margen.",
   "Mezclas la plata del negocio con tus gastos personales.",
-  "Tienes clientas pendientes por pagar y se te olvida cobrarles.",
+  "Tienes clientes pendientes por pagar y se te olvida cobrarles.",
   "Tienes productos quietos o agotados y no te das cuenta a tiempo.",
 ];
 
@@ -104,19 +103,11 @@ export default function Home() {
 function Hero() {
   return (
     <section className="relative min-h-[92svh] overflow-hidden px-5 py-5 sm:px-6 lg:px-8">
-      {hasHeroImage ? (
-        <Image
-          src="/images/hero-beauty.png"
-          alt="Productos de belleza y una pantalla con cálculos de rentabilidad"
-          fill
-          priority
-          className="object-cover"
-          sizes="100vw"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,#BFDBFE_0,#BFDBFE00_34%),linear-gradient(135deg,#ffffff_0%,#f8fafc_45%,#EFF6FF_100%)]" />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/78 to-[#f8fafc]/96 sm:bg-gradient-to-r sm:from-white/94 sm:via-white/78 sm:to-white/28" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,#E0F7FA_0%,transparent_32%),radial-gradient(circle_at_20%_80%,#DBEAFE_0%,transparent_34%),linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_48%,#EFF6FF_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#E2E8F0_1px,transparent_1px),linear-gradient(to_bottom,#E2E8F0_1px,transparent_1px)] bg-[size:72px_72px] opacity-25" />
+      <div className="absolute right-[-10rem] top-20 h-80 w-80 rounded-full bg-[#06B6D4]/10 blur-3xl" />
+      <div className="absolute bottom-10 left-[-8rem] h-72 w-72 rounded-full bg-[#2563EB]/10 blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/88 via-white/70 to-[#f8fafc]/96 sm:bg-gradient-to-r sm:from-white/92 sm:via-white/72 sm:to-white/20" />
       <nav className="relative z-10 mx-auto flex max-w-6xl items-center justify-between gap-3 py-4 sm:py-5">
         <a href="#" className="flex min-w-0 items-center gap-3">
           <BrandLogo showImage={hasLogoImage} />
@@ -144,32 +135,32 @@ function Hero() {
             events={[
               {
                 name: "click_beta",
-                params: { location: "navbar", cta_text: "Ser fundadora" },
+                params: { location: "navbar", cta_text: "Ser fundador" },
               },
               {
                 name: "click_fundadora",
-                params: { location: "navbar", cta_text: "Ser fundadora" },
+                params: { location: "navbar", cta_text: "Ser fundador" },
               },
             ]}
             className="rounded-full bg-white/90 px-4 py-2.5 text-sm font-black text-[#2563EB] shadow-sm ring-1 ring-[#E2E8F0] backdrop-blur transition-all duration-300 hover:bg-[#EFF6FF] hover:text-[#1D4ED8] hover:ring-[#BFDBFE] sm:px-5 sm:py-3"
           >
-            Ser fundadora
+            Ser fundador
           </TrackedLink>
         </div>
       </nav>
       <div className="relative z-10 mx-auto flex min-h-[78svh] max-w-6xl items-center">
         <div className="max-w-3xl pt-12">
           <p className="inline-flex rounded-full bg-[#EFF6FF]/90 px-4 py-2 text-sm font-bold text-[#2563EB]">
-            Calculadora gratis para emprendedoras de belleza
+            Primera herramienta gratuita de Margenia
           </p>
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.03] text-[#0F172A] sm:text-6xl">
             Deja de manejar tu negocio a ciegas
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#475569] sm:text-xl">
-            Margenia nace como un ecosistema para ayudarte a controlar precios,
-            combos, inventario, caja, ventas y utilidad real desde un solo
-            lugar. Empieza gratis con nuestra calculadora para emprendedoras de
-            belleza.
+            Margenia te ayuda a calcular precios, crear combos rentables y
+            entender cuánto estás ganando realmente. Estamos construyendo un
+            ecosistema para controlar ventas, inventario, caja, pagos pendientes
+            y utilidad real desde un solo lugar.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <TrackedLink
@@ -336,16 +327,16 @@ function FounderBeta() {
             PREVENTA
           </p>
           <h2 className="mt-3 text-3xl font-black sm:text-5xl">
-            Beta Fundadoras
+            Beta Fundadores
           </h2>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#CBD5E1]">
-            Únete al grupo de fundadoras y entra antes que nadie al ecosistema
-            Margenia. Estamos creando una plataforma para que emprendedoras
+            Únete al grupo fundador y entra antes que nadie al ecosistema
+            Margenia. Estamos creando una plataforma para que emprendedores
             puedan controlar precios, ventas, inventario, caja, combos, gastos
             y utilidad real desde un solo lugar.
           </p>
           <div className="mt-7 inline-flex rounded-full bg-white px-5 py-3 text-xl font-black text-[#2563EB]">
-            Precio especial de fundadora: &#36;49.900 COP por 3 meses
+            Precio especial de fundador: &#36;49.900 COP por 3 meses
           </div>
         </div>
         <div className="rounded-lg bg-white p-6 text-[#0F172A]">
@@ -441,7 +432,7 @@ function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col gap-2 border-t border-[#E2E8F0] pt-6 text-sm text-[#475569] sm:flex-row sm:items-center sm:justify-between">
-          <p>Primera versión en beta para emprendedoras de belleza.</p>
+          <p>Beta inicial para negocios que venden productos.</p>
           <p>© 2026 Margenia. Todos los derechos reservados.</p>
         </div>
       </div>

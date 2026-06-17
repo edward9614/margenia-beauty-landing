@@ -124,7 +124,7 @@ export function WaitlistForm() {
         <form onSubmit={submit} className="rounded-lg bg-white p-5 shadow-sm sm:p-6">
           {isFounderIntent && (
             <div className="mb-5 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] p-4 text-sm font-bold leading-6 text-[#2563EB]">
-              Estás aplicando para ser Fundadora. Déjanos tus datos y te
+              Estás aplicando para ser parte del grupo fundador. Déjanos tus datos y te
               contactaremos para activar tu acceso anticipado.
             </div>
           )}
@@ -151,7 +151,7 @@ export function WaitlistForm() {
             <Field
               label="Qué vendes"
               required
-              placeholder="Maquillaje, skincare, capilar..."
+              placeholder="Accesorios, cosméticos, alimentos, regalos..."
               value={form.sells}
               onChange={(event) => updateField("sells", event.target.value)}
             />
