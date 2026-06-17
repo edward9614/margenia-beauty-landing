@@ -14,6 +14,12 @@ import { trackEvent } from "@/lib/analytics";
 
 type SaleType = "product" | "combo";
 type ResultStatus = "profitable" | "tight" | "loss" | "invalid";
+type ComboProduct = {
+  id: number;
+  name: string;
+  unitCost: string;
+  quantity: string;
+};
 
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-base font-bold text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#4F46E5] focus:ring-4 focus:ring-[#C7D2FE]/60";
@@ -73,6 +79,27 @@ function NumberInput({
   );
 }
 
+function TextInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className={labelClass}>{label}</span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={inputClass}
+      />
+    </label>
+  );
+}
+
 function Toggle({
   label,
   enabled,
@@ -125,6 +152,10 @@ function MiniMetric({
 export function InteractiveCalculator() {
   const [saleType, setSaleType] = useState<SaleType>("product");
   const [productCost, setProductCost] = useState("25000");
+  const [comboProducts, setComboProducts] = useState<ComboProduct[]>([
+    { id: 1, name: "Serum vitamina C", unitCost: "25000", quantity: "1" },
+    { id: 2, name: "Rodillo facial", unitCost: "12000", quantity: "1" },
+  ]);
   const [packagingCost, setPackagingCost] = useState("1500");
   const [shippingCost, setShippingCost] = useState("0");
   const [commissionPercent, setCommissionPercent] = useState("3");
@@ -149,8 +180,56 @@ export function InteractiveCalculator() {
     setter(value);
   };
 
+  const updateComboProduct = (
+    id: number,
+    key: keyof Omit<ComboProduct, "id">,
+    value: string,
+  ) => {
+    trackFirstInteraction();
+    setComboProducts((current) =>
+      current.map((product) =>
+        product.id === id ? { ...product, [key]: value } : product,
+      ),
+    );
+  };
+
+  const addComboProduct = () => {
+    trackFirstInteraction();
+    trackEvent("calculator_combo_add_product", {
+      location: "interactive_calculator",
+      sale_type: "combo",
+    });
+    setComboProducts((current) => [
+      ...current,
+      {
+        id: Date.now(),
+        name: `Producto ${current.length + 1}`,
+        unitCost: "0",
+        quantity: "1",
+      },
+    ]);
+  };
+
+  const removeComboProduct = (id: number) => {
+    trackFirstInteraction();
+    setComboProducts((current) =>
+      current.length > 1 ? current.filter((product) => product.id !== id) : current,
+    );
+  };
+
+  const productsCost = useMemo(() => {
+    if (saleType === "product") {
+      return toNumber(productCost);
+    }
+
+    return comboProducts.reduce((total, product) => {
+      const unitCost = toNumber(product.unitCost);
+      const quantity = Math.max(toNumber(product.quantity), 1);
+      return total + unitCost * quantity;
+    }, 0);
+  }, [comboProducts, productCost, saleType]);
+
   const result = useMemo(() => {
-    const cleanProductCost = toNumber(productCost);
     const cleanPackagingCost = toNumber(packagingCost);
     const cleanShippingCost = includeShipping ? toNumber(shippingCost) : 0;
     const cleanCommissionPercent = includeCommission ? toNumber(commissionPercent) : 0;
@@ -158,7 +237,7 @@ export function InteractiveCalculator() {
     const cleanDesiredMargin = clamp(toNumber(desiredMargin), 10, 70);
     const invalidRate = cleanCommissionPercent + cleanDesiredMargin >= 100;
     const baseCostWithoutDiscount =
-      cleanProductCost + cleanPackagingCost + cleanShippingCost;
+      productsCost + cleanPackagingCost + cleanShippingCost;
     const baseCost = baseCostWithoutDiscount + cleanDiscount;
 
     if (invalidRate) {
@@ -187,14 +266,14 @@ export function InteractiveCalculator() {
     const commissionAmount = suggestedPrice * (cleanCommissionPercent / 100);
     const utility =
       suggestedPrice -
-      cleanProductCost -
+      productsCost -
       cleanPackagingCost -
       cleanShippingCost -
       commissionAmount -
       cleanDiscount;
     const realMargin = suggestedPrice > 0 ? (utility / suggestedPrice) * 100 : 0;
     const totalCost =
-      cleanProductCost +
+      productsCost +
       cleanPackagingCost +
       cleanShippingCost +
       commissionAmount +
@@ -218,7 +297,7 @@ export function InteractiveCalculator() {
     includeCommission,
     includeShipping,
     packagingCost,
-    productCost,
+    productsCost,
     shippingCost,
   ]);
 
@@ -283,7 +362,15 @@ export function InteractiveCalculator() {
                   type="button"
                   onClick={() => {
                     trackFirstInteraction();
-                    setSaleType(option.value as SaleType);
+                    const nextSaleType = option.value as SaleType;
+                    setSaleType(nextSaleType);
+
+                    if (nextSaleType === "combo") {
+                      trackEvent("calculator_mode_combo", {
+                        location: "interactive_calculator",
+                        sale_type: "combo",
+                      });
+                    }
                   }}
                   className={`rounded-full px-4 py-2 text-sm font-black transition ${
                     saleType === option.value
@@ -297,14 +384,93 @@ export function InteractiveCalculator() {
             </div>
           </div>
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-2">
+          <div className="mt-7">
+            {saleType === "combo" ? (
+              <div className="rounded-3xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-lg font-black text-[#0F172A]">
+                      Productos del combo
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-[#475569]">
+                      Agrega los productos que harán parte del combo para
+                      calcular si realmente deja ganancia.
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-[#EEF2FF] px-4 py-2 text-sm font-black text-[#4F46E5]">
+                    Subtotal productos: {currencyFormatter.format(productsCost)}
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  {comboProducts.map((product, index) => (
+                    <div
+                      key={product.id}
+                      className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <strong className="text-sm font-black text-[#0F172A]">
+                          Producto {index + 1}
+                        </strong>
+                        {comboProducts.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeComboProduct(product.id)}
+                            className="rounded-full bg-white px-3 py-1.5 text-xs font-black text-[#EF4444] ring-1 ring-[#FECACA] transition hover:bg-[#FEE2E2]"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+                      <div className="mt-4 grid gap-3 lg:grid-cols-[1.2fr_1fr_0.65fr]">
+                        <TextInput
+                          label="Nombre del producto"
+                          value={product.name}
+                          onChange={(value) =>
+                            updateComboProduct(product.id, "name", value)
+                          }
+                        />
+                        <MoneyInput
+                          label="Costo unitario"
+                          value={product.unitCost}
+                          onChange={(value) =>
+                            updateComboProduct(product.id, "unitCost", value)
+                          }
+                        />
+                        <NumberInput
+                          label="Cantidad"
+                          value={product.quantity}
+                          onChange={(value) =>
+                            updateComboProduct(product.id, "quantity", value)
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={addComboProduct}
+                  className="mt-4 w-full rounded-2xl border border-dashed border-[#C7D2FE] bg-[#F8FAFC] px-5 py-3 text-sm font-black text-[#4F46E5] transition hover:border-[#4F46E5] hover:bg-[#EEF2FF]"
+                >
+                  + Agregar producto
+                </button>
+              </div>
+            ) : (
+              <MoneyInput
+                label="Costo del producto"
+                value={productCost}
+                onChange={(value) => updateMoney(setProductCost, value)}
+              />
+            )}
+          </div>
+
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <MoneyInput
-              label={saleType === "product" ? "Costo del producto" : "Costo del combo"}
-              value={productCost}
-              onChange={(value) => updateMoney(setProductCost, value)}
-            />
-            <MoneyInput
-              label="Costo de empaque"
+              label={
+                saleType === "combo" ? "Costo de empaque del combo" : "Costo de empaque"
+              }
               value={packagingCost}
               onChange={(value) => updateMoney(setPackagingCost, value)}
             />
@@ -401,7 +567,7 @@ export function InteractiveCalculator() {
 
           <div className="mt-7 rounded-[1.75rem] bg-[linear-gradient(135deg,#0F172A_0%,#1E1B4B_100%)] p-5 text-white shadow-lg shadow-[#0F172A]/15">
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#C7D2FE]">
-              Precio sugerido
+              {saleType === "combo" ? "Precio sugerido del combo" : "Precio sugerido"}
             </p>
             <p className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
               {result.invalidRate
@@ -425,7 +591,11 @@ export function InteractiveCalculator() {
               value={currencyFormatter.format(result.minimumPrice)}
             />
             <MiniMetric
-              label="Ganancia estimada"
+              label={
+                saleType === "combo"
+                  ? "Ganancia estimada del combo"
+                  : "Ganancia estimada"
+              }
               value={currencyFormatter.format(result.utility)}
             />
             <MiniMetric
@@ -433,7 +603,7 @@ export function InteractiveCalculator() {
               value={`${Math.max(result.realMargin, 0).toFixed(1)}%`}
             />
             <MiniMetric
-              label="Costo total"
+              label={saleType === "combo" ? "Costo total del combo" : "Costo total"}
               value={currencyFormatter.format(result.totalCost)}
             />
             <MiniMetric
