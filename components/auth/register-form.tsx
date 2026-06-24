@@ -8,6 +8,24 @@ import { createClient } from "@/lib/supabase/client";
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-base text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
 
+function getRegisterErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("already registered") || normalized.includes("already exists")) {
+    return "Este correo ya está registrado. Intenta iniciar sesión.";
+  }
+
+  if (normalized.includes("password")) {
+    return "La contraseña no cumple los requisitos. Usa al menos 8 caracteres.";
+  }
+
+  if (normalized.includes("email")) {
+    return "Revisa que el correo esté escrito correctamente.";
+  }
+
+  return "No pudimos crear tu cuenta. Revisa los datos e intenta de nuevo.";
+}
+
 export function RegisterForm() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
@@ -15,11 +33,13 @@ export function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    setSuccess("");
 
     const cleanName = fullName.trim();
     const cleanEmail = email.trim().toLowerCase();
@@ -43,10 +63,11 @@ export function RegisterForm() {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/app/onboarding`,
           data: {
             full_name: cleanName,
           },
@@ -54,7 +75,16 @@ export function RegisterForm() {
       });
 
       if (authError) {
-        setError("No pudimos crear tu cuenta. Revisa los datos e intenta de nuevo.");
+        setError(getRegisterErrorMessage(authError.message));
+        return;
+      }
+
+      if (!data.session) {
+        setSuccess(
+          "Cuenta creada. Revisa tu correo para confirmar el registro antes de iniciar sesión.",
+        );
+        setPassword("");
+        setConfirmPassword("");
         return;
       }
 
@@ -112,6 +142,12 @@ export function RegisterForm() {
       {error && (
         <p className="rounded-2xl border border-[#FECACA] bg-[#FEE2E2] p-4 text-sm font-bold text-[#991B1B]">
           {error}
+        </p>
+      )}
+
+      {success && (
+        <p className="rounded-2xl border border-[#BBF7D0] bg-[#DCFCE7] p-4 text-sm font-bold text-[#166534]">
+          {success}
         </p>
       )}
 

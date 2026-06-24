@@ -8,6 +8,24 @@ import { createClient } from "@/lib/supabase/client";
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-base text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
 
+function getLoginErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("email not confirmed")) {
+    return "Tu correo todavía no está confirmado. Revisa tu email o confirma el usuario en Supabase.";
+  }
+
+  if (normalized.includes("invalid login credentials")) {
+    return "Correo o contraseña incorrectos. Si acabas de registrarte, verifica primero tu correo.";
+  }
+
+  if (normalized.includes("email rate limit")) {
+    return "Se hicieron demasiados intentos. Espera unos minutos e intenta nuevamente.";
+  }
+
+  return "No pudimos iniciar sesión. Revisa tus datos e intenta de nuevo.";
+}
+
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -36,7 +54,7 @@ export function LoginForm() {
       });
 
       if (authError) {
-        setError("No pudimos iniciar sesión. Revisa tus datos e intenta de nuevo.");
+        setError(getLoginErrorMessage(authError.message));
         return;
       }
 
