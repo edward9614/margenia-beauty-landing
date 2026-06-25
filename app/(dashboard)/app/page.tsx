@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { ActivationProgressCard } from "@/components/dashboard/activation-progress-card";
+import { BusinessPerformancePanel } from "@/components/dashboard/business-performance-panel";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import {
   BoxIcon,
@@ -8,7 +9,6 @@ import {
   WalletIcon,
 } from "@/components/dashboard/dashboard-icons";
 import { MetricCard } from "@/components/dashboard/metric-card";
-import { PerformanceCard } from "@/components/dashboard/performance-card";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { SetupChecklist } from "@/components/dashboard/setup-checklist";
@@ -89,7 +89,7 @@ export default async function AppHomePage() {
               ))}
             </section>
 
-            <PerformanceCard />
+            <BusinessPerformancePanel currency={business.currency || "COP"} />
             <RecentActivity />
           </div>
 
