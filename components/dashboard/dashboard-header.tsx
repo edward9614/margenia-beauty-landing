@@ -4,17 +4,9 @@ function formatToday() {
   return new Intl.DateTimeFormat("es-CO", {
     day: "numeric",
     month: "long",
+    timeZone: "America/Bogota",
     year: "numeric",
   }).format(new Date());
-}
-
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
 }
 
 export function DashboardHeader({
@@ -24,8 +16,6 @@ export function DashboardHeader({
   businessName: string;
   displayName: string;
 }) {
-  const initials = getInitials(displayName) || "M";
-
   return (
     <section className="grid gap-5 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-xl shadow-[#0F172A]/5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center">
       <div>
@@ -43,9 +33,6 @@ export function DashboardHeader({
       <div className="flex flex-wrap items-center gap-3 lg:justify-end">
         <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 text-sm font-bold text-[#475569]">
           {formatToday()}
-        </div>
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] text-sm font-black text-white shadow-lg shadow-cyan-500/20">
-          {initials}
         </div>
         <form action={signOut}>
           <button
