@@ -25,10 +25,10 @@ export default async function PrivateAppLayout({
     .maybeSingle();
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
+    <div className="min-h-screen w-full bg-[#F8FAFC] text-[#0F172A]">
+      <div className="flex min-h-screen w-full">
         <SidebarNavigation businessName={business?.name} userEmail={user.email} />
-        <div className="min-w-0 flex-1 pb-24 lg:pb-0">
+        <div className="min-w-0 flex-1 bg-[#F8FAFC] pb-24 lg:pb-0">
           <PrivateHeader email={user.email} />
           {children}
         </div>

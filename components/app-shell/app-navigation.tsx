@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 
 const navItems = [
   { href: "/app", label: "Inicio", active: true },
@@ -18,17 +19,23 @@ export function SidebarNavigation({
   userEmail?: string;
 }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-[#E2E8F0] bg-white px-5 py-6 lg:flex lg:flex-col">
-      <div className="flex items-center justify-between gap-3">
-        <Link href="/" className="text-2xl font-black tracking-tight text-[#0F172A]">
-          Margenia
-        </Link>
-        <span className="rounded-full bg-[#E0F7FA] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2] ring-1 ring-[#A5F3FC]">
-          Beta
-        </span>
+    <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col overflow-y-auto border-r border-[#E2E8F0] bg-white lg:flex">
+      <div className="border-b border-[#E2E8F0] px-5 py-5">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="block max-w-[170px] shrink overflow-hidden [&_img]:max-w-full"
+            aria-label="Ir a la landing de Margenia"
+          >
+            <BrandLogo showImage />
+          </Link>
+          <span className="shrink-0 rounded-full bg-[#E0F7FA] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2] ring-1 ring-[#A5F3FC]">
+            Beta
+          </span>
+        </div>
       </div>
 
-      <div className="mt-7 rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+      <div className="mx-5 mt-6 rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
         <p className="text-xs font-black uppercase tracking-[0.14em] text-[#2563EB]">
           Negocio activo
         </p>
@@ -38,7 +45,7 @@ export function SidebarNavigation({
         <p className="mt-1 text-xs font-bold text-[#475569]">Base privada de trabajo</p>
       </div>
 
-      <nav className="mt-7 space-y-1" aria-label="Navegación principal">
+      <nav className="mt-7 space-y-1 px-5" aria-label="Navegación principal">
         {navItems.map((item) => (
           <a
             key={item.label}
@@ -59,7 +66,7 @@ export function SidebarNavigation({
         ))}
       </nav>
 
-      <div className="mt-auto rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4">
+      <div className="mx-5 mb-5 mt-auto rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4">
         <p className="text-xs font-black uppercase tracking-[0.14em] text-[#64748B]">
           Sesión
         </p>

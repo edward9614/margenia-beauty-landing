@@ -69,12 +69,12 @@ export default async function AppHomePage() {
       : user.email?.split("@")[0] || "emprendedora";
 
   return (
-    <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-      <div className="mx-auto max-w-[1440px] space-y-6">
+    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
+      <div className="w-full max-w-none space-y-6">
         <DashboardHeader businessName={business.name} displayName={displayName} />
 
-        <div className="grid gap-6 xl:grid-cols-12">
-          <div className="space-y-6 xl:col-span-8">
+        <div className="grid min-w-0 grid-cols-12 gap-6">
+          <div className="col-span-12 min-w-0 space-y-6 xl:col-span-8">
             <ActivationProgressCard />
             <QuickActions />
 
@@ -93,7 +93,7 @@ export default async function AppHomePage() {
             <RecentActivity />
           </div>
 
-          <aside className="space-y-6 xl:col-span-4">
+          <aside className="col-span-12 min-w-0 space-y-6 xl:col-span-4">
             <SetupChecklist />
             <BusinessStatusCard
               business={{
