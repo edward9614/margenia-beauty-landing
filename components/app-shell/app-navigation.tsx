@@ -1,14 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/brand-logo";
 
 const navItems = [
-  { href: "/app", label: "Inicio", active: true },
-  { href: "#", label: "Productos" },
-  { href: "#", label: "Combos" },
-  { href: "#", label: "Ventas" },
-  { href: "#", label: "Inventario" },
-  { href: "#", label: "Caja" },
-  { href: "#", label: "Configuración" },
+  { href: "/app", label: "Inicio", soon: false },
+  { href: "/app/productos", label: "Productos", soon: false },
+  { href: "#", label: "Combos", soon: true },
+  { href: "#", label: "Ventas", soon: true },
+  { href: "#", label: "Inventario", soon: true },
+  { href: "#", label: "Caja", soon: true },
+  { href: "#", label: "Configuración", soon: true },
 ];
 
 export function SidebarNavigation({
@@ -18,6 +21,8 @@ export function SidebarNavigation({
   businessName?: string;
   userEmail?: string;
 }) {
+  const pathname = usePathname();
+
   return (
     <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col overflow-y-auto border-r border-[#E2E8F0] bg-white lg:flex">
       <div className="border-b border-[#E2E8F0] px-5 py-5">
@@ -46,24 +51,31 @@ export function SidebarNavigation({
       </div>
 
       <nav className="mt-7 space-y-1 px-5" aria-label="Navegación principal">
-        {navItems.map((item) => (
-          <a
-            key={item.label}
-            href={item.href}
-            className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-black transition ${
-              item.active
-                ? "bg-[#0F172A] text-white"
-                : "text-[#475569] hover:bg-[#EFF6FF] hover:text-[#2563EB]"
-            }`}
-          >
-            <span>{item.label}</span>
-            {!item.active && (
-              <span className="rounded-full bg-[#E0F7FA] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[#0891B2]">
-                Próximamente
-              </span>
-            )}
-          </a>
-        ))}
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/app"
+              ? pathname === "/app"
+              : item.href !== "#" && pathname.startsWith(item.href);
+
+          return (
+            <a
+              key={item.label}
+              href={item.href}
+              className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-black transition ${
+                isActive
+                  ? "bg-[#0F172A] text-white"
+                  : "text-[#475569] hover:bg-[#EFF6FF] hover:text-[#2563EB]"
+              }`}
+            >
+              <span>{item.label}</span>
+              {item.soon && (
+                <span className="rounded-full bg-[#E0F7FA] px-2 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[#0891B2]">
+                  Próximamente
+                </span>
+              )}
+            </a>
+          );
+        })}
       </nav>
 
       <div className="mx-5 mb-5 mt-auto rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4">
@@ -79,22 +91,31 @@ export function SidebarNavigation({
 }
 
 export function MobileNavigation() {
+  const pathname = usePathname();
+
   return (
     <nav
       className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
       aria-label="Navegación móvil"
     >
-      {navItems.slice(0, 4).map((item) => (
-        <a
-          key={item.label}
-          href={item.href}
-          className={`rounded-2xl px-2 py-2 text-center text-[11px] font-black ${
-            item.active ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#475569]"
-          }`}
-        >
-          {item.label}
-        </a>
-      ))}
+      {navItems.slice(0, 4).map((item) => {
+        const isActive =
+          item.href === "/app"
+            ? pathname === "/app"
+            : item.href !== "#" && pathname.startsWith(item.href);
+
+        return (
+          <a
+            key={item.label}
+            href={item.href}
+            className={`rounded-2xl px-2 py-2 text-center text-[11px] font-black ${
+              isActive ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#475569]"
+            }`}
+          >
+            {item.label}
+          </a>
+        );
+      })}
     </nav>
   );
 }

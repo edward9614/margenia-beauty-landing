@@ -1,32 +1,38 @@
-const steps = [
-  {
-    detail: "Tu usuario ya está activo.",
-    status: "completed",
-    title: "Crear tu cuenta",
-  },
-  {
-    detail: "El negocio base ya está configurado.",
-    status: "completed",
-    title: "Configurar tu negocio",
-  },
-  {
-    detail: "Será el primer módulo operativo de Margenia.",
-    status: "next",
-    title: "Agregar tu primer producto",
-  },
-  {
-    detail: "Después podrás crear promociones con margen claro.",
-    status: "pending",
-    title: "Crear tu primer combo",
-  },
-  {
-    detail: "Las métricas aparecerán con tus primeras ventas.",
-    status: "pending",
-    title: "Registrar tu primera venta",
-  },
-];
+function getSteps(hasProducts: boolean) {
+  return [
+    {
+      detail: "Tu usuario ya está activo.",
+      status: "completed",
+      title: "Crear tu cuenta",
+    },
+    {
+      detail: "El negocio base ya está configurado.",
+      status: "completed",
+      title: "Configurar tu negocio",
+    },
+    {
+      detail: hasProducts
+        ? "Ya tienes al menos un producto en tu catálogo."
+        : "Será el primer módulo operativo de Margenia.",
+      status: hasProducts ? "completed" : "next",
+      title: "Agregar tu primer producto",
+    },
+    {
+      detail: "Después podrás crear promociones con margen claro.",
+      status: hasProducts ? "next" : "pending",
+      title: "Crear tu primer combo",
+    },
+    {
+      detail: "Las métricas aparecerán con tus primeras ventas.",
+      status: "pending",
+      title: "Registrar tu primera venta",
+    },
+  ];
+}
 
-export function SetupChecklist() {
+export function SetupChecklist({ hasProducts = false }: { hasProducts?: boolean }) {
+  const steps = getSteps(hasProducts);
+
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
       <h2 className="text-xl font-black text-[#0F172A]">Primeros pasos en Margenia</h2>
