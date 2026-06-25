@@ -1,11 +1,45 @@
 import { redirect } from "next/navigation";
+import { ActivationProgressCard } from "@/components/dashboard/activation-progress-card";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import {
+  BoxIcon,
+  ProfitIcon,
+  SalesIcon,
+  WalletIcon,
+} from "@/components/dashboard/dashboard-icons";
+import { MetricCard } from "@/components/dashboard/metric-card";
+import { PerformanceCard } from "@/components/dashboard/performance-card";
+import { QuickActions } from "@/components/dashboard/quick-actions";
+import { RecentActivity } from "@/components/dashboard/recent-activity";
+import { SetupChecklist } from "@/components/dashboard/setup-checklist";
+import {
+  AlertsCard,
+  BusinessStatusCard,
+  MargeniaInsightCard,
+} from "@/components/dashboard/side-panels";
 import { createClient } from "@/lib/supabase/server";
 
-const cards = [
-  { title: "Ventas", value: "$0", detail: "Sin movimientos todavía" },
-  { title: "Utilidad", value: "$0", detail: "Aún no hay ventas registradas" },
-  { title: "Inventario", value: "0", detail: "Módulo próximamente" },
-  { title: "Caja", value: "$0", detail: "Módulo próximamente" },
+const metrics = [
+  {
+    detail: "Aún no hay ventas registradas en la beta.",
+    icon: <SalesIcon className="h-5 w-5" />,
+    title: "Ventas",
+  },
+  {
+    detail: "La utilidad aparecerá cuando existan movimientos reales.",
+    icon: <ProfitIcon className="h-5 w-5" />,
+    title: "Utilidad real",
+  },
+  {
+    detail: "El control de stock se activará en próximos módulos.",
+    icon: <BoxIcon className="h-5 w-5" />,
+    title: "Inventario",
+  },
+  {
+    detail: "Caja mostrará ingresos, gastos y saldo cuando esté disponible.",
+    icon: <WalletIcon className="h-5 w-5" />,
+    title: "Caja",
+  },
 ];
 
 export default async function AppHomePage() {
@@ -20,7 +54,7 @@ export default async function AppHomePage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id,name")
+    .select("id,name,business_type,country,currency,primary_channel")
     .eq("owner_id", user.id)
     .limit(1)
     .maybeSingle();
@@ -29,43 +63,51 @@ export default async function AppHomePage() {
     redirect("/app/onboarding");
   }
 
+  const displayName =
+    typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()
+      ? user.user_metadata.full_name.trim()
+      : user.email?.split("@")[0] || "emprendedora";
+
   return (
-    <main className="px-5 py-8 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-6 shadow-xl shadow-[#0F172A]/5 sm:p-8">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-            {business.name}
-          </p>
-          <h1 className="mt-3 text-3xl font-black sm:text-4xl">
-            Bienvenido a Margenia
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-[#475569]">
-            Este será el centro de control de tu negocio.
-          </p>
-        </section>
+    <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[1440px] space-y-6">
+        <DashboardHeader businessName={business.name} displayName={displayName} />
 
-        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {cards.map((card) => (
-            <article
-              key={card.title}
-              className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm"
-            >
-              <p className="text-sm font-black text-[#475569]">{card.title}</p>
-              <p className="mt-4 text-3xl font-black text-[#0F172A]">{card.value}</p>
-              <p className="mt-2 text-sm text-[#475569]">{card.detail}</p>
-            </article>
-          ))}
-        </section>
+        <div className="grid gap-6 xl:grid-cols-12">
+          <div className="space-y-6 xl:col-span-8">
+            <ActivationProgressCard />
+            <QuickActions />
 
-        <section className="mt-6 rounded-[1.5rem] border border-dashed border-[#BFDBFE] bg-[#EFF6FF] p-5">
-          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">
-            Base inicial
-          </p>
-          <p className="mt-2 text-base leading-7 text-[#475569]">
-            Tu negocio todavía no tiene movimientos. Los módulos de productos, combos,
-            ventas, inventario, caja y pagos pendientes se activarán en próximos hitos.
-          </p>
-        </section>
+            <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+              {metrics.map((metric) => (
+                <MetricCard
+                  key={metric.title}
+                  detail={metric.detail}
+                  icon={metric.icon}
+                  title={metric.title}
+                />
+              ))}
+            </section>
+
+            <PerformanceCard />
+            <RecentActivity />
+          </div>
+
+          <aside className="space-y-6 xl:col-span-4">
+            <SetupChecklist />
+            <BusinessStatusCard
+              business={{
+                businessType: business.business_type,
+                country: business.country,
+                currency: business.currency,
+                name: business.name,
+                primaryChannel: business.primary_channel,
+              }}
+            />
+            <AlertsCard />
+            <MargeniaInsightCard />
+          </aside>
+        </div>
       </div>
     </main>
   );

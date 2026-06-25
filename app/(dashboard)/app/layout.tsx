@@ -17,10 +17,17 @@ export default async function PrivateAppLayout({
     redirect("/login");
   }
 
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("name")
+    .eq("owner_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <SidebarNavigation />
+        <SidebarNavigation businessName={business?.name} userEmail={user.email} />
         <div className="min-w-0 flex-1 pb-24 lg:pb-0">
           <PrivateHeader email={user.email} />
           {children}

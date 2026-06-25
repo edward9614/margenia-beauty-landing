@@ -10,13 +10,35 @@ const navItems = [
   { href: "#", label: "Configuración" },
 ];
 
-export function SidebarNavigation() {
+export function SidebarNavigation({
+  businessName,
+  userEmail,
+}: {
+  businessName?: string;
+  userEmail?: string;
+}) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-[#E2E8F0] bg-white px-4 py-6 lg:flex lg:flex-col">
-      <Link href="/" className="text-2xl font-black tracking-tight text-[#0F172A]">
-        Margenia
-      </Link>
-      <nav className="mt-8 space-y-1" aria-label="Navegación principal">
+    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 border-r border-[#E2E8F0] bg-white px-5 py-6 lg:flex lg:flex-col">
+      <div className="flex items-center justify-between gap-3">
+        <Link href="/" className="text-2xl font-black tracking-tight text-[#0F172A]">
+          Margenia
+        </Link>
+        <span className="rounded-full bg-[#E0F7FA] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2] ring-1 ring-[#A5F3FC]">
+          Beta
+        </span>
+      </div>
+
+      <div className="mt-7 rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#2563EB]">
+          Negocio activo
+        </p>
+        <p className="mt-2 truncate text-base font-black text-[#0F172A]">
+          {businessName || "Tu negocio"}
+        </p>
+        <p className="mt-1 text-xs font-bold text-[#475569]">Base privada de trabajo</p>
+      </div>
+
+      <nav className="mt-7 space-y-1" aria-label="Navegación principal">
         {navItems.map((item) => (
           <a
             key={item.label}
@@ -36,6 +58,15 @@ export function SidebarNavigation() {
           </a>
         ))}
       </nav>
+
+      <div className="mt-auto rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4">
+        <p className="text-xs font-black uppercase tracking-[0.14em] text-[#64748B]">
+          Sesión
+        </p>
+        <p className="mt-2 truncate text-sm font-bold text-[#0F172A]">
+          {userEmail || "Sesión activa"}
+        </p>
+      </div>
     </aside>
   );
 }
