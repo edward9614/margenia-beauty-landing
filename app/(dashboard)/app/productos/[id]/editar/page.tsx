@@ -1,6 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { ProductForm } from "@/components/products/product-form";
-import { ProductFormInput } from "@/lib/products/product-utils";
+import {
+  ProductFormInput,
+  type ProductRow,
+  type ProductVariantRow,
+} from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function EditProductPage({
@@ -42,17 +46,18 @@ export default async function EditProductPage({
     notFound();
   }
 
+  const typedProduct = product as ProductRow;
   const initialProduct: ProductFormInput & { id: string } = {
-    brand: product.brand || "",
-    category: product.category || "",
-    description: product.description || "",
-    id: product.id,
-    name: product.name,
-    productType: product.product_type === "variants" ? "variants" : "simple",
-    status: product.status === "archived" ? "archived" : "active",
-    trackInventory: Boolean(product.track_inventory),
-    unit: product.unit || "Unidad",
-    variants: (product.product_variants || []).map((variant: any) => ({
+    brand: typedProduct.brand || "",
+    category: typedProduct.category || "",
+    description: typedProduct.description || "",
+    id: typedProduct.id,
+    name: typedProduct.name,
+    productType: typedProduct.product_type === "variants" ? "variants" : "simple",
+    status: typedProduct.status === "archived" ? "archived" : "active",
+    trackInventory: Boolean(typedProduct.track_inventory),
+    unit: typedProduct.unit || "Unidad",
+    variants: (typedProduct.product_variants || []).map((variant: ProductVariantRow) => ({
       commissionPercent: Number(variant.commission_percent || 0),
       currentStock: Number(variant.current_stock || 0),
       desiredMarginPercent: Number(variant.desired_margin_percent || 35),
@@ -75,7 +80,7 @@ export default async function EditProductPage({
             Editar producto
           </p>
           <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-            {product.name}
+            {typedProduct.name}
           </h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
             Actualiza información, variantes, precios y existencias. Archivar no

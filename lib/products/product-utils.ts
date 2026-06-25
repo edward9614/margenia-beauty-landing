@@ -1,6 +1,36 @@
 export type ProductType = "simple" | "variants";
 export type ProductStatus = "active" | "archived";
 
+export type ProductVariantRow = {
+  id: string;
+  business_id?: string;
+  product_id?: string;
+  name: string | null;
+  sku: string | null;
+  purchase_cost: number | string | null;
+  packaging_cost: number | string | null;
+  commission_percent: number | string | null;
+  desired_margin_percent: number | string | null;
+  sale_price: number | string | null;
+  current_stock: number | string | null;
+  minimum_stock: number | string | null;
+  status: ProductStatus | string | null;
+};
+
+export type ProductRow = {
+  id: string;
+  name: string;
+  description?: string | null;
+  brand: string | null;
+  category: string | null;
+  unit: string | null;
+  product_type: ProductType | string | null;
+  track_inventory: boolean | null;
+  status: ProductStatus | string | null;
+  created_at?: string | null;
+  product_variants?: ProductVariantRow[] | null;
+};
+
 export type ProductVariantInput = {
   id?: string;
   name: string;

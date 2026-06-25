@@ -43,18 +43,15 @@ async function getActiveBusiness() {
 
 function variantPayload(
   variant: ProductVariantInput,
-  businessId: string,
-  productId: string,
 ) {
   return {
-    business_id: businessId,
     commission_percent: variant.commissionPercent,
     current_stock: variant.currentStock,
     desired_margin_percent: variant.desiredMarginPercent,
+    id: variant.id || "",
     minimum_stock: variant.minimumStock,
     name: variant.name,
     packaging_cost: variant.packagingCost,
-    product_id: productId,
     purchase_cost: variant.purchaseCost,
     sale_price: variant.salePrice,
     sku: nullableText(variant.sku),
@@ -121,48 +118,24 @@ export async function createProduct(input: ProductFormInput): Promise<ActionResu
     };
   }
 
-  const { data: product, error: productError } = await supabase
-    .from("products")
-    .insert({
-      brand: nullableText(validation.value.brand),
-      business_id: business.id,
-      category: nullableText(validation.value.category),
-      description: nullableText(validation.value.description),
-      name: validation.value.name,
-      product_type: validation.value.productType,
-      status: validation.value.status,
-      track_inventory: validation.value.trackInventory,
-      unit: validation.value.unit,
-    })
-    .select("id")
-    .single();
+  const { error } = await supabase.rpc("create_product_with_variants", {
+    p_brand: nullableText(validation.value.brand),
+    p_business_id: business.id,
+    p_category: nullableText(validation.value.category),
+    p_description: nullableText(validation.value.description),
+    p_name: validation.value.name,
+    p_product_type: validation.value.productType,
+    p_status: validation.value.status,
+    p_track_inventory: validation.value.trackInventory,
+    p_unit: validation.value.unit,
+    p_variants: validation.value.variants.map((variant) => variantPayload(variant)),
+  });
 
-  if (productError || !product) {
+  if (error) {
     return {
       error:
-        getSkuErrorMessage(productError?.message || "") ||
-        "No pudimos crear el producto.",
-      ok: false,
-    };
-  }
-
-  const { error: variantsError } = await supabase.from("product_variants").insert(
-    validation.value.variants.map((variant) =>
-      variantPayload(variant, business.id, product.id),
-    ),
-  );
-
-  if (variantsError) {
-    await supabase
-      .from("products")
-      .update({ status: "archived" })
-      .eq("id", product.id)
-      .eq("business_id", business.id);
-
-    return {
-      error:
-        getSkuErrorMessage(variantsError.message) ||
-        "No pudimos crear las variantes del producto. Intenta nuevamente.",
+        getSkuErrorMessage(error.message) ||
+        "No pudimos crear el producto. Revisa los datos e intenta nuevamente.",
       ok: false,
     };
   }
@@ -219,76 +192,27 @@ export async function updateProduct(
     };
   }
 
-  const { error: productError } = await supabase
-    .from("products")
-    .update({
-      brand: nullableText(validation.value.brand),
-      category: nullableText(validation.value.category),
-      description: nullableText(validation.value.description),
-      name: validation.value.name,
-      product_type: validation.value.productType,
-      status: validation.value.status,
-      track_inventory: validation.value.trackInventory,
-      unit: validation.value.unit,
-    })
-    .eq("id", productId)
-    .eq("business_id", business.id);
+  const { error } = await supabase.rpc("update_product_with_variants", {
+    p_brand: nullableText(validation.value.brand),
+    p_business_id: business.id,
+    p_category: nullableText(validation.value.category),
+    p_description: nullableText(validation.value.description),
+    p_name: validation.value.name,
+    p_product_id: productId,
+    p_product_type: validation.value.productType,
+    p_status: validation.value.status,
+    p_track_inventory: validation.value.trackInventory,
+    p_unit: validation.value.unit,
+    p_variants: validation.value.variants.map((variant) => variantPayload(variant)),
+  });
 
-  if (productError) {
-    return { error: "No pudimos guardar los cambios del producto.", ok: false };
-  }
-
-  const { data: currentVariants } = await supabase
-    .from("product_variants")
-    .select("id")
-    .eq("product_id", productId)
-    .eq("business_id", business.id);
-
-  const submittedIds = new Set(existingVariantIds);
-  const variantsToArchive =
-    currentVariants
-      ?.map((variant) => variant.id as string)
-      .filter((id) => !submittedIds.has(id)) || [];
-
-  if (variantsToArchive.length) {
-    await supabase
-      .from("product_variants")
-      .update({ status: "archived" })
-      .eq("business_id", business.id)
-      .in("id", variantsToArchive);
-  }
-
-  for (const variant of validation.value.variants) {
-    if (variant.id) {
-      const { error } = await supabase
-        .from("product_variants")
-        .update(variantPayload(variant, business.id, productId))
-        .eq("id", variant.id)
-        .eq("business_id", business.id)
-        .eq("product_id", productId);
-
-      if (error) {
-        return {
-          error:
-            getSkuErrorMessage(error.message) ||
-            "No pudimos actualizar una variante.",
-          ok: false,
-        };
-      }
-    } else {
-      const { error } = await supabase
-        .from("product_variants")
-        .insert(variantPayload(variant, business.id, productId));
-
-      if (error) {
-        return {
-          error:
-            getSkuErrorMessage(error.message) ||
-            "No pudimos crear una variante nueva.",
-          ok: false,
-        };
-      }
-    }
+  if (error) {
+    return {
+      error:
+        getSkuErrorMessage(error.message) ||
+        "No pudimos guardar los cambios del producto.",
+      ok: false,
+    };
   }
 
   revalidatePath("/app");

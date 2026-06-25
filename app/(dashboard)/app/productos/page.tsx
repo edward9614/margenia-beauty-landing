@@ -2,7 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
 import { createClient } from "@/lib/supabase/server";
-import { calculateVariantProfit, moneyFormatter } from "@/lib/products/product-utils";
+import {
+  calculateVariantProfit,
+  moneyFormatter,
+  type ProductRow,
+  type ProductVariantRow,
+} from "@/lib/products/product-utils";
 
 const pageSize = 20;
 
@@ -17,35 +22,41 @@ function productInitial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "P";
 }
 
-function stockStatus(product: any) {
+type StockTone = "danger" | "neutral" | "success" | "warning";
+
+type ProductVariantWithTrackInventory = ProductVariantRow & {
+  track_inventory?: boolean | null;
+};
+
+function stockStatus(product: ProductRow) {
   if (!product.track_inventory) {
-    return { label: "Sin control", tone: "neutral" };
+    return { label: "Sin control", tone: "neutral" as StockTone };
   }
 
   const activeVariants = (product.product_variants || []).filter(
-    (variant: any) => variant.status === "active",
+    (variant) => variant.status === "active",
   );
   const totalStock = activeVariants.reduce(
-    (total: number, variant: any) => total + Number(variant.current_stock || 0),
+    (total: number, variant) => total + Number(variant.current_stock || 0),
     0,
   );
   const minimumStock = activeVariants.reduce(
-    (total: number, variant: any) => total + Number(variant.minimum_stock || 0),
+    (total: number, variant) => total + Number(variant.minimum_stock || 0),
     0,
   );
 
   if (totalStock === 0) {
-    return { label: "Agotado", tone: "danger" };
+    return { label: "Agotado", tone: "danger" as StockTone };
   }
 
   if (totalStock <= minimumStock) {
-    return { label: "Stock bajo", tone: "warning" };
+    return { label: "Stock bajo", tone: "warning" as StockTone };
   }
 
-  return { label: "Normal", tone: "success" };
+  return { label: "Normal", tone: "success" as StockTone };
 }
 
-function statusClass(tone: string) {
+function statusClass(tone: StockTone) {
   if (tone === "danger") {
     return "bg-[#FEE2E2] text-[#991B1B]";
   }
@@ -61,15 +72,15 @@ function statusClass(tone: string) {
   return "bg-[#F8FAFC] text-[#475569] ring-1 ring-[#E2E8F0]";
 }
 
-function productStats(product: any, currency: string) {
+function productStats(product: ProductRow, currency: string) {
   const formatter = moneyFormatter(currency);
   const variants = product.product_variants || [];
-  const activeVariants = variants.filter((variant: any) => variant.status === "active");
+  const activeVariants = variants.filter((variant) => variant.status === "active");
   const visibleVariants = activeVariants.length ? activeVariants : variants;
-  const stocks = visibleVariants.map((variant: any) => Number(variant.current_stock || 0));
-  const prices = visibleVariants.map((variant: any) => Number(variant.sale_price || 0));
-  const costs = visibleVariants.map((variant: any) => Number(variant.purchase_cost || 0));
-  const margins = visibleVariants.map((variant: any) =>
+  const stocks = visibleVariants.map((variant) => Number(variant.current_stock || 0));
+  const prices = visibleVariants.map((variant) => Number(variant.sale_price || 0));
+  const costs = visibleVariants.map((variant) => Number(variant.purchase_cost || 0));
+  const margins = visibleVariants.map((variant) =>
     calculateVariantProfit({
       commissionPercent: Number(variant.commission_percent || 0),
       desiredMarginPercent: Number(variant.desired_margin_percent || 0),
@@ -136,7 +147,9 @@ async function getMatchingProductIds(
     .eq("business_id", businessId)
     .or(`name.ilike.%${query}%,sku.ilike.%${query}%`);
 
-  return Array.from(new Set((data || []).map((item: any) => item.product_id)));
+  return Array.from(
+    new Set(((data || []) as { product_id: string }[]).map((item) => item.product_id)),
+  );
 }
 
 async function getStockFilteredProductIds(
@@ -155,7 +168,7 @@ async function getStockFilteredProductIds(
       .eq("business_id", businessId)
       .eq("track_inventory", false);
 
-    return (data || []).map((item: any) => item.id);
+    return ((data || []) as { id: string }[]).map((item) => item.id);
   }
 
   const { data: products } = await supabase
@@ -164,8 +177,8 @@ async function getStockFilteredProductIds(
     .eq("business_id", businessId)
     .eq("track_inventory", true);
 
-  return (products || [])
-    .filter((product: any) => {
+  return ((products || []) as ProductRow[])
+    .filter((product) => {
       const status = stockStatus(product).label;
       return (
         (stock === "normal" && status === "Normal") ||
@@ -173,7 +186,7 @@ async function getStockFilteredProductIds(
         (stock === "out" && status === "Agotado")
       );
     })
-    .map((product: any) => product.id);
+    .map((product) => product.id);
 }
 
 export default async function ProductsPage({
@@ -202,7 +215,11 @@ export default async function ProductsPage({
     .not("category", "is", null);
 
   const categories = Array.from(
-    new Set((categoryRows || []).map((row: any) => row.category).filter(Boolean)),
+    new Set(
+      ((categoryRows || []) as { category: string | null }[])
+        .map((row) => row.category)
+        .filter((item): item is string => Boolean(item)),
+    ),
   );
 
   const matchingIds = await getMatchingProductIds(supabase, business.id, q);
@@ -250,7 +267,8 @@ export default async function ProductsPage({
   }
 
   const { count, data: products, error } = await query.range(from, to);
-  const sortedProducts = [...(products || [])].sort((a: any, b: any) => {
+  const productList = (products || []) as ProductRow[];
+  const sortedProducts = [...productList].sort((a, b) => {
     const aStats = productStats(a, currency);
     const bStats = productStats(b, currency);
 
@@ -260,12 +278,12 @@ export default async function ProductsPage({
 
     if (sort === "value") {
       const aValue = (a.product_variants || []).reduce(
-        (total: number, variant: any) =>
+        (total: number, variant: ProductVariantRow) =>
           total + Number(variant.current_stock || 0) * Number(variant.purchase_cost || 0),
         0,
       );
       const bValue = (b.product_variants || []).reduce(
-        (total: number, variant: any) =>
+        (total: number, variant: ProductVariantRow) =>
           total + Number(variant.current_stock || 0) * Number(variant.purchase_cost || 0),
         0,
       );
@@ -285,22 +303,26 @@ export default async function ProductsPage({
     .select("id,track_inventory,status,product_variants(id,purchase_cost,current_stock,minimum_stock,status)")
     .eq("business_id", business.id);
 
-  const activeProducts = (metricProducts || []).filter(
-    (product: any) => product.status === "active",
+  const metricProductList = (metricProducts || []) as ProductRow[];
+  const activeProducts = metricProductList.filter(
+    (product) => product.status === "active",
   );
-  const activeVariants = activeProducts.flatMap((product: any) =>
+  const activeVariants = activeProducts.flatMap((product) =>
     (product.product_variants || [])
-      .filter((variant: any) => variant.status === "active")
-      .map((variant: any) => ({ ...variant, track_inventory: product.track_inventory })),
+      .filter((variant) => variant.status === "active")
+      .map((variant) => ({
+        ...variant,
+        track_inventory: product.track_inventory,
+      })),
   );
   const stockLowCount = activeVariants.filter(
-    (variant: any) =>
+    (variant: ProductVariantWithTrackInventory) =>
       variant.track_inventory &&
       Number(variant.current_stock || 0) > 0 &&
       Number(variant.current_stock || 0) <= Number(variant.minimum_stock || 0),
   ).length;
   const inventoryCostValue = activeVariants.reduce(
-    (total: number, variant: any) =>
+    (total: number, variant: ProductVariantWithTrackInventory) =>
       total + Number(variant.current_stock || 0) * Number(variant.purchase_cost || 0),
     0,
   );
@@ -453,7 +475,7 @@ export default async function ProductsPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
-                  {sortedProducts.map((product: any) => {
+                  {sortedProducts.map((product) => {
                     const stats = productStats(product, currency);
                     const stock = stockStatus(product);
                     return (
@@ -521,7 +543,7 @@ export default async function ProductsPage({
             </div>
 
             <div className="grid gap-4 p-4 lg:hidden">
-              {sortedProducts.map((product: any) => {
+              {sortedProducts.map((product) => {
                 const stats = productStats(product, currency);
                 const stock = stockStatus(product);
                 return (

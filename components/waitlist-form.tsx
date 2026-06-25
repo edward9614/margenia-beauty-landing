@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { primaryButtonClass } from "@/components/button-classes";
 import { Field, InstagramField, SelectField } from "@/components/field";
 import { trackEvent } from "@/lib/analytics";
@@ -26,26 +26,29 @@ const initialForm = {
   intent: "lista_espera",
 };
 
+function getInitialForm() {
+  if (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("intent") === "fundadora"
+  ) {
+    return {
+      ...initialForm,
+      wantsBeta: "Sí",
+      intent: "fundadora",
+    };
+  }
+
+  return initialForm;
+}
+
 export function WaitlistForm() {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(getInitialForm);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = (key: keyof typeof form, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    if (params.get("intent") === "fundadora") {
-      setForm((current) => ({
-        ...current,
-        wantsBeta: "Sí",
-        intent: "fundadora",
-      }));
-    }
-  }, []);
 
   const isFounderIntent = form.intent === "fundadora";
 

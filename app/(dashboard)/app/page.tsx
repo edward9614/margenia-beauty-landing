@@ -17,7 +17,11 @@ import {
   BusinessStatusCard,
   MargeniaInsightCard,
 } from "@/components/dashboard/side-panels";
-import { moneyFormatter } from "@/lib/products/product-utils";
+import {
+  moneyFormatter,
+  type ProductRow,
+  type ProductVariantRow,
+} from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppHomePage() {
@@ -49,16 +53,20 @@ export default async function AppHomePage() {
     .from("products")
     .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,status)")
     .eq("business_id", business.id);
-  const activeProducts = (productRows || []).filter(
-    (product: any) => product.status === "active",
+  const typedProductRows = (productRows || []) as ProductRow[];
+  const activeProducts = typedProductRows.filter(
+    (product) => product.status === "active",
   );
-  const activeVariants = activeProducts.flatMap((product: any) =>
+  const activeVariants = activeProducts.flatMap((product) =>
     (product.product_variants || [])
-      .filter((variant: any) => variant.status === "active")
-      .map((variant: any) => ({ ...variant, trackInventory: product.track_inventory })),
+      .filter((variant) => variant.status === "active")
+      .map((variant) => ({
+        ...variant,
+        trackInventory: product.track_inventory,
+      })),
   );
   const inventoryValue = activeVariants.reduce(
-    (total: number, variant: any) =>
+    (total: number, variant: ProductVariantRow) =>
       total + Number(variant.current_stock || 0) * Number(variant.purchase_cost || 0),
     0,
   );
