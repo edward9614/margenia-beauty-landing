@@ -16,6 +16,28 @@ const channels = [
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-base text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
 
+function getBusinessErrorMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes("could not find the table") ||
+    normalized.includes("businesses") ||
+    normalized.includes("schema cache")
+  ) {
+    return "La tabla businesses no existe todavía en Supabase. Ejecuta la migración 001_app_foundation.sql en el SQL Editor.";
+  }
+
+  if (normalized.includes("row-level security") || normalized.includes("rls")) {
+    return "Supabase bloqueó el guardado por seguridad RLS. Revisa que las políticas de businesses estén creadas.";
+  }
+
+  if (normalized.includes("violates foreign key constraint")) {
+    return "No pudimos asociar el negocio a tu usuario. Cierra sesión, vuelve a ingresar e intenta de nuevo.";
+  }
+
+  return "No pudimos crear tu negocio. Revisa la configuración de Supabase e intenta nuevamente.";
+}
+
 export function OnboardingForm() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -64,7 +86,7 @@ export function OnboardingForm() {
       });
 
       if (insertError) {
-        setError("No pudimos crear tu negocio. Intenta nuevamente.");
+        setError(getBusinessErrorMessage(insertError.message));
         return;
       }
 
