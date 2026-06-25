@@ -5,15 +5,18 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   getSkuErrorMessage,
+  NormalizedProductFormInput,
+  NormalizedProductVariantInput,
   nullableText,
+  ProductFieldErrors,
   ProductFormInput,
-  ProductVariantInput,
   validateProductInput,
 } from "@/lib/products/product-utils";
 
 type ActionResult = {
   ok: boolean;
   error?: string;
+  fieldErrors?: ProductFieldErrors;
 };
 
 async function getActiveBusiness() {
@@ -42,7 +45,7 @@ async function getActiveBusiness() {
 }
 
 function variantPayload(
-  variant: ProductVariantInput,
+  variant: NormalizedProductVariantInput,
 ) {
   return {
     commission_percent: variant.commissionPercent,
@@ -62,7 +65,7 @@ function variantPayload(
 async function variantSkuExists(
   supabase: Awaited<ReturnType<typeof createClient>>,
   businessId: string,
-  variants: ProductVariantInput[],
+  variants: NormalizedProductVariantInput[],
   ignoredIds: string[] = [],
 ) {
   const skus = variants
@@ -77,15 +80,11 @@ async function variantSkuExists(
     return false;
   }
 
-  let query = supabase
+  const query = supabase
     .from("product_variants")
     .select("id,sku")
     .eq("business_id", businessId)
-    .in("sku", skus);
-
-  if (ignoredIds.length) {
-    query = query.not("id", "in", `(${ignoredIds.join(",")})`);
-  }
+    .not("sku", "is", null);
 
   const { data, error } = await query;
 
@@ -93,7 +92,108 @@ async function variantSkuExists(
     return false;
   }
 
-  return Boolean(data?.length);
+  const ignored = new Set(ignoredIds);
+
+  return Boolean(
+    data?.some((variant) => {
+      if (ignored.has(variant.id)) {
+        return false;
+      }
+
+      return skus.includes(String(variant.sku || "").trim().toLowerCase());
+    }),
+  );
+}
+
+type SupabaseActionError = {
+  code?: string;
+  details?: string;
+  hint?: string;
+  message?: string;
+};
+
+function logProductError(scope: string, error: SupabaseActionError) {
+  console.error(`${scope} failed`, {
+    code: error.code,
+    details: error.details,
+    hint: error.hint,
+    message: error.message,
+  });
+}
+
+function mapProductSaveError(error: SupabaseActionError) {
+  const message = error.message || "";
+  const normalized = `${error.code || ""} ${message} ${error.details || ""} ${error.hint || ""}`.toLowerCase();
+  const skuError = getSkuErrorMessage(normalized);
+
+  if (skuError || error.code === "23505") {
+    return "Ya existe un producto o variante con ese SKU en tu negocio.";
+  }
+
+  if (
+    error.code === "PGRST202" ||
+    normalized.includes("could not find the function") ||
+    normalized.includes("function public.create_product_with_variants") ||
+    normalized.includes("function public.update_product_with_variants")
+  ) {
+    return "La función RPC de productos no está instalada o no coincide con sus parámetros. Ejecuta la migración 002_products_catalog.sql en Supabase.";
+  }
+
+  if (
+    normalized.includes("relation") &&
+    (normalized.includes("products") || normalized.includes("product_variants")) &&
+    normalized.includes("does not exist")
+  ) {
+    return "Las tablas de productos no existen todavía. Ejecuta la migración 002_products_catalog.sql en Supabase.";
+  }
+
+  if (error.code === "42501" || normalized.includes("row-level security")) {
+    return "Supabase bloqueó el guardado por permisos o RLS. Revisa que el negocio pertenezca a tu cuenta y que las políticas estén activas para authenticated.";
+  }
+
+  if (error.code === "23514" || normalized.includes("check constraint")) {
+    if (normalized.includes("rate") || normalized.includes("margin")) {
+      return "La comisión y el margen deseado deben sumar menos de 100%.";
+    }
+
+    return "Hay valores del producto que no cumplen las restricciones permitidas.";
+  }
+
+  if (normalized.includes("usuario no autenticado")) {
+    return "Tu sesión expiró. Inicia sesión nuevamente.";
+  }
+
+  if (normalized.includes("no tienes acceso") || normalized.includes("negocio")) {
+    return "No encontramos un negocio activo para esta cuenta.";
+  }
+
+  return "No pudimos guardar el producto. Intenta nuevamente.";
+}
+
+function validationError(validation: Exclude<ReturnType<typeof validateProductInput>, { ok: true }>) {
+  return {
+    error: validation.error,
+    fieldErrors: validation.fieldErrors,
+    ok: false,
+  };
+}
+
+function buildProductPayload(
+  input: NormalizedProductFormInput,
+  businessId: string,
+) {
+  return {
+    p_brand: nullableText(input.brand),
+    p_business_id: businessId,
+    p_category: nullableText(input.category),
+    p_description: nullableText(input.description),
+    p_name: input.name,
+    p_product_type: input.productType,
+    p_status: input.status,
+    p_track_inventory: input.trackInventory,
+    p_unit: input.unit,
+    p_variants: input.variants.map((variant) => variantPayload(variant)),
+  };
 }
 
 export async function createProduct(input: ProductFormInput): Promise<ActionResult> {
@@ -106,7 +206,7 @@ export async function createProduct(input: ProductFormInput): Promise<ActionResu
   const validation = validateProductInput(input);
 
   if (!validation.ok) {
-    return { error: validation.error, ok: false };
+    return validationError(validation);
   }
 
   const { business, supabase } = context;
@@ -119,23 +219,14 @@ export async function createProduct(input: ProductFormInput): Promise<ActionResu
   }
 
   const { error } = await supabase.rpc("create_product_with_variants", {
-    p_brand: nullableText(validation.value.brand),
-    p_business_id: business.id,
-    p_category: nullableText(validation.value.category),
-    p_description: nullableText(validation.value.description),
-    p_name: validation.value.name,
-    p_product_type: validation.value.productType,
-    p_status: validation.value.status,
-    p_track_inventory: validation.value.trackInventory,
-    p_unit: validation.value.unit,
-    p_variants: validation.value.variants.map((variant) => variantPayload(variant)),
+    ...buildProductPayload(validation.value, business.id),
   });
 
   if (error) {
+    logProductError("createProduct", error);
+
     return {
-      error:
-        getSkuErrorMessage(error.message) ||
-        "No pudimos crear el producto. Revisa los datos e intenta nuevamente.",
+      error: mapProductSaveError(error),
       ok: false,
     };
   }
@@ -158,7 +249,7 @@ export async function updateProduct(
   const validation = validateProductInput(input);
 
   if (!validation.ok) {
-    return { error: validation.error, ok: false };
+    return validationError(validation);
   }
 
   const { business, supabase } = context;
@@ -193,24 +284,15 @@ export async function updateProduct(
   }
 
   const { error } = await supabase.rpc("update_product_with_variants", {
-    p_brand: nullableText(validation.value.brand),
-    p_business_id: business.id,
-    p_category: nullableText(validation.value.category),
-    p_description: nullableText(validation.value.description),
-    p_name: validation.value.name,
+    ...buildProductPayload(validation.value, business.id),
     p_product_id: productId,
-    p_product_type: validation.value.productType,
-    p_status: validation.value.status,
-    p_track_inventory: validation.value.trackInventory,
-    p_unit: validation.value.unit,
-    p_variants: validation.value.variants.map((variant) => variantPayload(variant)),
   });
 
   if (error) {
+    logProductError("updateProduct", error);
+
     return {
-      error:
-        getSkuErrorMessage(error.message) ||
-        "No pudimos guardar los cambios del producto.",
+      error: mapProductSaveError(error),
       ok: false,
     };
   }

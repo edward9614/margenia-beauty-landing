@@ -14,11 +14,14 @@ import {
   calculateVariantProfit,
   emptyVariant,
   moneyFormatter,
+  parseNonNegativeNumber,
   ProductFormInput,
+  ProductFieldErrors,
   ProductStatus,
   ProductType,
   ProductVariantInput,
   productUnits,
+  sanitizeNumericInput,
   validateProductInput,
 } from "@/lib/products/product-utils";
 
@@ -52,23 +55,32 @@ function Field({
 }
 
 function NumberField({
+  error,
+  fieldKey,
   label,
   onChange,
   value,
 }: {
+  error?: string;
+  fieldKey: string;
   label: string;
-  onChange: (value: number) => void;
-  value: number;
+  onChange: (value: string) => void;
+  value: string;
 }) {
   return (
-    <Field label={label}>
+    <Field error={error} label={label}>
       <input
-        type="number"
-        min="0"
-        step="0.01"
+        data-field-key={fieldKey}
+        type="text"
+        inputMode="decimal"
         value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-        className={inputClass}
+        onChange={(event) => onChange(sanitizeNumericInput(event.target.value))}
+        onFocus={(event) => {
+          if (event.currentTarget.value === "0") {
+            event.currentTarget.select();
+          }
+        }}
+        className={`${inputClass} ${error ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
       />
     </Field>
   );
@@ -85,6 +97,7 @@ function ProfitPreview({
 }) {
   const formatter = moneyFormatter(currency);
   const result = calculateVariantProfit(variant);
+  const salePrice = parseNonNegativeNumber(variant.salePrice);
   const badge =
     result.state === "invalid"
       ? { className: "bg-[#FEE2E2] text-[#991B1B]", label: "Revisar margen" }
@@ -113,7 +126,7 @@ function ProfitPreview({
         {[
           ["Costo total", formatter.format(result.totalUnitCost)],
           ["Precio sugerido", formatter.format(result.suggestedPrice)],
-          ["Precio elegido", formatter.format(variant.salePrice)],
+          ["Precio elegido", formatter.format(salePrice)],
           ["Comisión estimada", formatter.format(result.estimatedCommission)],
           ["Ganancia por unidad", formatter.format(result.estimatedProfit)],
           ["Margen real", `${result.actualMargin.toFixed(1)}%`],
@@ -144,6 +157,7 @@ export function ProductForm({
 }: ProductFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ProductFieldErrors>({});
   const [product, setProduct] = useState<ProductFormInput>(
     initialProduct || {
       brand: "",
@@ -169,7 +183,34 @@ export function ProductForm({
     key: K,
     value: ProductFormInput[K],
   ) {
+    clearFieldError(String(key));
     setProduct((current) => ({ ...current, [key]: value }));
+  }
+
+  function clearFieldError(key: string) {
+    setFieldErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  }
+
+  function focusFirstInvalidField(errors: ProductFieldErrors) {
+    const firstKey = Object.keys(errors)[0];
+
+    if (!firstKey) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const field = document.querySelector<HTMLElement>(`[data-field-key="${firstKey}"]`);
+      field?.scrollIntoView({ behavior: "smooth", block: "center" });
+      field?.focus();
+    });
   }
 
   function updateVariant(
@@ -231,10 +272,13 @@ export function ProductForm({
 
   function submit() {
     setError("");
+    setFieldErrors({});
     const validation = validateProductInput(product);
 
     if (!validation.ok) {
       setError(validation.error);
+      setFieldErrors(validation.fieldErrors);
+      focusFirstInvalidField(validation.fieldErrors);
       return;
     }
 
@@ -246,11 +290,15 @@ export function ProductForm({
 
       const result =
         mode === "create"
-          ? await createProduct(validation.value)
-          : await updateProduct(initialProduct?.id || "", validation.value);
+          ? await createProduct(product)
+          : await updateProduct(initialProduct?.id || "", product);
 
       if (result && !result.ok) {
         setError(result.error || "No pudimos guardar el producto.");
+        if (result.fieldErrors) {
+          setFieldErrors(result.fieldErrors);
+          focusFirstInvalidField(result.fieldErrors);
+        }
       }
     });
   }
@@ -299,12 +347,13 @@ export function ProductForm({
             Información general
           </p>
           <div className="mt-5 grid gap-4">
-            <Field label="Nombre del producto">
+            <Field error={fieldErrors.name} label="Nombre del producto">
               <input
+                data-field-key="name"
                 value={product.name}
                 onChange={(event) => updateProductField("name", event.target.value)}
                 maxLength={120}
-                className={inputClass}
+                className={`${inputClass} ${fieldErrors.name ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
                 required
               />
             </Field>
@@ -343,11 +392,12 @@ export function ProductForm({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Unidad de medida">
+              <Field error={fieldErrors.unit} label="Unidad de medida">
                 <select
+                  data-field-key="unit"
                   value={product.unit}
                   onChange={(event) => updateProductField("unit", event.target.value)}
-                  className={inputClass}
+                  className={`${inputClass} ${fieldErrors.unit ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
                 >
                   {productUnits.map((unit) => (
                     <option key={unit} value={unit}>
@@ -460,6 +510,7 @@ export function ProductForm({
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Nombre de variante">
                       <input
+                        data-field-key={`variants.${index}.name`}
                         value={variant.name}
                         onChange={(event) =>
                           updateVariant(index, (current) => ({
@@ -468,11 +519,17 @@ export function ProductForm({
                           }))
                         }
                         maxLength={100}
-                        className={inputClass}
+                        className={`${inputClass} ${fieldErrors[`variants.${index}.name`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
                       />
+                      {fieldErrors[`variants.${index}.name`] && (
+                        <span className="mt-1 block text-xs font-bold text-[#DC2626]">
+                          {fieldErrors[`variants.${index}.name`]}
+                        </span>
+                      )}
                     </Field>
-                    <Field label="SKU">
+                    <Field error={fieldErrors[`variants.${index}.sku`]} label="SKU">
                       <input
+                        data-field-key={`variants.${index}.sku`}
                         value={variant.sku}
                         onChange={(event) =>
                           updateVariant(index, (current) => ({
@@ -481,10 +538,12 @@ export function ProductForm({
                           }))
                         }
                         maxLength={80}
-                        className={inputClass}
+                        className={`${inputClass} ${fieldErrors[`variants.${index}.sku`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
                       />
                     </Field>
                     <NumberField
+                      error={fieldErrors[`variants.${index}.purchaseCost`]}
+                      fieldKey={`variants.${index}.purchaseCost`}
                       label="Costo de compra"
                       value={variant.purchaseCost}
                       onChange={(value) =>
@@ -495,6 +554,8 @@ export function ProductForm({
                       }
                     />
                     <NumberField
+                      error={fieldErrors[`variants.${index}.packagingCost`]}
+                      fieldKey={`variants.${index}.packagingCost`}
                       label="Costo de empaque"
                       value={variant.packagingCost}
                       onChange={(value) =>
@@ -505,6 +566,8 @@ export function ProductForm({
                       }
                     />
                     <NumberField
+                      error={fieldErrors[`variants.${index}.commissionPercent`]}
+                      fieldKey={`variants.${index}.commissionPercent`}
                       label="Comisión %"
                       value={variant.commissionPercent}
                       onChange={(value) =>
@@ -515,6 +578,8 @@ export function ProductForm({
                       }
                     />
                     <NumberField
+                      error={fieldErrors[`variants.${index}.desiredMarginPercent`]}
+                      fieldKey={`variants.${index}.desiredMarginPercent`}
                       label="Margen deseado %"
                       value={variant.desiredMarginPercent}
                       onChange={(value) =>
@@ -525,6 +590,8 @@ export function ProductForm({
                       }
                     />
                     <NumberField
+                      error={fieldErrors[`variants.${index}.salePrice`]}
+                      fieldKey={`variants.${index}.salePrice`}
                       label="Precio de venta"
                       value={variant.salePrice}
                       onChange={(value) =>
@@ -535,6 +602,8 @@ export function ProductForm({
                       }
                     />
                     <NumberField
+                      error={fieldErrors[`variants.${index}.currentStock`]}
+                      fieldKey={`variants.${index}.currentStock`}
                       label="Existencia actual"
                       value={variant.currentStock}
                       onChange={(value) =>
@@ -545,6 +614,8 @@ export function ProductForm({
                       }
                     />
                     <NumberField
+                      error={fieldErrors[`variants.${index}.minimumStock`]}
+                      fieldKey={`variants.${index}.minimumStock`}
                       label="Stock mínimo"
                       value={variant.minimumStock}
                       onChange={(value) =>
@@ -577,8 +648,9 @@ export function ProductForm({
                       const result = calculateVariantProfit(variant);
                       updateVariant(index, (current) => ({
                         ...current,
-                        salePrice: Math.round(result.suggestedPrice),
+                        salePrice: String(Math.ceil(result.suggestedPrice)),
                       }));
+                      clearFieldError(`variants.${index}.salePrice`);
                       trackEvent("product_price_suggestion_used", {
                         product_type: product.productType,
                       });
@@ -624,14 +696,22 @@ export function ProductForm({
               <span className="text-[#475569]">Precio menor</span>
               <span className="font-black text-[#0F172A]">
                 {formatter.format(
-                  Math.min(...product.variants.map((variant) => variant.salePrice || 0)),
+                  Math.min(
+                    ...product.variants.map((variant) =>
+                      parseNonNegativeNumber(variant.salePrice),
+                    ),
+                  ),
                 )}
               </span>
             </div>
           </div>
 
           {error && (
-            <p className="mt-4 rounded-2xl border border-[#FECACA] bg-[#FEE2E2] p-4 text-sm font-bold text-[#991B1B]">
+            <p
+              role="alert"
+              aria-live="polite"
+              className="mt-4 rounded-2xl border border-[#FECACA] bg-[#FEE2E2] p-4 text-sm font-bold text-[#991B1B]"
+            >
               {error}
             </p>
           )}
