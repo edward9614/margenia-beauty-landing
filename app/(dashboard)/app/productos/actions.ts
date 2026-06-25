@@ -48,14 +48,25 @@ function variantPayload(
   variant: NormalizedProductVariantInput,
 ) {
   return {
+    allow_fractional_sales: variant.allowFractionalSales,
     commission_percent: variant.commissionPercent,
     current_stock: variant.currentStock,
+    default_sale_unit: variant.defaultSaleUnit,
     desired_margin_percent: variant.desiredMarginPercent,
     id: variant.id || "",
+    inventory_mode: variant.inventoryMode,
+    inventory_unit: variant.inventoryUnit,
+    measurement_family: variant.measurementFamily,
     minimum_stock: variant.minimumStock,
+    minimum_sale_quantity: variant.minimumSaleQuantity,
     name: variant.name,
     packaging_cost: variant.packagingCost,
+    purchase_package_cost: variant.purchasePackageCost,
+    purchase_package_label: nullableText(variant.purchasePackageLabel),
+    purchase_package_quantity: variant.purchasePackageQuantity,
+    purchase_package_unit: variant.purchasePackageUnit,
     purchase_cost: variant.purchaseCost,
+    sale_quantity_step: variant.saleQuantityStep,
     sale_price: variant.salePrice,
     sku: nullableText(variant.sku),
     status: variant.status,
@@ -136,7 +147,7 @@ function mapProductSaveError(error: SupabaseActionError) {
     normalized.includes("function public.create_product_with_variants") ||
     normalized.includes("function public.update_product_with_variants")
   ) {
-    return "La función RPC de productos no está instalada o no coincide con sus parámetros. Ejecuta la migración 002_products_catalog.sql en Supabase.";
+    return "La función RPC de productos no está instalada o no coincide con sus parámetros. Revisa las migraciones 003_products_rpcs.sql y 004_measured_products.sql en Supabase.";
   }
 
   if (

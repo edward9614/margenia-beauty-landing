@@ -8,6 +8,7 @@ import {
   type ProductRow,
   type ProductVariantRow,
 } from "@/lib/products/product-utils";
+import { formatMeasuredQuantity, getUnitSymbol } from "@/lib/measurements";
 
 const pageSize = 20;
 
@@ -90,6 +91,11 @@ function productStats(product: ProductRow, currency: string) {
     }).actualMargin,
   );
   const totalStock = stocks.reduce((total: number, value: number) => total + value, 0);
+  const firstVariant = visibleVariants[0];
+  const isMeasured = firstVariant?.inventory_mode === "measured";
+  const stockUnit = isMeasured ? firstVariant?.inventory_unit || "unit" : product.unit || "unidad";
+  const saleUnit = isMeasured ? firstVariant?.default_sale_unit || "unit" : product.unit || "unidad";
+  const costUnit = isMeasured ? firstVariant?.inventory_unit || "unit" : product.unit || "unidad";
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = Math.max(...prices, 0);
   const minCost = costs.length ? Math.min(...costs) : 0;
@@ -101,9 +107,17 @@ function productStats(product: ProductRow, currency: string) {
   return {
     avgMargin,
     costLabel:
-      minCost === maxCost ? formatter.format(maxCost) : `${formatter.format(minCost)} - ${formatter.format(maxCost)}`,
+      minCost === maxCost
+        ? `${formatter.format(maxCost)} / ${getUnitSymbol(costUnit)}`
+        : `${formatter.format(minCost)} - ${formatter.format(maxCost)}`,
+    isMeasured,
     priceLabel:
-      minPrice === maxPrice ? formatter.format(maxPrice) : `${formatter.format(minPrice)} - ${formatter.format(maxPrice)}`,
+      minPrice === maxPrice
+        ? `${formatter.format(maxPrice)} / ${getUnitSymbol(saleUnit)}`
+        : `${formatter.format(minPrice)} - ${formatter.format(maxPrice)}`,
+    stockLabel: isMeasured
+      ? formatMeasuredQuantity(totalStock, stockUnit)
+      : `${totalStock} ${product.unit || "unidad"}`,
     totalStock,
     variantCount: visibleVariants.length,
   };
@@ -173,7 +187,7 @@ async function getStockFilteredProductIds(
 
   const { data: products } = await supabase
     .from("products")
-    .select("id,track_inventory,product_variants(current_stock,minimum_stock,status)")
+    .select("id,track_inventory,product_variants(current_stock,minimum_stock,status,inventory_mode,inventory_unit)")
     .eq("business_id", businessId)
     .eq("track_inventory", true);
 
@@ -228,7 +242,7 @@ export default async function ProductsPage({
   let query = supabase
     .from("products")
     .select(
-      "id,name,brand,category,unit,product_type,track_inventory,status,created_at,product_variants(id,name,sku,purchase_cost,packaging_cost,commission_percent,desired_margin_percent,sale_price,current_stock,minimum_stock,status)",
+      "id,name,brand,category,unit,product_type,track_inventory,status,created_at,product_variants(id,name,sku,purchase_cost,packaging_cost,commission_percent,desired_margin_percent,sale_price,current_stock,minimum_stock,inventory_mode,inventory_unit,default_sale_unit,status)",
       { count: "exact" },
     )
     .eq("business_id", business.id);
@@ -300,7 +314,7 @@ export default async function ProductsPage({
 
   const { data: metricProducts } = await supabase
     .from("products")
-    .select("id,track_inventory,status,product_variants(id,purchase_cost,current_stock,minimum_stock,status)")
+    .select("id,track_inventory,status,product_variants(id,purchase_cost,current_stock,minimum_stock,inventory_mode,inventory_unit,status)")
     .eq("business_id", business.id);
 
   const metricProductList = (metricProducts || []) as ProductRow[];
@@ -497,6 +511,11 @@ export default async function ProductsPage({
                                   SKU {product.product_variants[0].sku}
                                 </p>
                               )}
+                              {stats.isMeasured && (
+                                <span className="mt-2 inline-flex rounded-full bg-[#E0F7FA] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2]">
+                                  Por medida
+                                </span>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -519,7 +538,7 @@ export default async function ProductsPage({
                         </td>
                         <td className="px-5 py-4 text-[#475569]">
                           {product.track_inventory
-                            ? `${stats.totalStock} ${product.unit}`
+                            ? stats.stockLabel
                             : "Sin control de stock"}
                         </td>
                         <td className="px-5 py-4">
@@ -557,6 +576,11 @@ export default async function ProductsPage({
                         <p className="mt-1 text-sm text-[#475569]">
                           {product.brand || "Sin marca"} · {product.category || "Sin categoría"}
                         </p>
+                        {stats.isMeasured && (
+                          <span className="mt-2 inline-flex rounded-full bg-[#E0F7FA] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2]">
+                            Por medida
+                          </span>
+                        )}
                       </div>
                       <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(stock.tone)}`}>
                         {product.status === "archived" ? "Archivado" : stock.label}
@@ -574,7 +598,7 @@ export default async function ProductsPage({
                       <p>
                         <span className="block text-[#475569]">Existencias</span>
                         <strong>
-                          {product.track_inventory ? stats.totalStock : "Sin control"}
+                          {product.track_inventory ? stats.stockLabel : "Sin control"}
                         </strong>
                       </p>
                       <p>

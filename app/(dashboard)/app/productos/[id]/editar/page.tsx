@@ -5,6 +5,7 @@ import {
   type ProductRow,
   type ProductVariantRow,
 } from "@/lib/products/product-utils";
+import type { MeasurementFamily, MeasurementUnit } from "@/lib/measurements";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function EditProductPage({
@@ -36,7 +37,7 @@ export default async function EditProductPage({
   const { data: product } = await supabase
     .from("products")
     .select(
-      "id,name,description,brand,category,unit,product_type,track_inventory,status,product_variants(id,name,sku,purchase_cost,packaging_cost,commission_percent,desired_margin_percent,sale_price,current_stock,minimum_stock,status)",
+      "id,name,description,brand,category,unit,product_type,track_inventory,status,product_variants(id,name,sku,purchase_cost,packaging_cost,commission_percent,desired_margin_percent,sale_price,current_stock,minimum_stock,inventory_mode,measurement_family,inventory_unit,purchase_package_label,purchase_package_quantity,purchase_package_unit,purchase_package_cost,default_sale_unit,allow_fractional_sales,minimum_sale_quantity,sale_quantity_step,status)",
     )
     .eq("id", id)
     .eq("business_id", business.id)
@@ -47,11 +48,13 @@ export default async function EditProductPage({
   }
 
   const typedProduct = product as ProductRow;
+  const firstVariant = typedProduct.product_variants?.[0];
   const initialProduct: ProductFormInput & { id: string } = {
     brand: typedProduct.brand || "",
     category: typedProduct.category || "",
     description: typedProduct.description || "",
     id: typedProduct.id,
+    inventoryMode: firstVariant?.inventory_mode === "measured" ? "measured" : "unit",
     name: typedProduct.name,
     productType: typedProduct.product_type === "variants" ? "variants" : "simple",
     status: typedProduct.status === "archived" ? "archived" : "active",
@@ -60,12 +63,24 @@ export default async function EditProductPage({
     variants: (typedProduct.product_variants || []).map((variant: ProductVariantRow) => ({
       commissionPercent: String(variant.commission_percent ?? 0),
       currentStock: String(variant.current_stock ?? 0),
+      allowFractionalSales: Boolean(variant.allow_fractional_sales),
+      defaultSaleUnit: (variant.default_sale_unit || "unit") as MeasurementUnit,
       desiredMarginPercent: String(variant.desired_margin_percent ?? 35),
       id: variant.id,
+      inventoryMode: variant.inventory_mode === "measured" ? "measured" : "unit",
+      inventoryUnit: (variant.inventory_unit || "unit") as MeasurementUnit,
+      measurementFamily: (variant.measurement_family || "count") as MeasurementFamily,
       minimumStock: String(variant.minimum_stock ?? 0),
+      minimumSaleQuantity: String(variant.minimum_sale_quantity ?? 1),
       name: variant.name || "Presentación estándar",
+      packageCount: "1",
       packagingCost: String(variant.packaging_cost ?? 0),
       purchaseCost: String(variant.purchase_cost ?? 0),
+      purchasePackageCost: String(variant.purchase_package_cost ?? variant.purchase_cost ?? 0),
+      purchasePackageLabel: variant.purchase_package_label || "Unidad",
+      purchasePackageQuantity: String(variant.purchase_package_quantity ?? 1),
+      purchasePackageUnit: (variant.purchase_package_unit || "unit") as MeasurementUnit,
+      saleQuantityStep: String(variant.sale_quantity_step ?? 1),
       salePrice: String(variant.sale_price ?? 0),
       sku: variant.sku || "",
       status: variant.status === "archived" ? "archived" : "active",

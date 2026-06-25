@@ -11,6 +11,7 @@ import {
 } from "@/app/(dashboard)/app/productos/actions";
 import { trackEvent } from "@/lib/analytics";
 import {
+  calculateMeasuredVariant,
   calculateVariantProfit,
   emptyVariant,
   moneyFormatter,
@@ -24,6 +25,16 @@ import {
   sanitizeNumericInput,
   validateProductInput,
 } from "@/lib/products/product-utils";
+import {
+  convertMeasurement,
+  formatMeasuredQuantity,
+  getMeasurementFamily,
+  getUnitSymbol,
+  measurementFamilies,
+  unitsForFamily,
+  type MeasurementFamily,
+  type MeasurementUnit,
+} from "@/lib/measurements";
 
 type ProductFormProps = {
   currency?: string;
@@ -150,6 +161,137 @@ function ProfitPreview({
   );
 }
 
+function MeasuredPreview({
+  currency,
+  variant,
+}: {
+  currency: string;
+  variant: ProductVariantInput;
+}) {
+  const [simulationQuantity, setSimulationQuantity] = useState("750");
+  const [simulationUnit, setSimulationUnit] = useState<MeasurementUnit>("g");
+  const formatter = moneyFormatter(currency);
+  const measured = calculateMeasuredVariant(variant);
+  const quantity = parseNonNegativeNumber(simulationQuantity);
+  const compatibleUnits = unitsForFamily(
+    getMeasurementFamily(variant.inventoryUnit) || "mass",
+  );
+  const selectedSimulationUnit = compatibleUnits.some(
+    (unit) => unit.value === simulationUnit,
+  )
+    ? simulationUnit
+    : (compatibleUnits[0]?.value as MeasurementUnit);
+  const simulatedInInventoryUnit = convertMeasurement(
+    quantity,
+    selectedSimulationUnit,
+    variant.inventoryUnit,
+  );
+  const saleUnitInInventoryUnit = measured?.saleUnitInInventoryUnit || 0;
+  const salePrice = parseNonNegativeNumber(variant.salePrice);
+  const totalEstimated =
+    saleUnitInInventoryUnit > 0
+      ? (simulatedInInventoryUnit / saleUnitInInventoryUnit) * salePrice
+      : 0;
+  const estimatedCost =
+    measured && saleUnitInInventoryUnit > 0
+      ? (simulatedInInventoryUnit / saleUnitInInventoryUnit) * measured.costPerSaleUnit
+      : 0;
+  const estimatedProfit =
+    measured && saleUnitInInventoryUnit > 0
+      ? (simulatedInInventoryUnit / saleUnitInInventoryUnit) * measured.estimatedProfit
+      : 0;
+  const stockAfter = Math.max(
+    parseNonNegativeNumber(variant.currentStock) - simulatedInInventoryUnit,
+    0,
+  );
+  if (!measured) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4 rounded-[1.5rem] border border-[#BFDBFE] bg-[#EFF6FF] p-4">
+      <div>
+        <p className="font-black text-[#0F172A]">Resumen por medida</p>
+        <p className="mt-1 text-xs font-bold text-[#475569]">
+          Estimación antes de otros gastos del negocio.
+        </p>
+      </div>
+
+      <dl className="grid gap-2 text-sm">
+        {[
+          [
+            "Compra",
+            `1 ${variant.purchasePackageLabel || "presentación"} de ${formatMeasuredQuantity(
+              parseNonNegativeNumber(variant.purchasePackageQuantity),
+              variant.purchasePackageUnit,
+            )} por ${formatter.format(parseNonNegativeNumber(variant.purchasePackageCost))}`,
+          ],
+          [
+            "Costo normalizado",
+            `${formatter.format(measured.costPerInventoryUnit)} por ${getUnitSymbol(
+              variant.inventoryUnit,
+            )}`,
+          ],
+          [
+            "Venta",
+            `${formatter.format(salePrice)} por ${getUnitSymbol(variant.defaultSaleUnit)}`,
+          ],
+          ["Utilidad estimada", formatter.format(measured.estimatedProfit)],
+          ["Margen estimado", `${measured.actualMargin.toFixed(2)}%`],
+          ["Ingreso potencial", formatter.format(measured.potentialRevenue)],
+          ["Utilidad potencial", formatter.format(measured.potentialProfit)],
+        ].map(([label, value]) => (
+          <div key={label} className="flex items-start justify-between gap-4">
+            <dt className="text-[#475569]">{label}</dt>
+            <dd className="text-right font-black text-[#0F172A]">{value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="rounded-[1.25rem] border border-[#E2E8F0] bg-white p-3">
+        <p className="font-black text-[#0F172A]">Simula una venta</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <input
+            type="text"
+            inputMode="decimal"
+            value={simulationQuantity}
+            onChange={(event) => setSimulationQuantity(sanitizeNumericInput(event.target.value))}
+            className={inputClass}
+          />
+          <select
+            value={selectedSimulationUnit}
+            onChange={(event) => setSimulationUnit(event.target.value as MeasurementUnit)}
+            className={inputClass}
+          >
+            {compatibleUnits.map((unit) => (
+              <option key={unit.value} value={unit.value}>
+                {unit.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <dl className="mt-3 grid gap-2 text-xs">
+          {[
+            [
+              "Equivale a",
+              formatMeasuredQuantity(simulatedInInventoryUnit, variant.inventoryUnit),
+            ],
+            ["Total estimado", formatter.format(totalEstimated)],
+            ["Costo estimado", formatter.format(estimatedCost)],
+            ["Utilidad estimada", formatter.format(estimatedProfit)],
+            ["Stock después", formatMeasuredQuantity(stockAfter, variant.inventoryUnit)],
+          ].map(([label, value]) => (
+            <div key={label} className="flex justify-between gap-3">
+              <dt className="text-[#475569]">{label}</dt>
+              <dd className="font-black text-[#0F172A]">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  );
+}
+
 export function ProductForm({
   currency = "COP",
   initialProduct,
@@ -163,6 +305,7 @@ export function ProductForm({
       brand: "",
       category: "",
       description: "",
+      inventoryMode: "unit",
       name: "",
       productType: "simple",
       status: "active",
@@ -223,6 +366,75 @@ export function ProductForm({
         currentIndex === index ? updater(variant) : variant,
       ),
     }));
+  }
+
+  function measuredDefaults(variant: ProductVariantInput): ProductVariantInput {
+    return {
+      ...variant,
+      allowFractionalSales: true,
+      defaultSaleUnit: variant.defaultSaleUnit === "unit" ? "kg" : variant.defaultSaleUnit,
+      inventoryMode: "measured",
+      inventoryUnit: variant.inventoryUnit === "unit" ? "kg" : variant.inventoryUnit,
+      measurementFamily:
+        variant.measurementFamily === "count" ? "mass" : variant.measurementFamily,
+      minimumSaleQuantity:
+        variant.minimumSaleQuantity === "1" ? "0.1" : variant.minimumSaleQuantity,
+      purchasePackageLabel:
+        variant.purchasePackageLabel === "Unidad" ? "Bulto" : variant.purchasePackageLabel,
+      purchasePackageQuantity:
+        variant.purchasePackageQuantity === "1" ? "22" : variant.purchasePackageQuantity,
+      purchasePackageUnit:
+        variant.purchasePackageUnit === "unit" ? "kg" : variant.purchasePackageUnit,
+      saleQuantityStep: variant.saleQuantityStep === "1" ? "0.05" : variant.saleQuantityStep,
+    };
+  }
+
+  function unitDefaults(variant: ProductVariantInput): ProductVariantInput {
+    return {
+      ...variant,
+      allowFractionalSales: false,
+      defaultSaleUnit: "unit",
+      inventoryMode: "unit",
+      inventoryUnit: "unit",
+      measurementFamily: "count",
+      minimumSaleQuantity: "1",
+      packageCount: "1",
+      purchasePackageCost: variant.purchaseCost,
+      purchasePackageLabel: "Unidad",
+      purchasePackageQuantity: "1",
+      purchasePackageUnit: "unit",
+      saleQuantityStep: "1",
+    };
+  }
+
+  function updateInventoryMode(mode: ProductFormInput["inventoryMode"]) {
+    setProduct((current) => ({
+      ...current,
+      inventoryMode: mode,
+      variants: current.variants.map((variant) =>
+        mode === "measured" ? measuredDefaults(variant) : unitDefaults(variant),
+      ),
+    }));
+  }
+
+  function variantWithInitialStock(variant: ProductVariantInput) {
+    if (mode !== "create" || variant.inventoryMode !== "measured") {
+      return variant;
+    }
+
+    const measured = calculateMeasuredVariant(variant);
+
+    return {
+      ...variant,
+      currentStock: measured ? String(Number(measured.initialStock.toFixed(6))) : "",
+    };
+  }
+
+  function updateMeasuredVariant(
+    index: number,
+    updater: (variant: ProductVariantInput) => ProductVariantInput,
+  ) {
+    updateVariant(index, (current) => variantWithInitialStock(updater(current)));
   }
 
   function addVariant() {
@@ -431,6 +643,51 @@ export function ProductForm({
                 </select>
               </Field>
             </div>
+
+            <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+              <p className="text-sm font-black text-[#0F172A]">
+                ¿Cómo vendes este producto?
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {[
+                  {
+                    examples: "Camiseta, cuaderno, shampoo empacado",
+                    label: "Por unidad",
+                    text: "Úsalo para productos que se venden como piezas completas.",
+                    value: "unit",
+                  },
+                  {
+                    examples: "Alimento a granel, tela por metro, líquido por litro",
+                    label: "Por medida",
+                    text: "Úsalo para productos vendidos por peso, volumen o longitud.",
+                    value: "measured",
+                  },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() =>
+                      updateInventoryMode(option.value as ProductFormInput["inventoryMode"])
+                    }
+                    className={`rounded-[1.25rem] border p-4 text-left transition ${
+                      product.inventoryMode === option.value
+                        ? "border-[#2563EB] bg-white shadow-sm ring-4 ring-[#BFDBFE]/70"
+                        : "border-[#E2E8F0] bg-white hover:border-[#BFDBFE]"
+                    }`}
+                  >
+                    <span className="block text-sm font-black text-[#0F172A]">
+                      {option.label}
+                    </span>
+                    <span className="mt-1 block text-xs font-bold leading-5 text-[#475569]">
+                      {option.text}
+                    </span>
+                    <span className="mt-2 block text-xs font-black text-[#2563EB]">
+                      {option.examples}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -541,18 +798,291 @@ export function ProductForm({
                         className={`${inputClass} ${fieldErrors[`variants.${index}.sku`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
                       />
                     </Field>
-                    <NumberField
-                      error={fieldErrors[`variants.${index}.purchaseCost`]}
-                      fieldKey={`variants.${index}.purchaseCost`}
-                      label="Costo de compra"
-                      value={variant.purchaseCost}
-                      onChange={(value) =>
-                        updateVariant(index, (current) => ({
-                          ...current,
-                          purchaseCost: value,
-                        }))
-                      }
-                    />
+                    {product.inventoryMode === "measured" ? (
+                      <div className="space-y-4 rounded-[1.25rem] border border-[#BFDBFE] bg-[#EFF6FF]/70 p-4 sm:col-span-2">
+                        <div>
+                          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">
+                            Unidad de inventario
+                          </p>
+                          <p className="mt-1 text-xs font-bold text-[#475569]">
+                            Margenia guardará todas las existencias usando esta unidad.
+                          </p>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field
+                            error={fieldErrors[`variants.${index}.measurementFamily`]}
+                            label="¿Qué estás controlando?"
+                          >
+                            <select
+                              data-field-key={`variants.${index}.measurementFamily`}
+                              value={variant.measurementFamily}
+                              onChange={(event) => {
+                                const family = event.target.value as MeasurementFamily;
+                                const firstUnit = unitsForFamily(family)[0]?.value as MeasurementUnit;
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  defaultSaleUnit: firstUnit,
+                                  inventoryUnit: firstUnit,
+                                  measurementFamily: family,
+                                  purchasePackageUnit: firstUnit,
+                                }));
+                              }}
+                              className={inputClass}
+                            >
+                              {measurementFamilies.map((family) => (
+                                <option key={family.value} value={family.value}>
+                                  {family.label}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field
+                            error={fieldErrors[`variants.${index}.inventoryUnit`]}
+                            label="Unidad principal del inventario"
+                          >
+                            <select
+                              data-field-key={`variants.${index}.inventoryUnit`}
+                              value={variant.inventoryUnit}
+                              onChange={(event) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  inventoryUnit: event.target.value as MeasurementUnit,
+                                }))
+                              }
+                              className={inputClass}
+                            >
+                              {unitsForFamily(variant.measurementFamily).map((unit) => (
+                                <option key={unit.value} value={unit.value}>
+                                  {unit.label}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">
+                            Presentación de compra
+                          </p>
+                          <p className="mt-1 text-xs font-bold text-[#475569]">
+                            Un {variant.purchasePackageLabel || "bulto"} contiene{" "}
+                            {variant.purchasePackageQuantity || "22"}{" "}
+                            {getUnitSymbol(variant.purchasePackageUnit)} y cuesta{" "}
+                            {formatter.format(
+                              parseNonNegativeNumber(variant.purchasePackageCost),
+                            )}
+                            .
+                          </p>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field label="Nombre de la presentación">
+                            <input
+                              value={variant.purchasePackageLabel}
+                              onChange={(event) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  purchasePackageLabel: event.target.value,
+                                }))
+                              }
+                              className={inputClass}
+                              placeholder="Bulto"
+                            />
+                          </Field>
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.purchasePackageQuantity`]}
+                            fieldKey={`variants.${index}.purchasePackageQuantity`}
+                            label="Cantidad contenida"
+                            value={variant.purchasePackageQuantity}
+                            onChange={(value) =>
+                              updateMeasuredVariant(index, (current) => ({
+                                ...current,
+                                purchasePackageQuantity: value,
+                              }))
+                            }
+                          />
+                          <Field
+                            error={fieldErrors[`variants.${index}.purchasePackageUnit`]}
+                            label="Unidad del contenido"
+                          >
+                            <select
+                              data-field-key={`variants.${index}.purchasePackageUnit`}
+                              value={variant.purchasePackageUnit}
+                              onChange={(event) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  purchasePackageUnit: event.target.value as MeasurementUnit,
+                                }))
+                              }
+                              className={inputClass}
+                            >
+                              {unitsForFamily(variant.measurementFamily).map((unit) => (
+                                <option key={unit.value} value={unit.value}>
+                                  {unit.label}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.purchasePackageCost`]}
+                            fieldKey={`variants.${index}.purchasePackageCost`}
+                            label="Costo total de la presentación"
+                            value={variant.purchasePackageCost}
+                            onChange={(value) =>
+                              updateMeasuredVariant(index, (current) => ({
+                                ...current,
+                                purchasePackageCost: value,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          {mode === "create" ? (
+                            <NumberField
+                              fieldKey={`variants.${index}.packageCount`}
+                              label={`Cantidad de presentaciones disponibles`}
+                              value={variant.packageCount}
+                              onChange={(value) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  packageCount: value,
+                                }))
+                              }
+                            />
+                          ) : (
+                            <NumberField
+                              error={fieldErrors[`variants.${index}.currentStock`]}
+                              fieldKey={`variants.${index}.currentStock`}
+                              label={`Existencia actual en ${getUnitSymbol(variant.inventoryUnit)}`}
+                              value={variant.currentStock}
+                              onChange={(value) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  currentStock: value,
+                                }))
+                              }
+                            />
+                          )}
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.minimumStock`]}
+                            fieldKey={`variants.${index}.minimumStock`}
+                            label={`Stock mínimo en ${getUnitSymbol(variant.inventoryUnit)}`}
+                            value={variant.minimumStock}
+                            onChange={(value) =>
+                              updateMeasuredVariant(index, (current) => ({
+                                ...current,
+                                minimumStock: value,
+                              }))
+                            }
+                          />
+                        </div>
+                        <p className="rounded-2xl bg-white p-3 text-xs font-bold text-[#475569]">
+                          {mode === "create"
+                            ? `Existencia inicial: ${formatMeasuredQuantity(
+                                calculateMeasuredVariant(variant)?.initialStock || 0,
+                                variant.inventoryUnit,
+                              )}`
+                            : "Cambiar la presentación de compra no modifica las existencias actuales."}
+                        </p>
+
+                        <div>
+                          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">
+                            Cómo lo vendes
+                          </p>
+                          <p className="mt-1 text-xs font-bold text-[#475569]">
+                            El cliente podrá pedir cantidades como 0,25 kg, 0,5 kg o 1,75 kg.
+                          </p>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Field
+                            error={fieldErrors[`variants.${index}.defaultSaleUnit`]}
+                            label="Unidad de venta predeterminada"
+                          >
+                            <select
+                              data-field-key={`variants.${index}.defaultSaleUnit`}
+                              value={variant.defaultSaleUnit}
+                              onChange={(event) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  defaultSaleUnit: event.target.value as MeasurementUnit,
+                                }))
+                              }
+                              className={inputClass}
+                            >
+                              {unitsForFamily(variant.measurementFamily).map((unit) => (
+                                <option key={unit.value} value={unit.value}>
+                                  {unit.label}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.salePrice`]}
+                            fieldKey={`variants.${index}.salePrice`}
+                            label={`Precio por ${getUnitSymbol(variant.defaultSaleUnit)}`}
+                            value={variant.salePrice}
+                            onChange={(value) =>
+                              updateMeasuredVariant(index, (current) => ({
+                                ...current,
+                                salePrice: value,
+                              }))
+                            }
+                          />
+                          <Field label="Permitir cantidades fraccionadas">
+                            <select
+                              value={variant.allowFractionalSales ? "yes" : "no"}
+                              onChange={(event) =>
+                                updateMeasuredVariant(index, (current) => ({
+                                  ...current,
+                                  allowFractionalSales: event.target.value === "yes",
+                                }))
+                              }
+                              className={inputClass}
+                            >
+                              <option value="yes">Sí</option>
+                              <option value="no">No</option>
+                            </select>
+                          </Field>
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.minimumSaleQuantity`]}
+                            fieldKey={`variants.${index}.minimumSaleQuantity`}
+                            label="Cantidad mínima de venta"
+                            value={variant.minimumSaleQuantity}
+                            onChange={(value) =>
+                              updateMeasuredVariant(index, (current) => ({
+                                ...current,
+                                minimumSaleQuantity: value,
+                              }))
+                            }
+                          />
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.saleQuantityStep`]}
+                            fieldKey={`variants.${index}.saleQuantityStep`}
+                            label="Incremento sugerido"
+                            value={variant.saleQuantityStep}
+                            onChange={(value) =>
+                              updateMeasuredVariant(index, (current) => ({
+                                ...current,
+                                saleQuantityStep: value,
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <NumberField
+                        error={fieldErrors[`variants.${index}.purchaseCost`]}
+                        fieldKey={`variants.${index}.purchaseCost`}
+                        label="Costo de compra"
+                        value={variant.purchaseCost}
+                        onChange={(value) =>
+                          updateVariant(index, (current) => ({
+                            ...current,
+                            purchaseCost: value,
+                          }))
+                        }
+                      />
+                    )}
                     <NumberField
                       error={fieldErrors[`variants.${index}.packagingCost`]}
                       fieldKey={`variants.${index}.packagingCost`}
@@ -589,42 +1119,46 @@ export function ProductForm({
                         }))
                       }
                     />
-                    <NumberField
-                      error={fieldErrors[`variants.${index}.salePrice`]}
-                      fieldKey={`variants.${index}.salePrice`}
-                      label="Precio de venta"
-                      value={variant.salePrice}
-                      onChange={(value) =>
-                        updateVariant(index, (current) => ({
-                          ...current,
-                          salePrice: value,
-                        }))
-                      }
-                    />
-                    <NumberField
-                      error={fieldErrors[`variants.${index}.currentStock`]}
-                      fieldKey={`variants.${index}.currentStock`}
-                      label="Existencia actual"
-                      value={variant.currentStock}
-                      onChange={(value) =>
-                        updateVariant(index, (current) => ({
-                          ...current,
-                          currentStock: value,
-                        }))
-                      }
-                    />
-                    <NumberField
-                      error={fieldErrors[`variants.${index}.minimumStock`]}
-                      fieldKey={`variants.${index}.minimumStock`}
-                      label="Stock mínimo"
-                      value={variant.minimumStock}
-                      onChange={(value) =>
-                        updateVariant(index, (current) => ({
-                          ...current,
-                          minimumStock: value,
-                        }))
-                      }
-                    />
+                    {product.inventoryMode === "unit" && (
+                      <>
+                        <NumberField
+                          error={fieldErrors[`variants.${index}.salePrice`]}
+                          fieldKey={`variants.${index}.salePrice`}
+                          label="Precio de venta"
+                          value={variant.salePrice}
+                          onChange={(value) =>
+                            updateVariant(index, (current) => ({
+                              ...current,
+                              salePrice: value,
+                            }))
+                          }
+                        />
+                        <NumberField
+                          error={fieldErrors[`variants.${index}.currentStock`]}
+                          fieldKey={`variants.${index}.currentStock`}
+                          label="Existencia actual"
+                          value={variant.currentStock}
+                          onChange={(value) =>
+                            updateVariant(index, (current) => ({
+                              ...current,
+                              currentStock: value,
+                            }))
+                          }
+                        />
+                        <NumberField
+                          error={fieldErrors[`variants.${index}.minimumStock`]}
+                          fieldKey={`variants.${index}.minimumStock`}
+                          label="Stock mínimo"
+                          value={variant.minimumStock}
+                          onChange={(value) =>
+                            updateVariant(index, (current) => ({
+                              ...current,
+                              minimumStock: value,
+                            }))
+                          }
+                        />
+                      </>
+                    )}
                     <Field label="Estado de variante">
                       <select
                         value={variant.status}
@@ -641,21 +1175,25 @@ export function ProductForm({
                       </select>
                     </Field>
                   </div>
-                  <ProfitPreview
-                    currency={currency}
-                    variant={variant}
-                    onUseSuggestedPrice={() => {
-                      const result = calculateVariantProfit(variant);
-                      updateVariant(index, (current) => ({
-                        ...current,
-                        salePrice: String(Math.ceil(result.suggestedPrice)),
-                      }));
-                      clearFieldError(`variants.${index}.salePrice`);
-                      trackEvent("product_price_suggestion_used", {
-                        product_type: product.productType,
-                      });
-                    }}
-                  />
+                  {product.inventoryMode === "measured" ? (
+                    <MeasuredPreview currency={currency} variant={variant} />
+                  ) : (
+                    <ProfitPreview
+                      currency={currency}
+                      variant={variant}
+                      onUseSuggestedPrice={() => {
+                        const result = calculateVariantProfit(variant);
+                        updateVariant(index, (current) => ({
+                          ...current,
+                          salePrice: String(Math.ceil(result.suggestedPrice)),
+                        }));
+                        clearFieldError(`variants.${index}.salePrice`);
+                        trackEvent("product_price_suggestion_used", {
+                          product_type: product.productType,
+                        });
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             ))}

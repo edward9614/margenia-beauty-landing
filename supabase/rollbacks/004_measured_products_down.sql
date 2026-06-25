@@ -257,6 +257,35 @@ grant execute on function public.update_product_with_variants(
   uuid, uuid, text, text, text, text, text, text, boolean, text, jsonb
 ) to authenticated;
 
+alter table public.product_variants
+  drop constraint if exists product_variants_measurement_mode_units_check,
+  drop constraint if exists product_variants_sale_quantity_step_check,
+  drop constraint if exists product_variants_minimum_sale_quantity_check,
+  drop constraint if exists product_variants_purchase_package_cost_check,
+  drop constraint if exists product_variants_purchase_package_quantity_check,
+  drop constraint if exists product_variants_measurement_family_check,
+  drop constraint if exists product_variants_inventory_mode_check;
+
+alter table public.product_variants
+  drop column if exists sale_quantity_step,
+  drop column if exists minimum_sale_quantity,
+  drop column if exists allow_fractional_sales,
+  drop column if exists default_sale_unit,
+  drop column if exists purchase_package_cost,
+  drop column if exists purchase_package_unit,
+  drop column if exists purchase_package_quantity,
+  drop column if exists purchase_package_label,
+  drop column if exists inventory_unit,
+  drop column if exists measurement_family,
+  drop column if exists inventory_mode;
+
+drop function if exists public.convert_measurement(numeric, text, text);
+drop function if exists public.measurement_unit_factor(text);
+drop function if exists public.measurement_unit_family(text);
+
+-- current_stock and minimum_stock intentionally remain numeric(18,6).
+-- Reducing precision in rollback could lose fractional inventory data.
+
 notify pgrst, 'reload schema';
 
 commit;
