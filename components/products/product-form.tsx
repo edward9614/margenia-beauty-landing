@@ -142,7 +142,7 @@ function ProfitPreview({
 
       {result.invalidRate && (
         <p className="mt-3 rounded-2xl border border-[#FECACA] bg-[#FEE2E2] p-3 text-xs font-bold text-[#991B1B]">
-          La comisión y el margen deseado deben sumar menos de 100%.
+          La comisión, el impuesto y el margen deseado deben sumar menos de 100%.
         </p>
       )}
 
@@ -152,6 +152,7 @@ function ProfitPreview({
           ["Precio sugerido", formatter.format(result.suggestedPrice)],
           ["Precio elegido", formatter.format(salePrice)],
           ["Comisión estimada", formatter.format(result.estimatedCommission)],
+          ["Impuesto estimado", formatter.format(result.taxAmount)],
           ["Ganancia por unidad", formatter.format(result.estimatedProfit)],
           ["Margen real", `${result.actualMargin.toFixed(1)}%`],
         ].map(([label, value]) => (
@@ -340,7 +341,10 @@ export function ProductForm({
               variant.status !== "active" ||
               variant.allowFractionalSales ||
               variant.minimumSaleQuantity !== "1" ||
-              variant.saleQuantityStep !== "1",
+              variant.saleQuantityStep !== "1" ||
+              variant.taxPercent !== "0" ||
+              variant.lotNumber ||
+              variant.expirationDate,
           )),
     ),
   );
@@ -1326,6 +1330,18 @@ export function ProductForm({
                             }
                           />
                           <NumberField
+                            error={fieldErrors[`variants.${index}.taxPercent`]}
+                            fieldKey={`variants.${index}.taxPercent`}
+                            label="Impuesto %"
+                            value={variant.taxPercent}
+                            onChange={(value) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                taxPercent: value,
+                              }))
+                            }
+                          />
+                          <NumberField
                             error={fieldErrors[`variants.${index}.minimumStock`]}
                             fieldKey={`variants.${index}.minimumStock`}
                             label="Stock mínimo"
@@ -1351,6 +1367,47 @@ export function ProductForm({
                               <option value="active">Activa</option>
                               <option value="archived">Archivada</option>
                             </select>
+                          </Field>
+
+                          <div className="sm:col-span-2">
+                            <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">
+                              Lote y vencimiento
+                            </p>
+                            <p className="mt-1 text-xs font-bold text-[#475569]">
+                              Margenia creará un lote inicial si guardas lote o fecha
+                              de vencimiento con existencia mayor a cero.
+                            </p>
+                          </div>
+                          <Field label="Número de lote">
+                            <input
+                              value={variant.lotNumber}
+                              onChange={(event) =>
+                                updateVariant(index, (current) => ({
+                                  ...current,
+                                  lotNumber: event.target.value,
+                                }))
+                              }
+                              maxLength={120}
+                              className={inputClass}
+                              placeholder="Ej. DOG-001"
+                            />
+                          </Field>
+                          <Field
+                            error={fieldErrors[`variants.${index}.expirationDate`]}
+                            label="Fecha de vencimiento"
+                          >
+                            <input
+                              data-field-key={`variants.${index}.expirationDate`}
+                              type="date"
+                              value={variant.expirationDate}
+                              onChange={(event) =>
+                                updateVariant(index, (current) => ({
+                                  ...current,
+                                  expirationDate: event.target.value,
+                                }))
+                              }
+                              className={`${inputClass} ${fieldErrors[`variants.${index}.expirationDate`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
+                            />
                           </Field>
 
                           <div className="rounded-[1.25rem] bg-white p-4 sm:col-span-2">
@@ -1828,6 +1885,20 @@ export function ProductForm({
                         }
                       />
                     )}
+                    {advancedOpen && (
+                      <NumberField
+                        error={fieldErrors[`variants.${index}.taxPercent`]}
+                        fieldKey={`variants.${index}.taxPercent`}
+                        label="Impuesto %"
+                        value={variant.taxPercent}
+                        onChange={(value) =>
+                          updateVariant(index, (current) => ({
+                            ...current,
+                            taxPercent: value,
+                          }))
+                        }
+                      />
+                    )}
                     {product.inventoryMode === "unit" && (
                       <>
                         <NumberField
@@ -1886,6 +1957,50 @@ export function ProductForm({
                           <option value="archived">Archivada</option>
                         </select>
                       </Field>
+                    )}
+                    {advancedOpen && (
+                      <div className="grid gap-4 rounded-[1.25rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:col-span-2 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <p className="text-sm font-black uppercase tracking-[0.12em] text-[#2563EB]">
+                            Lote y vencimiento
+                          </p>
+                          <p className="mt-1 text-xs font-bold text-[#475569]">
+                            Margenia creará un lote inicial si guardas lote o fecha de
+                            vencimiento con existencia mayor a cero.
+                          </p>
+                        </div>
+                        <Field label="Número de lote">
+                          <input
+                            value={variant.lotNumber}
+                            onChange={(event) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                lotNumber: event.target.value,
+                              }))
+                            }
+                            maxLength={120}
+                            className={inputClass}
+                            placeholder="Ej. DOG-001"
+                          />
+                        </Field>
+                        <Field
+                          error={fieldErrors[`variants.${index}.expirationDate`]}
+                          label="Fecha de vencimiento"
+                        >
+                          <input
+                            data-field-key={`variants.${index}.expirationDate`}
+                            type="date"
+                            value={variant.expirationDate}
+                            onChange={(event) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                expirationDate: event.target.value,
+                              }))
+                            }
+                            className={`${inputClass} ${fieldErrors[`variants.${index}.expirationDate`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
+                          />
+                        </Field>
+                      </div>
                     )}
                     {product.inventoryMode === "unit" &&
                       product.productType === "simple" &&

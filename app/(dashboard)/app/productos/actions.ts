@@ -69,6 +69,9 @@ function variantPayload(
     sale_quantity_step: variant.saleQuantityStep,
     sale_price: variant.salePrice,
     sku: nullableText(variant.sku),
+    tax_percent: variant.taxPercent,
+    lot_number: nullableText(variant.lotNumber),
+    expiration_date: nullableText(variant.expirationDate),
     status: variant.status,
   };
 }

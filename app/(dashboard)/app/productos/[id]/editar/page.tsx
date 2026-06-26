@@ -37,7 +37,7 @@ export default async function EditProductPage({
   const { data: product } = await supabase
     .from("products")
     .select(
-      "id,name,description,brand,category,unit,product_type,track_inventory,status,product_variants(id,name,sku,purchase_cost,packaging_cost,commission_percent,desired_margin_percent,sale_price,current_stock,minimum_stock,inventory_mode,measurement_family,inventory_unit,purchase_package_label,purchase_package_quantity,purchase_package_unit,purchase_package_cost,default_sale_unit,allow_fractional_sales,minimum_sale_quantity,sale_quantity_step,status)",
+      "id,name,description,brand,category,unit,product_type,track_inventory,status,product_variants(id,name,sku,purchase_cost,packaging_cost,commission_percent,desired_margin_percent,sale_price,current_stock,minimum_stock,inventory_mode,measurement_family,inventory_unit,purchase_package_label,purchase_package_quantity,purchase_package_unit,purchase_package_cost,default_sale_unit,allow_fractional_sales,minimum_sale_quantity,sale_quantity_step,tax_percent,status)",
     )
     .eq("id", id)
     .eq("business_id", business.id)
@@ -83,6 +83,9 @@ export default async function EditProductPage({
       saleQuantityStep: String(variant.sale_quantity_step ?? 1),
       salePrice: String(variant.sale_price ?? 0),
       sku: variant.sku || "",
+      taxPercent: String(variant.tax_percent ?? 0),
+      lotNumber: variant.lot_number || "",
+      expirationDate: variant.expiration_date || "",
       status: variant.status === "archived" ? "archived" : "active",
     })),
   };

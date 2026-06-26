@@ -34,6 +34,9 @@ export type ProductVariantRow = {
   purchase_package_quantity?: number | string | null;
   purchase_package_unit?: string | null;
   sale_quantity_step?: number | string | null;
+  tax_percent?: number | string | null;
+  lot_number?: string | null;
+  expiration_date?: string | null;
   status: ProductStatus | string | null;
 };
 
@@ -74,6 +77,9 @@ export type ProductVariantInput = {
   purchasePackageQuantity: string;
   purchasePackageUnit: MeasurementUnit;
   saleQuantityStep: string;
+  taxPercent: string;
+  lotNumber: string;
+  expirationDate: string;
   status: ProductStatus;
 };
 
@@ -104,6 +110,7 @@ export type NormalizedProductVariantInput = Omit<
   | "purchasePackageCost"
   | "purchasePackageQuantity"
   | "saleQuantityStep"
+  | "taxPercent"
 > & {
   purchaseCost: number;
   packagingCost: number;
@@ -124,6 +131,7 @@ export type NormalizedProductVariantInput = Omit<
   purchasePackageQuantity: number;
   purchasePackageUnit: MeasurementUnit;
   saleQuantityStep: number;
+  taxPercent: number;
 };
 
 export type NormalizedProductFormInput = Omit<ProductFormInput, "variants"> & {
@@ -172,6 +180,9 @@ export function emptyVariant(): ProductVariantInput {
     saleQuantityStep: "1",
     salePrice: "",
     sku: "",
+    taxPercent: "0",
+    lotNumber: "",
+    expirationDate: "",
     status: "active",
   };
 }
@@ -263,7 +274,9 @@ type VariantCalculationInput = Pick<
   | "packagingCost"
   | "purchaseCost"
   | "salePrice"
->;
+> & {
+  taxPercent?: string | number;
+};
 
 function numericValue(value: string | number): number {
   return typeof value === "number" ? toSafeNumber(value) : parseNonNegativeNumber(value);
@@ -275,20 +288,27 @@ export function calculateVariantProfit({
   packagingCost,
   purchaseCost,
   salePrice,
+  taxPercent,
 }: VariantCalculationInput) {
   const safePurchaseCost = numericValue(purchaseCost);
   const safePackagingCost = numericValue(packagingCost);
   const safeCommissionPercent = numericValue(commissionPercent);
   const safeDesiredMarginPercent = numericValue(desiredMarginPercent);
   const safeSalePrice = numericValue(salePrice);
+  const safeTaxPercent = numericValue(taxPercent ?? 0);
   const totalUnitCost = safePurchaseCost + safePackagingCost;
   const denominator =
-    1 - safeCommissionPercent / 100 - safeDesiredMarginPercent / 100;
+    1 -
+    safeCommissionPercent / 100 -
+    safeTaxPercent / 100 -
+    safeDesiredMarginPercent / 100;
   const suggestedPrice = denominator > 0 ? totalUnitCost / denominator : 0;
   const estimatedCommission = safeSalePrice * (safeCommissionPercent / 100);
-  const estimatedProfit = safeSalePrice - totalUnitCost - estimatedCommission;
+  const taxAmount = safeSalePrice * (safeTaxPercent / 100);
+  const estimatedProfit = safeSalePrice - totalUnitCost - estimatedCommission - taxAmount;
   const actualMargin = safeSalePrice > 0 ? (estimatedProfit / safeSalePrice) * 100 : 0;
-  const invalidRate = safeCommissionPercent + safeDesiredMarginPercent >= 100;
+  const invalidRate =
+    safeCommissionPercent + safeTaxPercent + safeDesiredMarginPercent >= 100;
 
   const state = invalidRate
     ? "invalid"
@@ -305,6 +325,7 @@ export function calculateVariantProfit({
     invalidRate,
     state,
     suggestedPrice,
+    taxAmount,
     totalUnitCost,
   };
 }
@@ -322,6 +343,7 @@ export function calculateMeasuredVariant(
   const salePrice = numericValue(variant.salePrice);
   const packagingCost = numericValue(variant.packagingCost);
   const commissionPercent = numericValue(variant.commissionPercent);
+  const taxPercent = numericValue(variant.taxPercent);
   const currentStock = numericValue(variant.currentStock);
   const purchaseQuantityInInventoryUnit = convertMeasurement(
     purchasePackageQuantity,
@@ -339,7 +361,9 @@ export function calculateMeasuredVariant(
   );
   const costPerSaleUnit = costPerInventoryUnit * saleUnitInInventoryUnit;
   const commissionAmount = salePrice * (commissionPercent / 100);
-  const estimatedProfit = salePrice - costPerSaleUnit - packagingCost - commissionAmount;
+  const taxAmount = salePrice * (taxPercent / 100);
+  const estimatedProfit =
+    salePrice - costPerSaleUnit - packagingCost - commissionAmount - taxAmount;
   const actualMargin = salePrice > 0 ? (estimatedProfit / salePrice) * 100 : 0;
   const potentialRevenue =
     saleUnitInInventoryUnit > 0 ? (currentStock / saleUnitInInventoryUnit) * salePrice : 0;
@@ -359,6 +383,7 @@ export function calculateMeasuredVariant(
     potentialRevenue,
     purchaseQuantityInInventoryUnit,
     saleUnitInInventoryUnit,
+    taxAmount,
   };
 }
 
@@ -400,6 +425,9 @@ export function validateProductInput(input: ProductFormInput): ProductValidation
       saleQuantityStep: parseNonNegativeNumber(variant.saleQuantityStep),
       salePrice: parseNonNegativeNumber(variant.salePrice),
       sku: cleanOptionalText(variant.sku).slice(0, 80),
+      taxPercent: parseNonNegativeNumber(variant.taxPercent),
+      lotNumber: cleanOptionalText(variant.lotNumber).slice(0, 120),
+      expirationDate: cleanOptionalText(variant.expirationDate),
       status: variant.status === "archived" ? "archived" : "active",
     })),
   };
@@ -443,9 +471,22 @@ export function validateProductInput(input: ProductFormInput): ProductValidation
         "El margen debe estar entre 0% y 99,99%.";
     }
 
-    if (variant.commissionPercent + variant.desiredMarginPercent >= 100) {
-      const message = "La comisión y el margen deseado deben sumar menos de 100%.";
+    if (variant.taxPercent >= 100) {
+      fieldErrors[`${prefix}.taxPercent`] = "El impuesto debe estar entre 0% y 99,99%.";
+    }
+
+    if (
+      variant.expirationDate &&
+      Number.isNaN(new Date(`${variant.expirationDate}T00:00:00`).getTime())
+    ) {
+      fieldErrors[`${prefix}.expirationDate`] =
+        "La fecha de vencimiento no puede ser inválida.";
+    }
+
+    if (variant.commissionPercent + variant.taxPercent + variant.desiredMarginPercent >= 100) {
+      const message = "La comisión, el impuesto y el margen deseado deben sumar menos de 100%.";
       fieldErrors[`${prefix}.commissionPercent`] ||= message;
+      fieldErrors[`${prefix}.taxPercent`] ||= message;
       fieldErrors[`${prefix}.desiredMarginPercent`] ||= message;
     }
 
