@@ -416,6 +416,7 @@ export function validateProductInput(input: ProductFormInput): ProductValidation
     fieldErrors.variants = "Agrega al menos una variante.";
   }
 
+  const seenNames = new Map<string, number>();
   const seenSkus = new Map<string, number>();
 
   for (const [index, variant] of normalized.variants.entries()) {
@@ -423,7 +424,7 @@ export function validateProductInput(input: ProductFormInput): ProductValidation
     const prefix = `variants.${index}`;
 
     if (!variant.name) {
-      fieldErrors[`${prefix}.name`] = "Cada variante debe tener un nombre.";
+      fieldErrors[`${prefix}.name`] = "Escribe el nombre de esta variante.";
     }
 
     const isMeasured = input.inventoryMode === "measured" || variant.inventoryMode === "measured";
@@ -525,12 +526,25 @@ export function validateProductInput(input: ProductFormInput): ProductValidation
     }
 
     const normalizedSku = variant.sku.trim().toLowerCase();
+    const normalizedName = variant.name.trim().toLowerCase();
+
+    if (productType === "variants" && normalizedName) {
+      const previousIndex = seenNames.get(normalizedName);
+
+      if (previousIndex !== undefined) {
+        const message = "Ya existe una variante con ese nombre.";
+        fieldErrors[`${prefix}.name`] = message;
+        fieldErrors[`variants.${previousIndex}.name`] ||= message;
+      }
+
+      seenNames.set(normalizedName, index);
+    }
 
     if (normalizedSku) {
       const previousIndex = seenSkus.get(normalizedSku);
 
       if (previousIndex !== undefined) {
-        const message = "Ya existe un producto o variante con ese SKU en tu negocio.";
+        const message = "Ya existe otra variante con ese SKU.";
         fieldErrors[`${prefix}.sku`] = message;
         fieldErrors[`variants.${previousIndex}.sku`] ||= message;
       }

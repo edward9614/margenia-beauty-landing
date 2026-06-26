@@ -45,6 +45,19 @@ type ProductFormProps = {
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
 
+const variantKinds = [
+  { example: "S, M, L", label: "Talla", placeholder: "Ej. Talla M" },
+  { example: "Negro, Azul, Rojo", label: "Color", placeholder: "Ej. Color Negro" },
+  { example: "Nude, Rosa, Vino", label: "Tono", placeholder: "Ej. Tono Nude" },
+  {
+    example: "250 ml, 500 ml, 1 litro",
+    label: "Presentación",
+    placeholder: "Ej. 500 ml",
+  },
+  { example: "Algodón, Acero, Vidrio", label: "Material", placeholder: "Ej. Algodón" },
+  { example: "Opción especial", label: "Otro", placeholder: "Ej. Opción especial" },
+];
+
 const labelClass = "block text-sm font-black text-[#0F172A]";
 
 function Field({
@@ -333,6 +346,17 @@ export function ProductForm({
   );
   const [showSuggestedPrice, setShowSuggestedPrice] = useState(false);
   const [useExactMeasuredStock, setUseExactMeasuredStock] = useState(mode === "edit");
+  const [variantKind, setVariantKind] = useState("Talla");
+  const [openVariantOptions, setOpenVariantOptions] = useState<Record<string, boolean>>({});
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkValues, setBulkValues] = useState({
+    applyCost: false,
+    applyPrice: false,
+    applyStock: false,
+    cost: "",
+    price: "",
+    stock: "",
+  });
   const [product, setProduct] = useState<ProductFormInput>(
     initialProduct || {
       brand: "",
@@ -440,6 +464,28 @@ export function ProductForm({
     };
   }
 
+  function blankVariant(overrides: Partial<ProductVariantInput> = {}): ProductVariantInput {
+    return {
+      ...unitDefaults(emptyVariant()),
+      currentStock: "",
+      name: "",
+      purchaseCost: "",
+      salePrice: "",
+      sku: "",
+      ...overrides,
+    };
+  }
+
+  function focusVariantName(index: number) {
+    requestAnimationFrame(() => {
+      const field = document.querySelector<HTMLElement>(
+        `[data-field-key="variants.${index}.name"]`,
+      );
+      field?.scrollIntoView({ behavior: "smooth", block: "center" });
+      field?.focus();
+    });
+  }
+
   function updateInventoryMode(mode: ProductFormInput["inventoryMode"]) {
     setProduct((current) => ({
       ...current,
@@ -452,8 +498,17 @@ export function ProductForm({
 
   function selectSellingMode(mode: "measured" | "unit" | "variants") {
     if (mode === "variants") {
-      updateProductField("productType", "variants");
-      updateInventoryMode("unit");
+      setProduct((current) => {
+        const shouldPreserveVariants =
+          current.productType === "variants" && current.variants.length > 0;
+
+        return {
+          ...current,
+          inventoryMode: "unit",
+          productType: "variants",
+          variants: shouldPreserveVariants ? current.variants : [blankVariant()],
+        };
+      });
     } else {
       updateProductField("productType", "simple");
       updateInventoryMode(mode);
@@ -500,12 +555,10 @@ export function ProductForm({
       productType: "variants",
       variants: [
         ...current.variants,
-        {
-          ...emptyVariant(),
-          name: `Variante ${current.variants.length + 1}`,
-        },
+        blankVariant(),
       ],
     }));
+    focusVariantName(product.variants.length);
     trackEvent("product_variant_added");
   }
 
@@ -518,15 +571,22 @@ export function ProductForm({
         {
           ...current.variants[index],
           id: undefined,
-          name: `${current.variants[index].name} copia`,
+          name: "",
           sku: "",
         },
       ],
     }));
+    focusVariantName(product.variants.length);
     trackEvent("product_variant_added");
   }
 
   function removeVariant(index: number) {
+    const variant = product.variants[index];
+
+    if (variant?.id && !confirm("Esta variante ya existe. ¿Quieres retirarla?")) {
+      return;
+    }
+
     setProduct((current) => {
       if (current.variants.length <= 1) {
         return current;
@@ -537,6 +597,57 @@ export function ProductForm({
         variants: current.variants.filter((_, currentIndex) => currentIndex !== index),
       };
     });
+  }
+
+  function toggleVariantOptions(index: number) {
+    setOpenVariantOptions((current) => ({
+      ...current,
+      [index]: !current[index],
+    }));
+  }
+
+  function applyBulkValues() {
+    if (
+      !bulkValues.applyCost &&
+      !bulkValues.applyPrice &&
+      !bulkValues.applyStock
+    ) {
+      return;
+    }
+
+    if (!confirm("¿Quieres aplicar estos valores a todas las variantes?")) {
+      return;
+    }
+
+    setProduct((current) => ({
+      ...current,
+      variants: current.variants.map((variant) => ({
+        ...variant,
+        currentStock: bulkValues.applyStock ? bulkValues.stock : variant.currentStock,
+        purchaseCost: bulkValues.applyCost ? bulkValues.cost : variant.purchaseCost,
+        salePrice: bulkValues.applyPrice ? bulkValues.price : variant.salePrice,
+      })),
+    }));
+  }
+
+  function validateBeforeNextStep() {
+    if (currentStep !== 2) {
+      nextStep();
+      return;
+    }
+
+    const validation = validateProductInput(product);
+
+    if (!validation.ok) {
+      setError(validation.error);
+      setFieldErrors(validation.fieldErrors);
+      focusFirstInvalidField(validation.fieldErrors);
+      return;
+    }
+
+    setError("");
+    setFieldErrors({});
+    nextStep();
   }
 
   function submit() {
@@ -623,6 +734,51 @@ export function ProductForm({
       : product.inventoryMode === "measured"
         ? "Por peso, volumen o longitud"
         : "Por unidad";
+  const selectedVariantKind =
+    variantKinds.find((kind) => kind.label === variantKind) || variantKinds[0];
+  const activeVariants = product.variants.filter((variant) => variant.status !== "archived");
+  const variantPrices = activeVariants
+    .map((variant) => parseNonNegativeNumber(variant.salePrice))
+    .filter((price) => price > 0);
+  const variantCosts = activeVariants
+    .map((variant) => parseNonNegativeNumber(variant.purchaseCost))
+    .filter((cost) => cost > 0);
+  const variantStocks = activeVariants.map((variant) =>
+    parseNonNegativeNumber(variant.currentStock),
+  );
+  const variantMargins = activeVariants
+    .map((variant) => calculateVariantProfit(variant).actualMargin)
+    .filter((margin) => Number.isFinite(margin));
+  const hasIncompleteVariants = activeVariants.some(
+    (variant) =>
+      !variant.name.trim() ||
+      !variant.purchaseCost ||
+      parseNonNegativeNumber(variant.salePrice) <= 0,
+  );
+  const hasLossVariants = activeVariants.some(
+    (variant) => calculateVariantProfit(variant).state === "loss",
+  );
+  const variantStatusLabel = hasIncompleteVariants
+    ? "Faltan datos"
+    : hasLossVariants
+      ? "Contiene variantes con pérdida"
+      : "Completo";
+  const priceRangeLabel =
+    variantPrices.length === 0
+      ? "Completa los precios"
+      : Math.min(...variantPrices) === Math.max(...variantPrices)
+        ? formatter.format(Math.min(...variantPrices))
+        : `${formatter.format(Math.min(...variantPrices))} – ${formatter.format(
+            Math.max(...variantPrices),
+          )}`;
+  const marginRangeLabel =
+    variantMargins.length === 0
+      ? "Sin margen calculado"
+      : Math.min(...variantMargins) === Math.max(...variantMargins)
+        ? `${Math.min(...variantMargins).toFixed(1)}%`
+        : `Entre ${Math.min(...variantMargins).toFixed(1)}% y ${Math.max(
+            ...variantMargins,
+          ).toFixed(1)}%`;
 
   function nextStep() {
     setCurrentStep((step) => Math.min(step + 1, 3));
@@ -865,6 +1021,388 @@ export function ProductForm({
             </div>
           )}
 
+          {product.productType === "variants" ? (
+            <div className="mt-6 space-y-5">
+              <div className="rounded-[1.75rem] border border-[#BFDBFE] bg-[#EFF6FF]/70 p-5">
+                <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
+                  Producto con variantes
+                </p>
+                <h3 className="mt-2 text-2xl font-black text-[#0F172A]">
+                  Agrega las variantes
+                </h3>
+                <p className="mt-2 text-sm font-bold leading-6 text-[#475569]">
+                  Crea una opción para cada talla, color, tono o presentación que vendas.
+                </p>
+                <div className="mt-5">
+                  <p className="text-sm font-black text-[#0F172A]">
+                    ¿Qué cambia entre las variantes?
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {variantKinds.map((kind) => (
+                      <button
+                        key={kind.label}
+                        type="button"
+                        onClick={() => setVariantKind(kind.label)}
+                        className={`rounded-full px-4 py-2 text-sm font-black transition ${
+                          variantKind === kind.label
+                            ? "bg-[#2563EB] text-white shadow-lg shadow-blue-500/20"
+                            : "bg-white text-[#2563EB] ring-1 ring-[#BFDBFE] hover:bg-[#EFF6FF]"
+                        }`}
+                      >
+                        {kind.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs font-bold text-[#475569]">
+                    Ejemplos: {selectedVariantKind.example}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setBulkOpen((current) => !current)}
+                  className="flex w-full items-center justify-between gap-3 text-left"
+                  aria-expanded={bulkOpen}
+                  aria-controls="bulk-variant-values"
+                >
+                  <span>
+                    <span className="block text-sm font-black text-[#0F172A]">
+                      Aplicar valores a todas
+                    </span>
+                    <span className="mt-1 block text-xs font-bold text-[#475569]">
+                      Úsalo cuando varias variantes compartan el mismo costo o precio.
+                    </span>
+                  </span>
+                  <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-black text-[#2563EB]">
+                    {bulkOpen ? "Cerrar" : "Abrir"}
+                  </span>
+                </button>
+                {bulkOpen && (
+                  <div
+                    id="bulk-variant-values"
+                    className="mt-4 grid gap-4 rounded-[1.25rem] bg-[#F8FAFC] p-4 sm:grid-cols-3"
+                  >
+                    {[
+                      {
+                        checked: bulkValues.applyCost,
+                        field: "cost",
+                        label: "Costo",
+                        toggle: "applyCost",
+                        value: bulkValues.cost,
+                      },
+                      {
+                        checked: bulkValues.applyPrice,
+                        field: "price",
+                        label: "Precio",
+                        toggle: "applyPrice",
+                        value: bulkValues.price,
+                      },
+                      {
+                        checked: bulkValues.applyStock,
+                        field: "stock",
+                        label: "Existencia inicial",
+                        toggle: "applyStock",
+                        value: bulkValues.stock,
+                      },
+                    ].map((item) => (
+                      <div key={item.field}>
+                        <label className="flex items-center gap-2 text-xs font-black text-[#0F172A]">
+                          <input
+                            type="checkbox"
+                            checked={item.checked}
+                            onChange={(event) =>
+                              setBulkValues((current) => ({
+                                ...current,
+                                [item.toggle]: event.target.checked,
+                              }))
+                            }
+                          />
+                          Aplicar {item.label.toLowerCase()} a todas
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={item.value}
+                          onChange={(event) =>
+                            setBulkValues((current) => ({
+                              ...current,
+                              [item.field]: sanitizeNumericInput(event.target.value),
+                            }))
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={applyBulkValues}
+                      className="rounded-full bg-[#2563EB] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1D4ED8] sm:col-span-3"
+                    >
+                      Aplicar valores seleccionados
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                {product.variants.map((variant, index) => {
+                  const profit = calculateVariantProfit(variant);
+                  const variantKey = variant.id || String(index);
+                  const isOptionsOpen = Boolean(openVariantOptions[index]);
+                  const badge =
+                    !variant.name.trim() ||
+                    !variant.purchaseCost ||
+                    parseNonNegativeNumber(variant.salePrice) <= 0
+                      ? {
+                          className: "bg-[#FEF3C7] text-[#92400E]",
+                          label: "Incompleta",
+                        }
+                      : profit.state === "loss"
+                        ? {
+                            className: "bg-[#FEE2E2] text-[#991B1B]",
+                            label: "Pérdida",
+                          }
+                        : profit.state === "tight"
+                          ? {
+                              className: "bg-[#FEF3C7] text-[#92400E]",
+                              label: "Margen ajustado",
+                            }
+                          : {
+                              className: "bg-[#DCFCE7] text-[#166534]",
+                              label: "Rentable",
+                            };
+
+                  return (
+                    <div
+                      key={variantKey}
+                      className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm"
+                    >
+                      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] lg:items-start">
+                        <Field label="Nombre de variante">
+                          <input
+                            data-field-key={`variants.${index}.name`}
+                            value={variant.name}
+                            onChange={(event) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                name: event.target.value,
+                              }))
+                            }
+                            maxLength={100}
+                            placeholder={selectedVariantKind.placeholder}
+                            className={`${inputClass} ${fieldErrors[`variants.${index}.name`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
+                          />
+                          {fieldErrors[`variants.${index}.name`] && (
+                            <span className="mt-1 block text-xs font-bold text-[#DC2626]">
+                              {fieldErrors[`variants.${index}.name`]}
+                            </span>
+                          )}
+                        </Field>
+                        <NumberField
+                          error={fieldErrors[`variants.${index}.purchaseCost`]}
+                          fieldKey={`variants.${index}.purchaseCost`}
+                          label="Costo"
+                          value={variant.purchaseCost}
+                          onChange={(value) =>
+                            updateVariant(index, (current) => ({
+                              ...current,
+                              purchaseCost: value,
+                            }))
+                          }
+                        />
+                        <NumberField
+                          error={fieldErrors[`variants.${index}.salePrice`]}
+                          fieldKey={`variants.${index}.salePrice`}
+                          label="Precio"
+                          value={variant.salePrice}
+                          onChange={(value) =>
+                            updateVariant(index, (current) => ({
+                              ...current,
+                              salePrice: value,
+                            }))
+                          }
+                        />
+                        <NumberField
+                          error={fieldErrors[`variants.${index}.currentStock`]}
+                          fieldKey={`variants.${index}.currentStock`}
+                          label="Existencia"
+                          value={variant.currentStock}
+                          onChange={(value) =>
+                            updateVariant(index, (current) => ({
+                              ...current,
+                              currentStock: value,
+                            }))
+                          }
+                        />
+                        <div className="flex flex-wrap gap-2 lg:pt-8">
+                          <span
+                            className={`rounded-full px-3 py-2 text-xs font-black ${badge.className}`}
+                          >
+                            {badge.label}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => duplicateVariant(index)}
+                            className="rounded-full bg-[#EFF6FF] px-3 py-2 text-xs font-black text-[#2563EB]"
+                          >
+                            Duplicar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeVariant(index)}
+                            disabled={product.variants.length <= 1}
+                            className="rounded-full bg-[#FEE2E2] px-3 py-2 text-xs font-black text-[#991B1B] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleVariantOptions(index)}
+                        className="mt-4 rounded-full bg-white px-4 py-2 text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-[#EFF6FF]"
+                        aria-expanded={isOptionsOpen}
+                        aria-controls={`variant-options-${index}`}
+                      >
+                        {isOptionsOpen ? "Ocultar más opciones" : "Más opciones"}
+                      </button>
+
+                      {isOptionsOpen && (
+                        <div
+                          id={`variant-options-${index}`}
+                          className="mt-4 grid gap-4 rounded-[1.25rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:grid-cols-2"
+                        >
+                          <Field error={fieldErrors[`variants.${index}.sku`]} label="SKU">
+                            <input
+                              data-field-key={`variants.${index}.sku`}
+                              value={variant.sku}
+                              onChange={(event) =>
+                                updateVariant(index, (current) => ({
+                                  ...current,
+                                  sku: event.target.value,
+                                }))
+                              }
+                              maxLength={80}
+                              className={`${inputClass} ${fieldErrors[`variants.${index}.sku`] ? "border-[#EF4444] focus:border-[#EF4444] focus:ring-[#FECACA]/70" : ""}`}
+                            />
+                          </Field>
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.packagingCost`]}
+                            fieldKey={`variants.${index}.packagingCost`}
+                            label="Costo de empaque"
+                            value={variant.packagingCost}
+                            onChange={(value) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                packagingCost: value,
+                              }))
+                            }
+                          />
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.commissionPercent`]}
+                            fieldKey={`variants.${index}.commissionPercent`}
+                            label="Comisión de pago %"
+                            value={variant.commissionPercent}
+                            onChange={(value) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                commissionPercent: value,
+                              }))
+                            }
+                          />
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.desiredMarginPercent`]}
+                            fieldKey={`variants.${index}.desiredMarginPercent`}
+                            label="Margen deseado %"
+                            value={variant.desiredMarginPercent}
+                            onChange={(value) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                desiredMarginPercent: value,
+                              }))
+                            }
+                          />
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.minimumStock`]}
+                            fieldKey={`variants.${index}.minimumStock`}
+                            label="Stock mínimo"
+                            value={variant.minimumStock}
+                            onChange={(value) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                minimumStock: value,
+                              }))
+                            }
+                          />
+                          <Field label="Estado">
+                            <select
+                              value={variant.status}
+                              onChange={(event) =>
+                                updateVariant(index, (current) => ({
+                                  ...current,
+                                  status: event.target.value as ProductStatus,
+                                }))
+                              }
+                              className={inputClass}
+                            >
+                              <option value="active">Activa</option>
+                              <option value="archived">Archivada</option>
+                            </select>
+                          </Field>
+
+                          <div className="rounded-[1.25rem] bg-white p-4 sm:col-span-2">
+                            <dl className="grid gap-2 text-sm sm:grid-cols-2">
+                              {[
+                                ["Costo total", formatter.format(profit.totalUnitCost)],
+                                ["Precio sugerido", formatter.format(profit.suggestedPrice)],
+                                ["Ganancia estimada", formatter.format(profit.estimatedProfit)],
+                                ["Margen real", `${profit.actualMargin.toFixed(1)}%`],
+                              ].map(([label, value]) => (
+                                <div
+                                  key={label}
+                                  className="flex justify-between gap-3 rounded-2xl bg-[#F8FAFC] p-3"
+                                >
+                                  <dt className="text-[#475569]">{label}</dt>
+                                  <dd className="font-black text-[#0F172A]">{value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateVariant(index, (current) => ({
+                                  ...current,
+                                  salePrice: String(Math.ceil(profit.suggestedPrice)),
+                                }));
+                                clearFieldError(`variants.${index}.salePrice`);
+                                trackEvent("product_price_suggestion_used", {
+                                  product_type: product.productType,
+                                });
+                              }}
+                              className="mt-4 rounded-full bg-[#2563EB] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1D4ED8]"
+                            >
+                              Usar precio sugerido
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={addVariant}
+                className="rounded-full bg-[#EFF6FF] px-5 py-3 text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-white"
+              >
+                + Agregar variante
+              </button>
+            </div>
+          ) : (
           <div className="mt-6 space-y-5">
             {product.variants.map((variant, index) => (
               <div
@@ -1398,15 +1936,6 @@ export function ProductForm({
               </div>
             ))}
           </div>
-
-          {product.productType === "variants" && (
-            <button
-              type="button"
-              onClick={addVariant}
-              className="mt-5 rounded-full bg-[#EFF6FF] px-5 py-3 text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-white"
-            >
-              Agregar variante
-            </button>
           )}
         </section>
 
@@ -1441,7 +1970,46 @@ export function ProductForm({
           </div>
 
           <div className="mt-5 rounded-[1.5rem] border border-[#BFDBFE] bg-[#EFF6FF]/70 p-4">
-            {product.inventoryMode === "measured" && primaryMeasured ? (
+            {product.productType === "variants" ? (
+              <div className="space-y-4">
+                <div className="grid gap-3 text-sm sm:grid-cols-2">
+                  <p className="font-bold text-[#475569]">
+                    Rango de precios:{" "}
+                    <span className="font-black text-[#0F172A]">{priceRangeLabel}</span>
+                  </p>
+                  <p className="font-bold text-[#475569]">
+                    Existencia total:{" "}
+                    <span className="font-black text-[#0F172A]">
+                      {variantStocks.reduce((total, stock) => total + stock, 0)} unidades
+                    </span>
+                  </p>
+                  <p className="font-bold text-[#475569]">
+                    Margen estimado:{" "}
+                    <span className="font-black text-[#0F172A]">{marginRangeLabel}</span>
+                  </p>
+                  <p className="font-bold text-[#475569]">
+                    Estado:{" "}
+                    <span className="font-black text-[#0F172A]">{variantStatusLabel}</span>
+                  </p>
+                </div>
+                <div className="divide-y divide-[#BFDBFE] rounded-[1.25rem] bg-white">
+                  {activeVariants.map((variant, index) => (
+                    <div
+                      key={variant.id || index}
+                      className="flex flex-col gap-1 p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <span className="font-black text-[#0F172A]">
+                        {variant.name || `Variante ${index + 1}`}
+                      </span>
+                      <span className="font-bold text-[#475569]">
+                        {formatter.format(parseNonNegativeNumber(variant.salePrice))} —{" "}
+                        {parseNonNegativeNumber(variant.currentStock)} unidades
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : product.inventoryMode === "measured" && primaryMeasured ? (
               <div className="grid gap-3 text-sm sm:grid-cols-2">
                 <p className="font-bold text-[#475569]">
                   Compra:{" "}
@@ -1543,25 +2111,74 @@ export function ProductForm({
             <div className="flex justify-between gap-3">
               <span className="text-[#475569]">Tipo</span>
               <span className="font-black text-[#0F172A]">
-                {product.productType === "simple" ? "Simple" : "Con variantes"}
+                {sellingModeLabel}
               </span>
             </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-[#475569]">Variantes</span>
-              <span className="font-black text-[#0F172A]">{product.variants.length}</span>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-[#475569]">Precio menor</span>
-              <span className="font-black text-[#0F172A]">
-                {formatter.format(
-                  Math.min(
-                    ...product.variants.map((variant) =>
-                      parseNonNegativeNumber(variant.salePrice),
-                    ),
-                  ),
-                )}
-              </span>
-            </div>
+            {product.productType === "variants" ? (
+              <>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Variantes</span>
+                  <span className="font-black text-[#0F172A]">
+                    {product.variants.length}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Rango de precios</span>
+                  <span className="text-right font-black text-[#0F172A]">
+                    {priceRangeLabel}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Existencia total</span>
+                  <span className="font-black text-[#0F172A]">
+                    {variantStocks.reduce((total, stock) => total + stock, 0)} unidades
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Costo menor</span>
+                  <span className="font-black text-[#0F172A]">
+                    {variantCosts.length > 0
+                      ? formatter.format(Math.min(...variantCosts))
+                      : "Completa los costos"}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Costo mayor</span>
+                  <span className="font-black text-[#0F172A]">
+                    {variantCosts.length > 0
+                      ? formatter.format(Math.max(...variantCosts))
+                      : "Completa los costos"}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Estado general</span>
+                  <span className="text-right font-black text-[#0F172A]">
+                    {variantStatusLabel}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Variantes</span>
+                  <span className="font-black text-[#0F172A]">
+                    {product.variants.length}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-[#475569]">Precio menor</span>
+                  <span className="font-black text-[#0F172A]">
+                    {formatter.format(
+                      Math.min(
+                        ...product.variants.map((variant) =>
+                          parseNonNegativeNumber(variant.salePrice),
+                        ),
+                      ),
+                    )}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {error && (
@@ -1586,7 +2203,7 @@ export function ProductForm({
             )}
             <button
               type="button"
-              onClick={currentStep < 3 ? nextStep : submit}
+              onClick={currentStep < 3 ? validateBeforeNextStep : submit}
               disabled={isPending}
               className="rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
