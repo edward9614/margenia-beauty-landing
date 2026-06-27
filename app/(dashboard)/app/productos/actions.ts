@@ -326,11 +326,20 @@ export async function archiveProduct(productId: string): Promise<ActionResult> {
 
   const { business, supabase } = context;
 
-  await supabase
+  const { error: variantsError } = await supabase
     .from("product_variants")
     .update({ status: "archived" })
     .eq("product_id", productId)
     .eq("business_id", business.id);
+
+  if (variantsError) {
+    logProductError("archiveProductVariants", variantsError);
+
+    return {
+      error: "No pudimos archivar el producto. Intenta nuevamente.",
+      ok: false,
+    };
+  }
 
   const { error } = await supabase
     .from("products")
@@ -339,7 +348,12 @@ export async function archiveProduct(productId: string): Promise<ActionResult> {
     .eq("business_id", business.id);
 
   if (error) {
-    return { error: "No pudimos archivar el producto.", ok: false };
+    logProductError("archiveProduct", error);
+
+    return {
+      error: "No pudimos archivar el producto. Intenta nuevamente.",
+      ok: false,
+    };
   }
 
   revalidatePath("/app");
@@ -363,14 +377,28 @@ export async function restoreProduct(productId: string): Promise<ActionResult> {
     .eq("business_id", business.id);
 
   if (error) {
-    return { error: "No pudimos reactivar el producto.", ok: false };
+    logProductError("restoreProduct", error);
+
+    return {
+      error: "No pudimos restaurar el producto. Intenta nuevamente.",
+      ok: false,
+    };
   }
 
-  await supabase
+  const { error: variantsError } = await supabase
     .from("product_variants")
     .update({ status: "active" })
     .eq("product_id", productId)
     .eq("business_id", business.id);
+
+  if (variantsError) {
+    logProductError("restoreProductVariants", variantsError);
+
+    return {
+      error: "No pudimos restaurar el producto. Intenta nuevamente.",
+      ok: false,
+    };
+  }
 
   revalidatePath("/app");
   revalidatePath("/app/productos");

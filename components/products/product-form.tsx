@@ -4,12 +4,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
-  archiveProduct,
   createProduct,
-  restoreProduct,
   updateProduct,
 } from "@/app/(dashboard)/app/productos/actions";
 import { trackEvent } from "@/lib/analytics";
+import { ProductArchiveAction } from "@/components/products/product-archive-action";
 import {
   calculateMeasuredVariant,
   calculateVariantProfit,
@@ -773,42 +772,6 @@ export function ProductForm({
     });
   }
 
-  function archive() {
-    if (!initialProduct || !confirm("¿Quieres archivar este producto?")) {
-      return;
-    }
-
-    startTransition(async () => {
-      trackEvent("product_archived", {
-        product_type: initialProduct.productType,
-        variant_count: initialProduct.variants.length,
-      });
-      const result = await archiveProduct(initialProduct.id);
-
-      if (result && !result.ok) {
-        setError(result.error || "No pudimos archivar el producto.");
-      }
-    });
-  }
-
-  function restore() {
-    if (!initialProduct) {
-      return;
-    }
-
-    startTransition(async () => {
-      trackEvent("product_restored", {
-        product_type: initialProduct.productType,
-        variant_count: initialProduct.variants.length,
-      });
-      const result = await restoreProduct(initialProduct.id);
-
-      if (result && !result.ok) {
-        setError(result.error || "No pudimos reactivar el producto.");
-      }
-    });
-  }
-
   const primaryVariant = product.variants[0] || emptyVariant();
   const primaryMeasured = calculateMeasuredVariant(primaryVariant);
   const canGoBack = currentStep > 1;
@@ -842,6 +805,7 @@ export function ProductForm({
   const variantStocks = activeVariants.map((variant) =>
     parseNonNegativeNumber(variant.currentStock),
   );
+  const totalVariantStock = variantStocks.reduce((total, stock) => total + stock, 0);
   const variantMargins = activeVariants
     .map((variant) => calculateVariantProfit(variant).actualMargin)
     .filter((margin) => Number.isFinite(margin));
@@ -1554,7 +1518,7 @@ export function ProductForm({
                             disabled={product.variants.length <= 1}
                             className="rounded-full bg-[#FEE2E2] px-3 py-2 text-xs font-black text-[#991B1B] disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            Eliminar
+                            Quitar
                           </button>
                         </div>
                       </div>
@@ -2655,23 +2619,19 @@ export function ProductForm({
               Al reactivar, esta versión inicial reactiva todas sus variantes.
             </p>
             {initialProduct.status === "active" ? (
-              <button
-                type="button"
-                onClick={archive}
-                disabled={isPending}
-                className="mt-4 w-full rounded-full bg-[#FEE2E2] px-5 py-3 text-sm font-black text-[#991B1B] transition hover:bg-[#FECACA] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Archivar
-              </button>
+              <ProductArchiveAction
+                productId={initialProduct.id}
+                status="active"
+                totalStock={totalVariantStock}
+                variant="block"
+              />
             ) : (
-              <button
-                type="button"
-                onClick={restore}
-                disabled={isPending}
-                className="mt-4 w-full rounded-full bg-[#DCFCE7] px-5 py-3 text-sm font-black text-[#166534] transition hover:bg-[#BBF7D0] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Reactivar
-              </button>
+              <ProductArchiveAction
+                productId={initialProduct.id}
+                status="archived"
+                totalStock={totalVariantStock}
+                variant="block"
+              />
             )}
           </section>
         )}
