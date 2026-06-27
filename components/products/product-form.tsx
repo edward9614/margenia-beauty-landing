@@ -19,7 +19,6 @@ import {
   ProductFormInput,
   ProductFieldErrors,
   ProductStatus,
-  ProductType,
   ProductVariantInput,
   productUnits,
   sanitizeNumericInput,
@@ -56,6 +55,19 @@ const variantKinds = [
   },
   { example: "Algodón, Acero, Vidrio", label: "Material", placeholder: "Ej. Algodón" },
   { example: "Opción especial", label: "Otro", placeholder: "Ej. Opción especial" },
+];
+
+const categoryOptions = [
+  "Belleza / cosméticos",
+  "Cuidado personal",
+  "Mascotas",
+  "Alimentos",
+  "Ropa",
+  "Accesorios",
+  "Papelería",
+  "Hogar",
+  "Artesanal",
+  "Tecnología",
 ];
 
 const labelClass = "block text-sm font-black text-[#0F172A]";
@@ -327,6 +339,21 @@ export function ProductForm({
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<ProductFieldErrors>({});
   const [currentStep, setCurrentStep] = useState(1);
+  const [saleMode, setSaleMode] = useState<"measured" | "unit" | null>(
+    initialProduct ? initialProduct.inventoryMode : null,
+  );
+  const [hasVariants, setHasVariants] = useState(
+    initialProduct?.productType === "variants",
+  );
+  const [categoryChoice, setCategoryChoice] = useState(() => {
+    if (!initialProduct?.category) {
+      return "";
+    }
+
+    return categoryOptions.includes(initialProduct.category)
+      ? initialProduct.category
+      : "__custom";
+  });
   const [advancedOpen, setAdvancedOpen] = useState(() =>
     Boolean(
       initialProduct &&
@@ -490,35 +517,42 @@ export function ProductForm({
     });
   }
 
-  function updateInventoryMode(mode: ProductFormInput["inventoryMode"]) {
+  function selectSellingMode(mode: "measured" | "unit") {
+    setSaleMode(mode);
+    clearFieldError("saleMode");
     setProduct((current) => ({
       ...current,
       inventoryMode: mode,
+      productType: hasVariants ? "variants" : "simple",
       variants: current.variants.map((variant) =>
         mode === "measured" ? measuredDefaults(variant) : unitDefaults(variant),
       ),
     }));
+    trackEvent("product_form_mode_selected", { mode });
   }
 
-  function selectSellingMode(mode: "measured" | "unit" | "variants") {
-    if (mode === "variants") {
-      setProduct((current) => {
-        const shouldPreserveVariants =
-          current.productType === "variants" && current.variants.length > 0;
+  function toggleHasVariants(enabled: boolean) {
+    setHasVariants(enabled);
+    setProduct((current) => {
+      const nextVariants = enabled
+        ? current.variants.map((variant) =>
+            variant.name === "Presentación estándar"
+              ? { ...variant, name: "" }
+              : variant,
+          )
+        : [
+            {
+              ...(current.variants[0] || emptyVariant()),
+              name: "Presentación estándar",
+            },
+          ];
 
-        return {
-          ...current,
-          inventoryMode: "unit",
-          productType: "variants",
-          variants: shouldPreserveVariants ? current.variants : [blankVariant()],
-        };
-      });
-    } else {
-      updateProductField("productType", "simple");
-      updateInventoryMode(mode);
-    }
-
-    trackEvent("product_form_mode_selected", { mode });
+      return {
+        ...current,
+        productType: enabled ? "variants" : "simple",
+        variants: nextVariants,
+      };
+    });
   }
 
   function toggleAdvanced() {
@@ -553,13 +587,26 @@ export function ProductForm({
     updateVariant(index, (current) => variantWithInitialStock(updater(current)));
   }
 
+  function updateMeasuredVariantsCommon(
+    updater: (variant: ProductVariantInput) => ProductVariantInput,
+  ) {
+    setProduct((current) => ({
+      ...current,
+      variants: current.variants.map((variant) =>
+        updater(measuredDefaults(variant)),
+      ),
+    }));
+  }
+
   function addVariant() {
     setProduct((current) => ({
       ...current,
       productType: "variants",
       variants: [
         ...current.variants,
-        blankVariant(),
+        current.inventoryMode === "measured"
+          ? measuredDefaults(blankVariant())
+          : blankVariant(),
       ],
     }));
     focusVariantName(product.variants.length);
@@ -628,13 +675,52 @@ export function ProductForm({
       variants: current.variants.map((variant) => ({
         ...variant,
         currentStock: bulkValues.applyStock ? bulkValues.stock : variant.currentStock,
-        purchaseCost: bulkValues.applyCost ? bulkValues.cost : variant.purchaseCost,
+        purchaseCost:
+          current.inventoryMode === "unit" && bulkValues.applyCost
+            ? bulkValues.cost
+            : variant.purchaseCost,
+        purchasePackageCost:
+          current.inventoryMode === "measured" && bulkValues.applyCost
+            ? bulkValues.cost
+            : variant.purchasePackageCost,
         salePrice: bulkValues.applyPrice ? bulkValues.price : variant.salePrice,
       })),
     }));
   }
 
+  function validateStepOne() {
+    const nextErrors: ProductFieldErrors = {};
+
+    if (!product.name.trim()) {
+      nextErrors.name = "Escribe el nombre del producto.";
+    }
+
+    if (!saleMode) {
+      nextErrors.saleMode = "Selecciona cómo vendes este producto.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setError(Object.values(nextErrors)[0] || "Revisa los datos del producto.");
+      setFieldErrors(nextErrors);
+      focusFirstInvalidField(nextErrors);
+      return false;
+    }
+
+    setError("");
+    setFieldErrors({});
+    return true;
+  }
+
   function validateBeforeNextStep() {
+    if (currentStep === 1) {
+      if (!validateStepOne()) {
+        return;
+      }
+
+      nextStep();
+      return;
+    }
+
     if (currentStep !== 2) {
       nextStep();
       return;
@@ -733,11 +819,13 @@ export function ProductForm({
         ? "Cómo compras y vendes"
         : "Revisar y guardar";
   const sellingModeLabel =
-    product.productType === "variants"
-      ? "Con variantes"
-      : product.inventoryMode === "measured"
-        ? "Por peso, volumen o longitud"
-        : "Por unidad";
+    product.inventoryMode === "measured"
+      ? "Por peso, volumen o longitud"
+      : "Por unidad";
+  const saleSetupLabel = hasVariants
+    ? `${sellingModeLabel} con variantes`
+    : sellingModeLabel;
+  const isStepOneComplete = Boolean(product.name.trim() && saleMode);
   const selectedVariantKind =
     variantKinds.find((kind) => kind.label === variantKind) || variantKinds[0];
   const activeVariants = product.variants.filter((variant) => variant.status !== "archived");
@@ -745,7 +833,11 @@ export function ProductForm({
     .map((variant) => parseNonNegativeNumber(variant.salePrice))
     .filter((price) => price > 0);
   const variantCosts = activeVariants
-    .map((variant) => parseNonNegativeNumber(variant.purchaseCost))
+    .map((variant) =>
+      product.inventoryMode === "measured"
+        ? parseNonNegativeNumber(variant.purchasePackageCost)
+        : parseNonNegativeNumber(variant.purchaseCost),
+    )
     .filter((cost) => cost > 0);
   const variantStocks = activeVariants.map((variant) =>
     parseNonNegativeNumber(variant.currentStock),
@@ -756,7 +848,9 @@ export function ProductForm({
   const hasIncompleteVariants = activeVariants.some(
     (variant) =>
       !variant.name.trim() ||
-      !variant.purchaseCost ||
+      (product.inventoryMode === "measured"
+        ? !variant.purchasePackageCost
+        : !variant.purchaseCost) ||
       parseNonNegativeNumber(variant.salePrice) <= 0,
   );
   const hasLossVariants = activeVariants.some(
@@ -805,7 +899,13 @@ export function ProductForm({
               <button
                 key={step}
                 type="button"
-                onClick={() => setCurrentStep(step)}
+                onClick={() => {
+                  if (step > 1 && !validateStepOne()) {
+                    return;
+                  }
+
+                  setCurrentStep(step);
+                }}
                 className={`h-2 rounded-full transition ${
                   currentStep >= step ? "bg-[#2563EB]" : "bg-[#E2E8F0]"
                 }`}
@@ -851,15 +951,45 @@ export function ProductForm({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Categoría">
-                <input
-                  value={product.category}
-                  onChange={(event) =>
-                    updateProductField("category", event.target.value)
-                  }
-                  maxLength={100}
+                <select
+                  value={categoryChoice}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setCategoryChoice(value);
+                    updateProductField(
+                      "category",
+                      value === "__custom" ? "" : value,
+                    );
+                  }}
                   className={inputClass}
-                />
+                >
+                  <option value="">Sin categoría</option>
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                  <option value="__custom">Otro</option>
+                </select>
               </Field>
+              {categoryChoice === "__custom" && (
+                <Field label="Categoría personalizada">
+                  <input
+                    value={product.category}
+                    onChange={(event) =>
+                      updateProductField("category", event.target.value)
+                    }
+                    maxLength={100}
+                    className={inputClass}
+                    placeholder="Escribe tu categoría"
+                  />
+                </Field>
+              )}
+              {categoryChoice !== "__custom" && (
+                <p className="self-end rounded-2xl bg-[#F8FAFC] p-4 text-xs font-bold leading-5 text-[#64748B]">
+                  Opcional. Puedes dejarla vacía y completar este dato después.
+                </p>
+              )}
             </div>
 
             {advancedOpen && (
@@ -933,35 +1063,28 @@ export function ProductForm({
               <p className="text-sm font-black text-[#0F172A]">
                 ¿Cómo vendes este producto?
               </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {[
                   {
-                    examples: "Camiseta, cuaderno, botella.",
+                    examples: "Cuaderno, botella, camiseta, labial.",
                     label: "Por unidad",
                     text: "Para productos que se venden como piezas completas.",
                     value: "unit",
                   },
                   {
-                    examples: "Alimento a granel, tela, líquidos.",
+                    examples: "Alimento a granel, líquidos, tela.",
                     label: "Por peso, volumen o longitud",
-                    text: "Para productos que se venden por kg, gramos, litros o metros.",
+                    text: "Para productos vendidos por kg, gramos, litros o metros.",
                     value: "measured",
-                  },
-                  {
-                    examples: "Camiseta S/M/L, labial por tono.",
-                    label: "Con variantes",
-                    text: "Para productos con tallas, colores, tonos o presentaciones.",
-                    value: "variants",
                   },
                 ].map((option) => (
                   <button
                     key={option.value}
                     type="button"
-                    onClick={() => selectSellingMode(option.value as "measured" | "unit" | "variants")}
+                    onClick={() => selectSellingMode(option.value as "measured" | "unit")}
+                    data-field-key="saleMode"
                     className={`rounded-[1.25rem] border p-4 text-left transition ${
-                      (option.value === "variants"
-                        ? product.productType === "variants"
-                        : product.inventoryMode === option.value && product.productType !== "variants")
+                      saleMode === option.value
                         ? "border-[#2563EB] bg-white shadow-sm ring-4 ring-[#BFDBFE]/70"
                         : "border-[#E2E8F0] bg-white hover:border-[#BFDBFE]"
                     }`}
@@ -978,6 +1101,31 @@ export function ProductForm({
                   </button>
                 ))}
               </div>
+              {fieldErrors.saleMode && (
+                <p className="mt-3 text-sm font-bold text-[#DC2626]">
+                  {fieldErrors.saleMode}
+                </p>
+              )}
+              <label className="mt-4 flex cursor-pointer flex-col gap-3 rounded-[1.25rem] border border-[#E2E8F0] bg-white p-4 transition hover:border-[#BFDBFE] sm:flex-row sm:items-start">
+                <input
+                  type="checkbox"
+                  checked={hasVariants}
+                  onChange={(event) => toggleHasVariants(event.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#BFDBFE]"
+                />
+                <span>
+                  <span className="block text-sm font-black text-[#0F172A]">
+                    Este producto tiene variantes
+                  </span>
+                  <span className="mt-1 block text-xs font-bold leading-5 text-[#475569]">
+                    Úsalo si vendes el mismo producto en tallas, colores, tonos,
+                    sabores o presentaciones diferentes.
+                  </span>
+                  <span className="mt-2 block text-xs font-black text-[#2563EB]">
+                    Talla M, color negro, tono nude, sabor pollo.
+                  </span>
+                </span>
+              </label>
             </div>
           </div>
         </section>
@@ -1010,11 +1158,9 @@ export function ProductForm({
                 <button
                   key={value}
                   type="button"
-                  onClick={() =>
-                    updateProductField("productType", value as ProductType)
-                  }
+                  onClick={() => toggleHasVariants(value === "variants")}
                   className={`rounded-full px-4 py-3 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
-                    product.productType === value
+                    (value === "variants" ? hasVariants : !hasVariants)
                       ? "bg-white text-[#2563EB] shadow-sm ring-1 ring-[#BFDBFE]"
                       : "text-[#475569]"
                   }`}
@@ -1025,7 +1171,7 @@ export function ProductForm({
             </div>
           )}
 
-          {product.productType === "variants" ? (
+          {hasVariants ? (
             <div className="mt-6 space-y-5">
               <div className="rounded-[1.75rem] border border-[#BFDBFE] bg-[#EFF6FF]/70 p-5">
                 <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
@@ -1063,6 +1209,133 @@ export function ProductForm({
                 </div>
               </div>
 
+              {product.inventoryMode === "measured" && (
+                <div className="rounded-[1.5rem] border border-[#BFDBFE] bg-[#EFF6FF]/70 p-4">
+                  <div>
+                    <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
+                      Configuración común por medida
+                    </p>
+                    <p className="mt-2 text-sm font-bold leading-6 text-[#475569]">
+                      Define cómo compras y vendes este producto. Cada variante cambia
+                      nombre, precio y existencia.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <Field label="¿Qué estás controlando?">
+                      <select
+                        value={primaryVariant.measurementFamily}
+                        onChange={(event) => {
+                          const family = event.target.value as MeasurementFamily;
+                          const firstUnit = unitsForFamily(family)[0]
+                            ?.value as MeasurementUnit;
+
+                          updateMeasuredVariantsCommon((current) => ({
+                            ...current,
+                            defaultSaleUnit: firstUnit,
+                            inventoryUnit: firstUnit,
+                            measurementFamily: family,
+                            purchasePackageUnit: firstUnit,
+                          }));
+                        }}
+                        className={inputClass}
+                      >
+                        {measurementFamilies.map((family) => (
+                          <option key={family.value} value={family.value}>
+                            {family.label}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <Field label="Nombre de la presentación">
+                      <input
+                        value={primaryVariant.purchasePackageLabel}
+                        onChange={(event) =>
+                          updateMeasuredVariantsCommon((current) => ({
+                            ...current,
+                            purchasePackageLabel: event.target.value,
+                          }))
+                        }
+                        className={inputClass}
+                        placeholder="Bulto"
+                      />
+                    </Field>
+
+                    <NumberField
+                      error={fieldErrors["variants.0.purchasePackageQuantity"]}
+                      fieldKey="variants.0.purchasePackageQuantity"
+                      label="Cantidad contenida"
+                      value={primaryVariant.purchasePackageQuantity}
+                      onChange={(value) =>
+                        updateMeasuredVariantsCommon((current) => ({
+                          ...current,
+                          purchasePackageQuantity: value,
+                        }))
+                      }
+                    />
+
+                    <Field label="Unidad del contenido">
+                      <select
+                        value={primaryVariant.purchasePackageUnit}
+                        onChange={(event) =>
+                          updateMeasuredVariantsCommon((current) => ({
+                            ...current,
+                            purchasePackageUnit: event.target.value as MeasurementUnit,
+                          }))
+                        }
+                        className={inputClass}
+                      >
+                        {unitsForFamily(primaryVariant.measurementFamily).map((unit) => (
+                          <option key={unit.value} value={unit.value}>
+                            {unit.label}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+
+                    <NumberField
+                      error={fieldErrors["variants.0.purchasePackageCost"]}
+                      fieldKey="variants.0.purchasePackageCost"
+                      label="Costo total de la presentación"
+                      value={primaryVariant.purchasePackageCost}
+                      onChange={(value) =>
+                        updateMeasuredVariantsCommon((current) => ({
+                          ...current,
+                          purchasePackageCost: value,
+                        }))
+                      }
+                    />
+
+                    <Field label="Unidad de venta predeterminada">
+                      <select
+                        value={primaryVariant.defaultSaleUnit}
+                        onChange={(event) =>
+                          updateMeasuredVariantsCommon((current) => ({
+                            ...current,
+                            defaultSaleUnit: event.target.value as MeasurementUnit,
+                          }))
+                        }
+                        className={inputClass}
+                      >
+                        {unitsForFamily(primaryVariant.measurementFamily).map((unit) => (
+                          <option key={unit.value} value={unit.value}>
+                            {unit.label}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  </div>
+
+                  <p className="mt-4 rounded-2xl bg-white p-3 text-xs font-bold leading-5 text-[#475569]">
+                    Compras 1 {primaryVariant.purchasePackageLabel || "presentación"} de{" "}
+                    {primaryVariant.purchasePackageQuantity || "0"}{" "}
+                    {getUnitSymbol(primaryVariant.purchasePackageUnit)} y vendes por{" "}
+                    {getUnitSymbol(primaryVariant.defaultSaleUnit)}.
+                  </p>
+                </div>
+              )}
+
               <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm">
                 <button
                   type="button"
@@ -1092,7 +1365,10 @@ export function ProductForm({
                       {
                         checked: bulkValues.applyCost,
                         field: "cost",
-                        label: "Costo",
+                        label:
+                          product.inventoryMode === "measured"
+                            ? "Costo presentación"
+                            : "Costo",
                         toggle: "applyCost",
                         value: bulkValues.cost,
                       },
@@ -1153,11 +1429,14 @@ export function ProductForm({
               <div className="space-y-3">
                 {product.variants.map((variant, index) => {
                   const profit = calculateVariantProfit(variant);
+                  const isMeasuredVariant = product.inventoryMode === "measured";
                   const variantKey = variant.id || String(index);
                   const isOptionsOpen = Boolean(openVariantOptions[index]);
                   const badge =
                     !variant.name.trim() ||
-                    !variant.purchaseCost ||
+                    (isMeasuredVariant
+                      ? !variant.purchasePackageCost
+                      : !variant.purchaseCost) ||
                     parseNonNegativeNumber(variant.salePrice) <= 0
                       ? {
                           className: "bg-[#FEF3C7] text-[#92400E]",
@@ -1183,7 +1462,13 @@ export function ProductForm({
                       key={variantKey}
                       className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm"
                     >
-                      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] lg:items-start">
+                      <div
+                        className={`grid gap-3 lg:items-start ${
+                          isMeasuredVariant
+                            ? "lg:grid-cols-[1.4fr_1fr_1fr_auto]"
+                            : "lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto]"
+                        }`}
+                      >
                         <Field label="Nombre de variante">
                           <input
                             data-field-key={`variants.${index}.name`}
@@ -1204,22 +1489,28 @@ export function ProductForm({
                             </span>
                           )}
                         </Field>
-                        <NumberField
-                          error={fieldErrors[`variants.${index}.purchaseCost`]}
-                          fieldKey={`variants.${index}.purchaseCost`}
-                          label="Costo"
-                          value={variant.purchaseCost}
-                          onChange={(value) =>
-                            updateVariant(index, (current) => ({
-                              ...current,
-                              purchaseCost: value,
-                            }))
-                          }
-                        />
+                        {!isMeasuredVariant && (
+                          <NumberField
+                            error={fieldErrors[`variants.${index}.purchaseCost`]}
+                            fieldKey={`variants.${index}.purchaseCost`}
+                            label="Costo"
+                            value={variant.purchaseCost}
+                            onChange={(value) =>
+                              updateVariant(index, (current) => ({
+                                ...current,
+                                purchaseCost: value,
+                              }))
+                            }
+                          />
+                        )}
                         <NumberField
                           error={fieldErrors[`variants.${index}.salePrice`]}
                           fieldKey={`variants.${index}.salePrice`}
-                          label="Precio"
+                          label={
+                            isMeasuredVariant
+                              ? `Precio por ${getUnitSymbol(variant.defaultSaleUnit)}`
+                              : "Precio"
+                          }
                           value={variant.salePrice}
                           onChange={(value) =>
                             updateVariant(index, (current) => ({
@@ -1231,7 +1522,11 @@ export function ProductForm({
                         <NumberField
                           error={fieldErrors[`variants.${index}.currentStock`]}
                           fieldKey={`variants.${index}.currentStock`}
-                          label="Existencia"
+                          label={
+                            isMeasuredVariant
+                              ? `Existencia en ${getUnitSymbol(variant.inventoryUnit)}`
+                              : "Existencia"
+                          }
                           value={variant.currentStock}
                           onChange={(value) =>
                             updateVariant(index, (current) => ({
@@ -1410,40 +1705,48 @@ export function ProductForm({
                             />
                           </Field>
 
-                          <div className="rounded-[1.25rem] bg-white p-4 sm:col-span-2">
-                            <dl className="grid gap-2 text-sm sm:grid-cols-2">
-                              {[
-                                ["Costo total", formatter.format(profit.totalUnitCost)],
-                                ["Precio sugerido", formatter.format(profit.suggestedPrice)],
-                                ["Ganancia estimada", formatter.format(profit.estimatedProfit)],
-                                ["Margen real", `${profit.actualMargin.toFixed(1)}%`],
-                              ].map(([label, value]) => (
-                                <div
-                                  key={label}
-                                  className="flex justify-between gap-3 rounded-2xl bg-[#F8FAFC] p-3"
-                                >
-                                  <dt className="text-[#475569]">{label}</dt>
-                                  <dd className="font-black text-[#0F172A]">{value}</dd>
-                                </div>
-                              ))}
-                            </dl>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                updateVariant(index, (current) => ({
-                                  ...current,
-                                  salePrice: String(Math.ceil(profit.suggestedPrice)),
-                                }));
-                                clearFieldError(`variants.${index}.salePrice`);
-                                trackEvent("product_price_suggestion_used", {
-                                  product_type: product.productType,
-                                });
-                              }}
-                              className="mt-4 rounded-full bg-[#2563EB] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1D4ED8]"
-                            >
-                              Usar precio sugerido
-                            </button>
-                          </div>
+                          {!isMeasuredVariant && (
+                            <div className="rounded-[1.25rem] bg-white p-4 sm:col-span-2">
+                              <dl className="grid gap-2 text-sm sm:grid-cols-2">
+                                {[
+                                  ["Costo total", formatter.format(profit.totalUnitCost)],
+                                  [
+                                    "Precio sugerido",
+                                    formatter.format(profit.suggestedPrice),
+                                  ],
+                                  [
+                                    "Ganancia estimada",
+                                    formatter.format(profit.estimatedProfit),
+                                  ],
+                                  ["Margen real", `${profit.actualMargin.toFixed(1)}%`],
+                                ].map(([label, value]) => (
+                                  <div
+                                    key={label}
+                                    className="flex justify-between gap-3 rounded-2xl bg-[#F8FAFC] p-3"
+                                  >
+                                    <dt className="text-[#475569]">{label}</dt>
+                                    <dd className="font-black text-[#0F172A]">{value}</dd>
+                                  </div>
+                                ))}
+                              </dl>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  updateVariant(index, (current) => ({
+                                    ...current,
+                                    salePrice: String(Math.ceil(profit.suggestedPrice)),
+                                  }));
+                                  clearFieldError(`variants.${index}.salePrice`);
+                                  trackEvent("product_price_suggestion_used", {
+                                    product_type: product.productType,
+                                  });
+                                }}
+                                className="mt-4 rounded-full bg-[#2563EB] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1D4ED8]"
+                              >
+                                Usar precio sugerido
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1473,7 +1776,7 @@ export function ProductForm({
                       : `Variante ${index + 1}`}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {product.productType === "variants" && (
+                    {hasVariants && (
                       <>
                         <button
                           type="button"
@@ -1497,7 +1800,7 @@ export function ProductForm({
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    {product.productType === "variants" && (
+                    {hasVariants && (
                       <Field label="Nombre de variante">
                         <input
                           data-field-key={`variants.${index}.name`}
@@ -2003,7 +2306,7 @@ export function ProductForm({
                       </div>
                     )}
                     {product.inventoryMode === "unit" &&
-                      product.productType === "simple" &&
+                      !hasVariants &&
                       !showSuggestedPrice && (
                         <button
                           type="button"
@@ -2069,7 +2372,7 @@ export function ProductForm({
             {[
               ["Producto", product.name || "Sin nombre"],
               ["Categoría", product.category || "Sin categoría"],
-              ["Forma de venta", sellingModeLabel],
+              ["Forma de venta", saleSetupLabel],
               ["Variantes", String(product.variants.length)],
             ].map(([label, value]) => (
               <div
@@ -2085,7 +2388,7 @@ export function ProductForm({
           </div>
 
           <div className="mt-5 rounded-[1.5rem] border border-[#BFDBFE] bg-[#EFF6FF]/70 p-4">
-            {product.productType === "variants" ? (
+            {hasVariants ? (
               <div className="space-y-4">
                 <div className="grid gap-3 text-sm sm:grid-cols-2">
                   <p className="font-bold text-[#475569]">
@@ -2226,10 +2529,10 @@ export function ProductForm({
             <div className="flex justify-between gap-3">
               <span className="text-[#475569]">Tipo</span>
               <span className="font-black text-[#0F172A]">
-                {sellingModeLabel}
+                {saleMode ? saleSetupLabel : "Selecciona forma de venta"}
               </span>
             </div>
-            {product.productType === "variants" ? (
+            {hasVariants ? (
               <>
                 <div className="flex justify-between gap-3">
                   <span className="text-[#475569]">Variantes</span>
@@ -2319,7 +2622,7 @@ export function ProductForm({
             <button
               type="button"
               onClick={currentStep < 3 ? validateBeforeNextStep : submit}
-              disabled={isPending}
+              disabled={isPending || (currentStep === 1 && !isStepOneComplete)}
               className="rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {currentStep < 3
@@ -2330,6 +2633,11 @@ export function ProductForm({
                     ? "Guardar producto"
                     : "Guardar cambios"}
             </button>
+            {currentStep === 1 && !isStepOneComplete && (
+              <p className="text-center text-xs font-bold text-[#64748B]">
+                Completa el nombre y selecciona cómo vendes este producto para continuar.
+              </p>
+            )}
             <Link
               href="/app/productos"
               className="rounded-full bg-white px-6 py-4 text-center text-base font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-[#EFF6FF]"

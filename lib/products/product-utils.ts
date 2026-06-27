@@ -451,7 +451,7 @@ export function validateProductInput(input: ProductFormInput): ProductValidation
     const originalVariant = input.variants[index];
     const prefix = `variants.${index}`;
 
-    if (!variant.name) {
+    if (productType === "variants" && !variant.name) {
       fieldErrors[`${prefix}.name`] = "Escribe el nombre de esta variante.";
     }
 
