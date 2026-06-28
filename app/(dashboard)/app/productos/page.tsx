@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
-import { ProductArchiveAction } from "@/components/products/product-archive-action";
+import { ProductRowActions } from "@/components/products/product-row-actions";
 import { createClient } from "@/lib/supabase/server";
 import {
   calculateVariantProfit,
@@ -548,21 +548,12 @@ export default async function ProductsPage({
                           </span>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <Link
-                              href={`/app/productos/${product.id}/editar`}
-                              className="rounded-full bg-[#EFF6FF] px-4 py-2 text-xs font-black text-[#2563EB] ring-1 ring-[#BFDBFE]"
-                            >
-                              Editar
-                            </Link>
-                            <ProductArchiveAction
-                              productId={product.id}
-                              status={
-                                product.status === "archived" ? "archived" : "active"
-                              }
-                              totalStock={stats.totalStock}
-                            />
-                          </div>
+                          <ProductRowActions
+                            editHref={`/app/productos/${product.id}/editar`}
+                            hasStock={stats.totalStock > 0}
+                            productId={product.id}
+                            status={product.status === "archived" ? "archived" : "active"}
+                          />
                         </td>
                       </tr>
                     );
@@ -616,20 +607,13 @@ export default async function ProductsPage({
                         <strong>{stats.avgMargin.toFixed(1)}%</strong>
                       </p>
                     </div>
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                      <Link
-                        href={`/app/productos/${product.id}/editar`}
-                        className="block rounded-full bg-[#EFF6FF] px-4 py-3 text-center text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE]"
-                      >
-                        Editar
-                      </Link>
-                      <ProductArchiveAction
-                        productId={product.id}
-                        status={product.status === "archived" ? "archived" : "active"}
-                        totalStock={stats.totalStock}
-                        variant="block"
-                      />
-                    </div>
+                    <ProductRowActions
+                      editHref={`/app/productos/${product.id}/editar`}
+                      hasStock={stats.totalStock > 0}
+                      productId={product.id}
+                      status={product.status === "archived" ? "archived" : "active"}
+                      variant="block"
+                    />
                   </article>
                 );
               })}

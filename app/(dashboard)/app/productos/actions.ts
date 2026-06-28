@@ -326,19 +326,23 @@ export async function archiveProduct(productId: string): Promise<ActionResult> {
 
   const { business, supabase } = context;
 
-  const { error: variantsError } = await supabase
-    .from("product_variants")
-    .update({ status: "archived" })
-    .eq("product_id", productId)
+  const { data: product, error: productLookupError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
     .eq("business_id", business.id);
 
-  if (variantsError) {
-    logProductError("archiveProductVariants", variantsError);
+  if (productLookupError) {
+    logProductError("archiveProductLookup", productLookupError);
 
     return {
       error: "No pudimos archivar el producto. Intenta nuevamente.",
       ok: false,
     };
+  }
+
+  if (!product?.length) {
+    return { error: "No encontramos este producto.", ok: false };
   }
 
   const { error } = await supabase
@@ -349,6 +353,21 @@ export async function archiveProduct(productId: string): Promise<ActionResult> {
 
   if (error) {
     logProductError("archiveProduct", error);
+
+    return {
+      error: "No pudimos archivar el producto. Intenta nuevamente.",
+      ok: false,
+    };
+  }
+
+  const { error: variantsError } = await supabase
+    .from("product_variants")
+    .update({ status: "archived" })
+    .eq("product_id", productId)
+    .eq("business_id", business.id);
+
+  if (variantsError) {
+    logProductError("archiveProductVariants", variantsError);
 
     return {
       error: "No pudimos archivar el producto. Intenta nuevamente.",
@@ -369,6 +388,25 @@ export async function restoreProduct(productId: string): Promise<ActionResult> {
   }
 
   const { business, supabase } = context;
+
+  const { data: product, error: productLookupError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("business_id", business.id);
+
+  if (productLookupError) {
+    logProductError("restoreProductLookup", productLookupError);
+
+    return {
+      error: "No pudimos restaurar el producto. Intenta nuevamente.",
+      ok: false,
+    };
+  }
+
+  if (!product?.length) {
+    return { error: "No encontramos este producto.", ok: false };
+  }
 
   const { error } = await supabase
     .from("products")
