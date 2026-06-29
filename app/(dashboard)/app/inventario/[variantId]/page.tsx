@@ -40,7 +40,7 @@ export default async function InventoryDetailPage({
       supabase
         .from("product_variants")
         .select(
-          "id,product_id,name,sku,purchase_cost,current_stock,minimum_stock,low_stock_threshold,inventory_location,last_counted_at,inventory_mode,inventory_unit,default_sale_unit,status,products!inner(id,name,status,track_inventory,unit)",
+          "id,product_id,name,sku,purchase_cost,current_stock,low_stock_threshold,inventory_location,last_counted_at,inventory_mode,inventory_unit,default_sale_unit,status,products!inner(id,name,status,track_inventory,unit)",
         )
         .eq("business_id", business.id)
         .eq("id", variantId)
@@ -108,9 +108,14 @@ export default async function InventoryDetailPage({
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
             ["Stock actual", `${toSafeNumber(variant.current_stock)} ${inventoryUnitLabel(variant.inventory_unit)}`],
+            [
+              "Alerta stock bajo",
+              status.hasLowStockAlertConfigured
+                ? `${toSafeNumber(variant.low_stock_threshold)} ${inventoryUnitLabel(variant.inventory_unit)}`
+                : "Alerta sin configurar",
+            ],
             ["Costo actual", formatter.format(toSafeNumber(variant.purchase_cost))],
             ["Valor estimado", formatter.format(inventoryValue(variant))],
-            ["Ubicación", variant.inventory_location || "Sin ubicación"],
           ].map(([label, value]) => (
             <article key={label} className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
               <p className="text-sm font-black text-[#475569]">{label}</p>
@@ -168,7 +173,8 @@ export default async function InventoryDetailPage({
 
           <InventorySettingsForm
             inventoryLocation={variant.inventory_location || ""}
-            lowStockThreshold={String(variant.low_stock_threshold || variant.minimum_stock || "")}
+            lowStockThreshold={String(variant.low_stock_threshold || "")}
+            unitLabel={variant.inventory_mode === "measured" ? inventoryUnitLabel(variant.inventory_unit) : "unidades"}
             variantId={variant.id}
           />
         </section>

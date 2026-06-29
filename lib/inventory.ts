@@ -116,26 +116,63 @@ export function inventoryValue(variant: InventoryVariant) {
 }
 
 export function inventoryThreshold(variant: InventoryVariant) {
-  return toSafeNumber(variant.low_stock_threshold || variant.minimum_stock);
+  return toSafeNumber(variant.low_stock_threshold);
+}
+
+export function getInventoryStatus({
+  currentStock,
+  lowStockThreshold,
+  trackInventory,
+}: {
+  currentStock: unknown;
+  lowStockThreshold: unknown;
+  trackInventory: boolean | null | undefined;
+}) {
+  const stock = toSafeNumber(currentStock);
+  const threshold = toSafeNumber(lowStockThreshold);
+  const hasLowStockAlertConfigured = threshold > 0;
+
+  if (trackInventory === false) {
+    return {
+      hasLowStockAlertConfigured,
+      label: "Sin control",
+      status: "untracked" as const,
+      tone: "neutral" as const,
+    };
+  }
+
+  if (stock <= 0) {
+    return {
+      hasLowStockAlertConfigured,
+      label: "Agotado",
+      status: "out_of_stock" as const,
+      tone: "danger" as const,
+    };
+  }
+
+  if (hasLowStockAlertConfigured && stock <= threshold) {
+    return {
+      hasLowStockAlertConfigured,
+      label: "Stock bajo",
+      status: "low_stock" as const,
+      tone: "warning" as const,
+    };
+  }
+
+  return {
+    hasLowStockAlertConfigured,
+    label: "En stock",
+    status: "in_stock" as const,
+    tone: "success" as const,
+  };
 }
 
 export function inventoryStatus(variant: InventoryVariant) {
-  if (variant.track_inventory === false) {
-    return { label: "Sin seguimiento", tone: "neutral" as const };
-  }
-
-  const stock = toSafeNumber(variant.current_stock);
-  const threshold = inventoryThreshold(variant);
-
-  if (stock <= 0) {
-    return { label: "Agotado", tone: "danger" as const };
-  }
-
-  if (threshold > 0 && stock <= threshold) {
-    return { label: "Stock bajo", tone: "warning" as const };
-  }
-
-  return { label: "En stock", tone: "success" as const };
+  return getInventoryStatus({
+    currentStock: variant.current_stock,
+    lowStockThreshold: variant.low_stock_threshold,
+    trackInventory: variant.track_inventory,
+  });
 }
 
 export function statusClass(tone: "danger" | "neutral" | "success" | "warning") {

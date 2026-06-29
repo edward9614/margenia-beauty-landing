@@ -51,7 +51,7 @@ export default async function AppHomePage() {
       : user.email?.split("@")[0] || "emprendedora";
   const { data: productRows } = await supabase
     .from("products")
-    .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,minimum_stock,status)")
+    .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,low_stock_threshold,status)")
     .eq("business_id", business.id);
   const { data: comboRows } = await supabase
     .from("combos")
@@ -114,12 +114,12 @@ export default async function AppHomePage() {
   const hasCatalog = hasProducts || hasCombos;
   const lowStockVariants = activeVariants.filter((variant) => {
     const stock = Number(variant.current_stock || 0);
-    const threshold = Number(variant.minimum_stock || 0);
+    const threshold = Number(variant.low_stock_threshold || 0);
 
-    return threshold > 0 && stock > 0 && stock <= threshold;
+    return variant.trackInventory !== false && threshold > 0 && stock > 0 && stock <= threshold;
   });
   const outOfStockVariants = activeVariants.filter(
-    (variant) => Number(variant.current_stock || 0) <= 0,
+    (variant) => variant.trackInventory !== false && Number(variant.current_stock || 0) <= 0,
   );
   const salesTotal = typedSaleRows.reduce(
     (total, sale) => total + Number(sale.total_amount || 0),

@@ -22,6 +22,7 @@ export type ProductVariantRow = {
   desired_margin_percent: number | string | null;
   sale_price: number | string | null;
   current_stock: number | string | null;
+  low_stock_threshold?: number | string | null;
   minimum_stock: number | string | null;
   allow_fractional_sales?: boolean | null;
   default_sale_unit?: string | null;

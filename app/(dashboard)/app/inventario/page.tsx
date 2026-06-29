@@ -23,11 +23,21 @@ function getParam(params: SearchParams | undefined, key: string, fallback = "") 
 function matchesFilter(variant: InventoryVariant, filter: string) {
   const status = inventoryStatus(variant);
 
-  if (filter === "low") return status.label === "Stock bajo";
-  if (filter === "out") return status.label === "Agotado";
+  if (filter === "low") return status.status === "low_stock";
+  if (filter === "out") return status.status === "out_of_stock";
   if (filter === "with_stock") return toSafeNumber(variant.current_stock) > 0;
   if (filter === "measured") return variant.inventory_mode === "measured";
   return true;
+}
+
+function alertLabel(variant: InventoryVariant) {
+  const threshold = inventoryThreshold(variant);
+
+  if (threshold <= 0) {
+    return "Alerta sin configurar";
+  }
+
+  return `${threshold.toLocaleString("es-CO")} ${inventoryUnitLabel(variant.inventory_unit)}`;
 }
 
 export default async function InventoryPage({
@@ -78,8 +88,8 @@ export default async function InventoryPage({
   });
   const formatter = moneyFormatter(business.currency || "COP");
   const totalValue = variants.reduce((total, variant) => total + inventoryValue(variant), 0);
-  const lowStock = variants.filter((variant) => inventoryStatus(variant).label === "Stock bajo").length;
-  const outStock = variants.filter((variant) => inventoryStatus(variant).label === "Agotado").length;
+  const lowStock = variants.filter((variant) => inventoryStatus(variant).status === "low_stock").length;
+  const outStock = variants.filter((variant) => inventoryStatus(variant).status === "out_of_stock").length;
 
   return (
     <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
@@ -161,7 +171,7 @@ export default async function InventoryPage({
             <table className="min-w-full divide-y divide-[#E2E8F0] text-sm">
               <thead className="bg-[#F8FAFC] text-left text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">
                 <tr>
-                  {["Producto", "Variante", "Stock actual", "Unidad", "Stock bajo", "Valor estimado", "Último movimiento", "Acciones"].map((header) => (
+                  {["Producto", "Variante", "Stock actual", "Unidad", "Alerta de stock bajo", "Estado", "Valor estimado", "Acciones"].map((header) => (
                     <th key={header} className="px-5 py-4">{header}</th>
                   ))}
                 </tr>
@@ -176,13 +186,18 @@ export default async function InventoryPage({
                       <td className="px-5 py-4 text-[#475569]">{variant.name || "Presentación estándar"}</td>
                       <td className="px-5 py-4 font-black text-[#0F172A]">{toSafeNumber(variant.current_stock).toLocaleString("es-CO")}</td>
                       <td className="px-5 py-4">{inventoryUnitLabel(variant.inventory_unit)}</td>
+                      <td className="px-5 py-4 text-[#475569]">{alertLabel(variant)}</td>
                       <td className="px-5 py-4">
                         <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(status.tone)}`}>{status.label}</span>
                       </td>
                       <td className="px-5 py-4">{formatter.format(inventoryValue(variant))}</td>
-                      <td className="px-5 py-4 text-[#475569]">{variant.last_counted_at ? new Date(variant.last_counted_at).toLocaleDateString("es-CO") : "Sin conteo"}</td>
                       <td className="px-5 py-4">
-                        <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                        <div className="flex flex-col gap-1">
+                          <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                          <Link href={`/app/inventario/${variant.id}#alerta-stock`} className="font-black text-[#0891B2]">
+                            Configurar alerta
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -201,13 +216,18 @@ export default async function InventoryPage({
                       <p className="font-black text-[#0F172A]">{variant.product_name}</p>
                       <p className="text-sm font-bold text-[#475569]">{variant.name || "Presentación estándar"}</p>
                     </div>
-                    <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                    <div className="flex flex-col items-end gap-1">
+                      <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                      <Link href={`/app/inventario/${variant.id}#alerta-stock`} className="text-xs font-black text-[#0891B2]">
+                        Configurar alerta
+                      </Link>
+                    </div>
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                     <p><span className="block font-bold text-[#64748B]">Stock</span>{toSafeNumber(variant.current_stock)} {inventoryUnitLabel(variant.inventory_unit)}</p>
                     <p><span className="block font-bold text-[#64748B]">Estado</span>{status.label}</p>
                     <p><span className="block font-bold text-[#64748B]">Valor</span>{formatter.format(inventoryValue(variant))}</p>
-                    <p><span className="block font-bold text-[#64748B]">Mínimo</span>{inventoryThreshold(variant)}</p>
+                    <p><span className="block font-bold text-[#64748B]">Alerta</span>{alertLabel(variant)}</p>
                   </div>
                 </article>
               );

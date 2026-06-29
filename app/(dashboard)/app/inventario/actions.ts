@@ -86,7 +86,7 @@ export async function loadInventoryVariants(
   const { data } = await supabase
     .from("product_variants")
     .select(
-      "id,product_id,name,sku,purchase_cost,sale_price,current_stock,minimum_stock,low_stock_threshold,inventory_location,last_counted_at,inventory_mode,inventory_unit,default_sale_unit,status,products!inner(id,name,status,track_inventory,unit)",
+      "id,product_id,name,sku,purchase_cost,sale_price,current_stock,low_stock_threshold,inventory_location,last_counted_at,inventory_mode,inventory_unit,default_sale_unit,status,products!inner(id,name,status,track_inventory,unit)",
     )
     .eq("business_id", businessId)
     .eq("status", "active")
@@ -210,6 +210,10 @@ export async function updateInventorySettings({
   }
 
   const { business, supabase } = context;
+  if (String(lowStockThreshold).includes("-")) {
+    return { error: "La alerta no puede ser negativa.", ok: false };
+  }
+
   const { error } = await supabase.rpc("update_inventory_settings", {
     p_business_id: business.id,
     p_inventory_location: inventoryLocation,
@@ -222,6 +226,7 @@ export async function updateInventorySettings({
     return { error: mapInventoryError(error), ok: false };
   }
 
+  revalidatePath("/app");
   revalidatePath("/app/inventario");
   revalidatePath(`/app/inventario/${variantId}`);
   return { ok: true };
