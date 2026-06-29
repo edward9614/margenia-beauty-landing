@@ -29,7 +29,6 @@ import { dashboardHelp } from "@/lib/help-content";
 import {
   moneyFormatter,
   type ProductRow,
-  type ProductVariantRow,
 } from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
@@ -105,11 +104,6 @@ export default async function AppHomePage({
         trackInventory: product.track_inventory,
       })),
   );
-  const inventoryValue = activeVariants.reduce(
-    (total: number, variant: ProductVariantRow) =>
-      total + Number(variant.current_stock || 0) * Number(variant.purchase_cost || 0),
-    0,
-  );
   const hasProducts = activeProducts.length > 0;
   const hasCombos = Boolean(
     ((comboRows || []) as { id: string; status: string | null }[]).some(
@@ -164,42 +158,42 @@ export default async function AppHomePage({
   const formatter = moneyFormatter(business.currency || "COP");
   const metrics = [
     {
-      badge: hasSales ? "Real" : "Sin datos",
-      detail: hasSales ? "Ventas completadas del periodo seleccionado." : "Sin datos de ventas en este periodo.",
+      badge: hasSales ? "Periodo" : "Sin datos",
+      detail: hasSales ? "Ventas del período" : "Sin ventas aún",
       help: dashboardHelp.sales,
       icon: <SalesIcon className="h-5 w-5" />,
       title: "Ventas",
       value: hasSales ? formatter.format(salesTotal) : undefined,
+      variant: "sales" as const,
     },
     {
       badge: hasSales ? "Real" : "Sin datos",
-      detail: hasSales
-        ? "Utilidad bruta estimada del mes."
-        : "Sin datos de utilidad en este periodo.",
+      detail: hasSales ? "Ganancia estimada" : "Sin utilidad aún",
       help: dashboardHelp.profit,
       icon: <ProfitIcon className="h-5 w-5" />,
       title: "Utilidad real",
       value: hasSales ? formatter.format(grossProfitTotal) : undefined,
+      variant: "profit" as const,
     },
     {
-      badge: hasProducts ? "Real" : "Sin datos",
+      badge: hasProducts ? "Stock" : "Sin datos",
       detail: hasProducts
-        ? `${lowStockVariants.length} bajo stock · ${outOfStockVariants.length} agotados · valor al costo: ${formatter.format(inventoryValue)}`
-        : "Agrega productos para activar el inventario.",
+        ? `${lowStockVariants.length} bajo stock · ${outOfStockVariants.length} agotado${outOfStockVariants.length === 1 ? "" : "s"}`
+        : "Agrega productos",
       help: dashboardHelp.inventory,
       icon: <BoxIcon className="h-5 w-5" />,
       title: "Inventario",
       value: hasProducts ? activeVariants.length : "—",
+      variant: "inventory" as const,
     },
     {
       badge: hasSales ? "Por cobrar" : undefined,
-      detail: hasSales
-        ? "Saldo pendiente de ventas del mes."
-        : "Sin datos de caja todavía.",
+      detail: hasSales ? "Saldo por cobrar" : "Sin caja aún",
       help: dashboardHelp.pending,
       icon: <WalletIcon className="h-5 w-5" />,
       title: "Caja",
       value: hasSales ? formatter.format(pendingTotal) : undefined,
+      variant: "cash" as const,
     },
   ];
 
@@ -228,6 +222,7 @@ export default async function AppHomePage({
                   icon={metric.icon}
                   title={metric.title}
                   value={metric.value}
+                  variant={metric.variant}
                 />
               ))}
             </section>
