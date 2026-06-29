@@ -18,7 +18,9 @@ import {
   MargeniaInsightCard,
 } from "@/components/dashboard/side-panels";
 import {
+  buildDailyPerformanceSeries,
   getDashboardPerformanceData,
+  getPerformanceDateRange,
   type DashboardSaleRow,
 } from "@/lib/dashboard/performance";
 import { dashboardHelp } from "@/lib/help-content";
@@ -29,7 +31,15 @@ import {
 } from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function AppHomePage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function AppHomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  const params = await searchParams;
+  const performanceRange = getPerformanceDateRange(params);
   const supabase = await createClient();
   const {
     data: { user },
@@ -62,15 +72,13 @@ export default async function AppHomePage() {
     .from("combos")
     .select("id,status")
     .eq("business_id", business.id);
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  monthStart.setHours(0, 0, 0, 0);
   const { data: saleRows } = await supabase
     .from("sales")
     .select("id,sale_date,status,payment_status,total_amount,balance_due,gross_profit")
     .eq("business_id", business.id)
     .eq("status", "completed")
-    .gte("sale_date", monthStart.toISOString())
+    .gte("sale_date", performanceRange.startIso)
+    .lte("sale_date", performanceRange.endIso)
     .order("sale_date", { ascending: true });
   const { data: inventoryMovementRows } = await supabase
     .from("inventory_movements")
@@ -143,14 +151,18 @@ export default async function AppHomePage() {
         : total,
     0,
   );
-  const performancePoints = getDashboardPerformanceData(
-    typedSaleRows as DashboardSaleRow[],
-  ).slice(-14);
+  const performanceRows = typedSaleRows as DashboardSaleRow[];
+  const movementPoints = getDashboardPerformanceData(performanceRows);
+  const performancePoints = buildDailyPerformanceSeries({
+    endDate: performanceRange.endDate,
+    rawRows: performanceRows,
+    startDate: performanceRange.startDate,
+  });
   const formatter = moneyFormatter(business.currency || "COP");
   const metrics = [
     {
       badge: hasSales ? "Real" : "Sin datos",
-      detail: hasSales ? "Ventas completadas del mes actual." : "Sin datos de ventas todavía.",
+      detail: hasSales ? "Ventas completadas del periodo seleccionado." : "Sin datos de ventas en este periodo.",
       help: dashboardHelp.sales,
       icon: <SalesIcon className="h-5 w-5" />,
       title: "Ventas",
@@ -160,7 +172,7 @@ export default async function AppHomePage() {
       badge: hasSales ? "Real" : "Sin datos",
       detail: hasSales
         ? "Utilidad bruta estimada del mes."
-        : "Sin datos de utilidad hasta registrar ventas.",
+        : "Sin datos de utilidad en este periodo.",
       help: dashboardHelp.profit,
       icon: <ProfitIcon className="h-5 w-5" />,
       title: "Utilidad real",
@@ -219,10 +231,12 @@ export default async function AppHomePage() {
 
             <BusinessPerformancePanel
               currency={business.currency || "COP"}
-              hasCostData={hasSales}
-              hasSalesData={hasSales}
-              points={performancePoints}
-            />
+      hasCostData={hasSales}
+      hasSalesData={hasSales}
+      range={performanceRange}
+      movementCount={movementPoints.length}
+      points={performancePoints}
+    />
             <RecentActivity />
           </div>
 

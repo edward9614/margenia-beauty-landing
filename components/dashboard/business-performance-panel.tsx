@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ActionHelp } from "@/components/ui/action-help";
+import { PerformanceDateFilter } from "@/components/dashboard/performance-date-filter";
 import { trackEvent } from "@/lib/analytics";
 import {
   summarizePerformance,
+  type PerformanceDateRange,
   type PerformancePoint,
 } from "@/lib/dashboard/performance";
 import { dashboardHelp } from "@/lib/help-content";
@@ -14,6 +17,8 @@ type PerformanceView = "sales" | "profit";
 type BusinessPerformancePanelProps = {
   currency?: string;
   points?: PerformancePoint[];
+  movementCount?: number;
+  range: PerformanceDateRange;
   hasSalesData?: boolean;
   hasCostData?: boolean;
   hasExpenseData?: boolean;
@@ -23,29 +28,20 @@ const viewConfig = {
   sales: {
     action: "Registrar primera venta",
     badge: "Disponible en el módulo Ventas",
-    emptyText: "Registra tu primera venta para visualizar la evolución de tu negocio.",
-    emptyTitle: "Aún no hay ventas registradas.",
+    emptyText: "Cuando registres ventas dentro de este rango, Margenia mostrará aquí su evolución.",
+    emptyTitle: "No hay ventas en este periodo",
     intro: "Visualiza cómo han evolucionado tus ingresos.",
     title: "Evolución de ventas",
   },
   profit: {
     action: "Configurar costos",
     badge: "Disponible con Productos y Ventas",
-    emptyText: "Registra ventas con costos para visualizar la utilidad real.",
-    emptyTitle: "Aún no hay datos de utilidad.",
-    intro:
-      "Aquí podrás entender cuánto queda después de cubrir los costos del negocio.",
+    emptyText: "Cuando registres ventas dentro de este rango, Margenia mostrará aquí su evolución.",
+    emptyTitle: "No hay ventas en este periodo",
+    intro: "Entiende cuánto queda después de cubrir los costos del negocio.",
     title: "Evolución de la utilidad",
   },
 };
-
-const profitSummaryRows = [
-  "Ingresos",
-  "Costo de productos vendidos",
-  "Comisiones y envíos",
-  "Gastos operativos",
-  "Utilidad estimada",
-];
 
 function formatCurrency(value: number, currency: string) {
   return new Intl.NumberFormat("es-CO", {
@@ -65,17 +61,11 @@ function formatPercent(value: number | null) {
 }
 
 function EmptyPerformanceState({
-  action,
-  badge,
   text,
   title,
-  view,
 }: {
-  action: string;
-  badge: string;
   text: string;
   title: string;
-  view: PerformanceView;
 }) {
   return (
     <div className="relative overflow-hidden rounded-[1.5rem] border border-dashed border-[#E2E8F0] bg-[#F8FAFC] p-5 sm:p-6">
@@ -89,25 +79,15 @@ function EmptyPerformanceState({
       </div>
 
       <div className="relative mx-auto flex min-h-56 max-w-xl flex-col items-center justify-center text-center">
-        <span className="rounded-full border border-[#BFDBFE] bg-white px-3 py-1.5 text-xs font-black text-[#2563EB]">
-          {badge}
-        </span>
         <h3 className="mt-5 text-xl font-black text-[#0F172A]">{title}</h3>
         <p className="mt-3 text-sm leading-6 text-[#475569]">{text}</p>
 
-        {view === "profit" && (
-          <p className="mt-4 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-xs font-black text-[#475569]">
-            Ingresos - costos de productos - comisiones - envíos asumidos - gastos
-          </p>
-        )}
-
-        <button
-          type="button"
-          disabled
-          className="mt-5 rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-5 py-3 text-sm font-black text-white opacity-55 shadow-lg shadow-cyan-500/20 disabled:cursor-not-allowed"
+        <Link
+          href="/app/ventas/nueva"
+          className="mt-5 rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
         >
-          {action}
-        </button>
+          Nueva venta
+        </Link>
       </div>
     </div>
   );
@@ -122,20 +102,30 @@ function PerformanceChart({
   points: PerformancePoint[];
   view: PerformanceView;
 }) {
+  const [selectedPoint, setSelectedPoint] = useState<PerformancePoint | null>(null);
   const values = points.map((point) => (view === "sales" ? point.sales : point.grossProfit));
-  const chartWidth = 640;
-  const chartHeight = 210;
-  const paddingX = 34;
+  const chartWidth = Math.max(680, points.length * 28);
+  const chartHeight = 190;
+  const paddingX = 24;
   const paddingTop = 22;
-  const paddingBottom = 42;
+  const paddingBottom = 36;
   const plotHeight = chartHeight - paddingTop - paddingBottom;
   const minValue = Math.min(0, ...values);
   const maxValue = Math.max(0, ...values, 1);
   const range = maxValue - minValue || 1;
   const zeroY = paddingTop + ((maxValue - 0) / range) * plotHeight;
-  const barWidth = Math.min(54, Math.max(24, (chartWidth - paddingX * 2) / Math.max(points.length * 1.8, 1)));
+  const barWidth = Math.min(18, Math.max(8, (chartWidth - paddingX * 2) / Math.max(points.length * 1.8, 1)));
   const gradientId = view === "sales" ? "salesGradient" : "profitGradient";
   const totalValue = values.reduce((total, value) => total + value, 0);
+  const bestValue = Math.max(...values);
+  const selected = selectedPoint || points.find((point) => point.saleCount > 0) || points[0];
+
+  function shouldShowLabel(point: PerformancePoint, index: number) {
+    if (points.length <= 7) return true;
+    if (point.saleCount > 0) return true;
+    if (index === 0 || index === points.length - 1) return true;
+    return (index + 1) % 5 === 0;
+  }
 
   function xFor(index: number) {
     if (points.length === 1) return chartWidth / 2;
@@ -148,8 +138,8 @@ function PerformanceChart({
   }
 
   return (
-    <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-5">
-      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+    <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:p-5">
+      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.12em] text-[#2563EB]">
             Total del periodo
@@ -159,110 +149,128 @@ function PerformanceChart({
           </p>
         </div>
         <p className="text-sm font-bold text-[#475569]">
-          {points.length} {points.length === 1 ? "día con datos" : "días con datos"}
+          Días con movimiento: {points.filter((point) => point.saleCount > 0).length}
         </p>
       </div>
 
-      <svg
-        role="img"
-        aria-label={`Gráfico de ${view === "sales" ? "ventas" : "utilidad"}`}
-        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-        className="h-64 w-full overflow-visible"
-        preserveAspectRatio="none"
-      >
-        <defs>
-          <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#2563EB" />
-            <stop offset="100%" stopColor="#06B6D4" />
-          </linearGradient>
-          <linearGradient id="profitGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#16A34A" />
-            <stop offset="100%" stopColor="#06B6D4" />
-          </linearGradient>
-        </defs>
-        <line
-          x1={paddingX}
-          x2={chartWidth - paddingX}
-          y1={zeroY}
-          y2={zeroY}
-          stroke="#CBD5E1"
-          strokeDasharray="5 6"
-          strokeWidth="1"
-        />
-        {points.map((point, index) => {
-          const value = values[index] || 0;
-          const x = xFor(index);
-          const valueY = yFor(value);
-          const barHeight = Math.max(Math.abs(zeroY - valueY), 10);
-          const barY = value >= 0 ? zeroY - barHeight : zeroY;
+      <div className="-mx-2 overflow-x-auto px-2">
+        <svg
+          role="img"
+          aria-label={`Gráfico de ${view === "sales" ? "ventas" : "utilidad"}`}
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+          className="h-[230px] w-full min-w-[680px] overflow-visible"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#2563EB" />
+              <stop offset="100%" stopColor="#06B6D4" />
+            </linearGradient>
+            <linearGradient id="profitGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#16A34A" />
+              <stop offset="100%" stopColor="#06B6D4" />
+            </linearGradient>
+          </defs>
+          <line
+            x1={paddingX}
+            x2={chartWidth - paddingX}
+            y1={zeroY}
+            y2={zeroY}
+            stroke="#CBD5E1"
+            strokeDasharray="5 6"
+            strokeWidth="1"
+          />
+          {points.map((point, index) => {
+            const value = values[index] || 0;
+            const x = xFor(index);
+            const valueY = yFor(value);
+            const hasMovement = point.saleCount > 0;
+            const barHeight = hasMovement ? Math.max(Math.abs(zeroY - valueY), 8) : 4;
+            const barY = hasMovement
+              ? value >= 0
+                ? zeroY - barHeight
+                : zeroY
+              : zeroY - 2;
+            const isBest = hasMovement && value === bestValue && bestValue > 0;
 
-          return (
-            <g key={`${point.date}-${view}`}>
-              <rect
-                x={x - barWidth / 2}
-                y={barY}
-                width={barWidth}
-                height={barHeight}
-                rx="12"
-                fill={`url(#${gradientId})`}
+            return (
+              <g
+                key={`${point.date}-${view}`}
+                className="cursor-pointer outline-none"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedPoint(point)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelectedPoint(point);
+                  }
+                }}
               >
-                <title>
-                  {point.label}: {formatCurrency(value, currency)}
-                </title>
-              </rect>
-              <circle
-                cx={x}
-                cy={value >= 0 ? barY : barY + barHeight}
-                r="4"
-                fill={view === "sales" ? "#1D4ED8" : "#16A34A"}
-              />
-              <text
-                x={x}
-                y={Math.max(14, barY - 8)}
-                textAnchor="middle"
-                className="fill-[#0F172A] text-[11px] font-black"
-              >
-                {formatCurrency(value, currency)}
-              </text>
-              <text
-                x={x}
-                y={chartHeight - 14}
-                textAnchor="middle"
-                className="fill-[#475569] text-[12px] font-bold"
-              >
-                {point.label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+                <rect
+                  x={x - barWidth / 2}
+                  y={barY}
+                  width={barWidth}
+                  height={barHeight}
+                  rx="8"
+                  fill={hasMovement ? `url(#${gradientId})` : "#CBD5E1"}
+                  opacity={hasMovement ? 1 : 0.75}
+                  stroke={isBest ? "#0F172A" : "transparent"}
+                  strokeWidth={isBest ? 1.5 : 0}
+                >
+                  <title>
+                    {point.label}
+                    {"\n"}Ventas: {formatCurrency(point.sales, currency)}
+                    {"\n"}Utilidad: {formatCurrency(point.grossProfit, currency)}
+                    {"\n"}Ventas registradas: {point.saleCount}
+                  </title>
+                </rect>
+                {hasMovement && (
+                  <circle
+                    cx={x}
+                    cy={value >= 0 ? barY : barY + barHeight}
+                    r={isBest ? 4.5 : 3.5}
+                    fill={view === "sales" ? "#1D4ED8" : "#16A34A"}
+                  />
+                )}
+                {shouldShowLabel(point, index) && (
+                  <text
+                    x={x}
+                    y={chartHeight - 12}
+                    textAnchor="middle"
+                    className="fill-[#475569] text-[11px] font-bold"
+                  >
+                    {point.label.replace(" de ", " ")}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {selected && (
+        <div className="mt-3 grid gap-2 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm sm:grid-cols-4">
+          <p className="font-black text-[#0F172A]">{selected.label}</p>
+          <p className="font-bold text-[#475569]">Ventas: {formatCurrency(selected.sales, currency)}</p>
+          <p className="font-bold text-[#475569]">Utilidad: {formatCurrency(selected.grossProfit, currency)}</p>
+          <p className="font-bold text-[#475569]">Ventas registradas: {selected.saleCount}</p>
+        </div>
+      )}
     </div>
   );
 }
 
 export function BusinessPerformancePanel({
   currency = "COP",
+  movementCount = 0,
   points = [],
-  hasSalesData = false,
-  hasCostData = false,
-  hasExpenseData = false,
+  range,
 }: BusinessPerformancePanelProps) {
   const [view, setView] = useState<PerformanceView>("sales");
   const config = viewConfig[view];
-  const hasPoints = points.length > 0;
   const summary = useMemo(() => summarizePerformance(points), [points]);
-  const profitLabel = hasExpenseData
-    ? "Utilidad neta estimada"
-    : "Utilidad bruta estimada";
-
-  const summaryRows = useMemo(
-    () =>
-      profitSummaryRows.map((label) => ({
-        label,
-        value: "Sin datos todavía",
-      })),
-    [],
-  );
+  const hasMovement = summary.saleCount > 0;
 
   function changeView(nextView: PerformanceView) {
     setView(nextView);
@@ -271,7 +279,7 @@ export function BusinessPerformancePanel({
 
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-black text-[#0F172A]">{config.title}</h2>
@@ -280,41 +288,44 @@ export function BusinessPerformancePanel({
           <p className="mt-2 text-sm leading-6 text-[#475569]">{config.intro}</p>
         </div>
 
-        <div
-          role="tablist"
-          aria-label="Métrica de rendimiento"
-          className="grid w-full grid-cols-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] p-1 sm:w-fit"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "sales"}
-            aria-controls="performance-sales-panel"
-            id="performance-sales-tab"
-            onClick={() => changeView("sales")}
-            className={`rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
-              view === "sales"
-                ? "border border-[#BFDBFE] bg-white text-[#2563EB] shadow-sm"
-                : "text-[#475569] hover:text-[#2563EB]"
-            }`}
+        <div className="w-full space-y-3 xl:max-w-xl">
+          <PerformanceDateFilter range={range} />
+          <div
+            role="tablist"
+            aria-label="Métrica de rendimiento"
+            className="grid w-full grid-cols-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] p-1 sm:w-fit"
           >
-            Ventas
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "profit"}
-            aria-controls="performance-profit-panel"
-            id="performance-profit-tab"
-            onClick={() => changeView("profit")}
-            className={`rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
-              view === "profit"
-                ? "border border-[#BFDBFE] bg-white text-[#2563EB] shadow-sm"
-                : "text-[#475569] hover:text-[#2563EB]"
-            }`}
-          >
-            Utilidad
-          </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "sales"}
+              aria-controls="performance-sales-panel"
+              id="performance-sales-tab"
+              onClick={() => changeView("sales")}
+              className={`rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
+                view === "sales"
+                  ? "border border-[#BFDBFE] bg-white text-[#2563EB] shadow-sm"
+                  : "text-[#475569] hover:text-[#2563EB]"
+              }`}
+            >
+              Ventas
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "profit"}
+              aria-controls="performance-profit-panel"
+              id="performance-profit-tab"
+              onClick={() => changeView("profit")}
+              className={`rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
+                view === "profit"
+                  ? "border border-[#BFDBFE] bg-white text-[#2563EB] shadow-sm"
+                  : "text-[#475569] hover:text-[#2563EB]"
+              }`}
+            >
+              Utilidad
+            </button>
+          </div>
         </div>
       </div>
 
@@ -326,20 +337,17 @@ export function BusinessPerformancePanel({
         }
         className="mt-6"
       >
-        {!hasPoints ? (
+        {!hasMovement ? (
           <EmptyPerformanceState
-            action={config.action}
-            badge={config.badge}
             text={config.emptyText}
             title={config.emptyTitle}
-            view={view}
           />
         ) : (
           <PerformanceChart currency={currency} points={points} view={view} />
         )}
       </div>
 
-      {hasPoints && (
+      {hasMovement && (
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {view === "sales" ? (
             <>
@@ -356,7 +364,7 @@ export function BusinessPerformancePanel({
             </>
           ) : (
             <>
-              <SummaryPill label="Utilidad total" value={formatCurrency(summary.totalProfit, currency)} />
+              <SummaryPill label="Utilidad bruta total" value={formatCurrency(summary.totalProfit, currency)} />
               <SummaryPill label="Margen promedio" value={formatPercent(summary.averageMargin)} />
               <SummaryPill
                 label="Mejor día por utilidad"
@@ -368,38 +376,7 @@ export function BusinessPerformancePanel({
               />
             </>
           )}
-        </div>
-      )}
-
-      {view === "profit" && (
-        <div className="mt-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="font-black text-[#0F172A]">{profitLabel}</h3>
-              <p className="mt-1 text-xs leading-5 text-[#475569]">
-                {hasExpenseData
-                  ? "Fórmula futura: utilidad bruta - gastos operativos."
-                  : "Fórmula futura: ventas netas - costos - comisiones - envíos asumidos."}
-              </p>
-            </div>
-            <span className="w-fit rounded-full bg-[#F8FAFC] px-3 py-1.5 text-xs font-black text-[#475569] ring-1 ring-[#E2E8F0]">
-              {hasSalesData && hasCostData ? "Preparado para datos" : "Sin datos todavía"}
-            </span>
-          </div>
-
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {summaryRows.map((row) => (
-              <div
-                key={row.label}
-                className="flex items-center justify-between gap-3 rounded-2xl bg-[#F8FAFC] px-4 py-3"
-              >
-                <span className="text-sm font-bold text-[#475569]">{row.label}</span>
-                <span className="text-right text-sm font-black text-[#0F172A]">
-                  {row.value}
-                </span>
-              </div>
-            ))}
-          </div>
+          <SummaryPill label="Días con movimiento" value={movementCount.toLocaleString("es-CO")} />
         </div>
       )}
     </section>
