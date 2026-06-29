@@ -61,6 +61,10 @@ function formatPercent(value: number | null) {
   })}%`;
 }
 
+function formatSaleCount(count: number) {
+  return `${count.toLocaleString("es-CO")} ${count === 1 ? "venta registrada" : "ventas registradas"}`;
+}
+
 function EmptyPerformanceState({
   text,
   title,
@@ -103,7 +107,7 @@ function PerformanceChart({
   points: PerformancePoint[];
   view: PerformanceView;
 }) {
-  const [selectedPoint, setSelectedPoint] = useState<PerformancePoint | null>(null);
+  const [activePoint, setActivePoint] = useState<PerformancePoint | null>(null);
   const values = points.map((point) => (view === "sales" ? point.sales : point.grossProfit));
   const chartWidth = Math.max(680, points.length * 28);
   const chartHeight = 190;
@@ -119,13 +123,13 @@ function PerformanceChart({
   const gradientId = view === "sales" ? "salesGradient" : "profitGradient";
   const totalValue = values.reduce((total, value) => total + value, 0);
   const bestValue = Math.max(...values);
-  const selected = selectedPoint || points.find((point) => point.saleCount > 0) || points[0];
 
   function shouldShowLabel(point: PerformancePoint, index: number) {
     if (points.length <= 7) return true;
-    if (point.saleCount > 0) return true;
     if (index === 0 || index === points.length - 1) return true;
-    return (index + 1) % 5 === 0;
+
+    const day = Number(point.date.slice(-2));
+    return [1, 5, 10, 15, 20, 25].includes(day);
   }
 
   function xFor(index: number) {
@@ -136,6 +140,12 @@ function PerformanceChart({
 
   function yFor(value: number) {
     return paddingTop + ((maxValue - value) / range) * plotHeight;
+  }
+
+  function pointAriaLabel(point: PerformancePoint) {
+    if (point.saleCount < 1) return `${point.label}. Sin movimiento.`;
+
+    return `${point.label}. Ventas ${formatCurrency(point.sales, currency)}. Utilidad ${formatCurrency(point.grossProfit, currency)}. ${formatSaleCount(point.saleCount)}.`;
   }
 
   return (
@@ -154,7 +164,21 @@ function PerformanceChart({
         </p>
       </div>
 
-      <div className="-mx-2 overflow-x-auto px-2">
+      <div className="relative -mx-2 overflow-x-auto px-2">
+        {activePoint && (
+          <div className="pointer-events-none absolute right-4 top-3 z-10 max-w-60 rounded-2xl border border-[#E2E8F0] bg-white p-3 text-left text-xs shadow-xl shadow-[#0F172A]/10">
+            <p className="font-black text-[#0F172A]">{activePoint.label}</p>
+            {activePoint.saleCount > 0 ? (
+              <div className="mt-2 space-y-1 font-bold text-[#475569]">
+                <p>Ventas: {formatCurrency(activePoint.sales, currency)}</p>
+                <p>Utilidad: {formatCurrency(activePoint.grossProfit, currency)}</p>
+                <p>{formatSaleCount(activePoint.saleCount)}</p>
+              </div>
+            ) : (
+              <p className="mt-2 font-bold text-[#64748B]">Sin movimiento</p>
+            )}
+          </div>
+        )}
         <svg
           role="img"
           aria-label={`Gráfico de ${view === "sales" ? "ventas" : "utilidad"}`}
@@ -200,13 +224,18 @@ function PerformanceChart({
                 className="cursor-pointer outline-none"
                 role="button"
                 tabIndex={0}
-                onClick={() => setSelectedPoint(point)}
+                aria-label={pointAriaLabel(point)}
+                onBlur={() => setActivePoint(null)}
+                onClick={() => setActivePoint(point)}
+                onFocus={() => setActivePoint(point)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    setSelectedPoint(point);
+                    setActivePoint(point);
                   }
                 }}
+                onMouseEnter={() => setActivePoint(point)}
+                onMouseLeave={() => setActivePoint(null)}
               >
                 <rect
                   x={x - barWidth / 2}
@@ -250,14 +279,6 @@ function PerformanceChart({
         </svg>
       </div>
 
-      {selected && (
-        <div className="mt-3 grid gap-2 rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm sm:grid-cols-4">
-          <p className="font-black text-[#0F172A]">{selected.label}</p>
-          <p className="font-bold text-[#475569]">Ventas: {formatCurrency(selected.sales, currency)}</p>
-          <p className="font-bold text-[#475569]">Utilidad: {formatCurrency(selected.grossProfit, currency)}</p>
-          <p className="font-bold text-[#475569]">Ventas registradas: {selected.saleCount}</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -294,8 +315,8 @@ export function BusinessPerformancePanel({
 
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-        <div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 lg:max-w-sm xl:max-w-md">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-black text-[#0F172A]">{config.title}</h2>
             <ActionHelp help={dashboardHelp.performance} />
@@ -303,7 +324,7 @@ export function BusinessPerformancePanel({
           <p className="mt-2 text-sm leading-6 text-[#475569]">{config.intro}</p>
         </div>
 
-        <div className="w-full space-y-3 xl:max-w-xl">
+        <div className="flex w-full flex-wrap items-end gap-3 lg:max-w-[760px] lg:justify-end">
           <PerformanceDateFilter range={range} />
           <div
             role="tablist"

@@ -56,14 +56,14 @@ export function PerformanceDateFilter({ range }: { range: PerformanceDateRange }
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_1fr] sm:items-end">
-      <label className="grid gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#64748B]">
+    <div className="flex w-full min-w-0 flex-wrap items-end gap-3 lg:w-auto">
+      <label className="grid w-full gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#64748B] sm:w-[220px]">
         Periodo
         <select
           aria-label="Seleccionar periodo"
           value={period}
           onChange={(event) => handlePeriodChange(event.target.value as PerformancePeriod)}
-          className="h-12 rounded-2xl border border-[#E2E8F0] bg-white px-4 text-sm font-black normal-case tracking-normal text-[#0F172A] shadow-sm outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+          className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 text-sm font-black normal-case tracking-normal text-[#0F172A] shadow-sm outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
         >
           {periods.map((item) => (
             <option key={item.value} value={item.value}>
@@ -74,37 +74,37 @@ export function PerformanceDateFilter({ range }: { range: PerformanceDateRange }
       </label>
 
       {period === "custom" && (
-        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-          <label className="grid gap-1.5 text-xs font-black text-[#475569]">
+        <>
+          <label className="grid w-full gap-1.5 text-xs font-black text-[#475569] sm:w-[170px]">
             Desde
             <input
               type="date"
               value={from}
               onChange={(event) => setFrom(event.target.value)}
-              className="h-12 rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+              className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
             />
           </label>
-          <label className="grid gap-1.5 text-xs font-black text-[#475569]">
+          <label className="grid w-full gap-1.5 text-xs font-black text-[#475569] sm:w-[170px]">
             Hasta
             <input
               type="date"
               value={to}
               onChange={(event) => setTo(event.target.value)}
-              className="h-12 rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+              className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
             />
           </label>
           <button
             type="button"
             onClick={applyCustomRange}
-            className="h-12 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-4 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
+            className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-5 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 sm:w-auto sm:min-w-[120px]"
           >
             Aplicar
           </button>
-        </div>
+        </>
       )}
 
       {range.error && (
-        <p className="rounded-2xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#B91C1C] sm:col-span-2">
+        <p className="w-full rounded-2xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#B91C1C]">
           {range.error}
         </p>
       )}
