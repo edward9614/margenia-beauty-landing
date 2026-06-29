@@ -1,4 +1,4 @@
-function getSteps(hasCombos: boolean, hasProducts: boolean) {
+function getSteps(hasCombos: boolean, hasProducts: boolean, hasSales: boolean) {
   return [
     {
       detail: "Tu usuario ya está activo.",
@@ -25,8 +25,10 @@ function getSteps(hasCombos: boolean, hasProducts: boolean) {
       title: "Crear tu primer combo",
     },
     {
-      detail: "Las métricas aparecerán con tus primeras ventas.",
-      status: hasCombos ? "next" : "pending",
+      detail: hasSales
+        ? "Ya registraste al menos una venta."
+        : "Las métricas aparecerán con tus primeras ventas.",
+      status: hasSales ? "completed" : hasCombos || hasProducts ? "next" : "pending",
       title: "Registrar tu primera venta",
     },
   ];
@@ -35,11 +37,13 @@ function getSteps(hasCombos: boolean, hasProducts: boolean) {
 export function SetupChecklist({
   hasCombos = false,
   hasProducts = false,
+  hasSales = false,
 }: {
   hasCombos?: boolean;
   hasProducts?: boolean;
+  hasSales?: boolean;
 }) {
-  const steps = getSteps(hasCombos, hasProducts);
+  const steps = getSteps(hasCombos, hasProducts, hasSales);
 
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">

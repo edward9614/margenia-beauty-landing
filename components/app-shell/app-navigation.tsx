@@ -8,7 +8,7 @@ const navItems = [
   { href: "/app", label: "Inicio", soon: false },
   { href: "/app/productos", label: "Productos", soon: false },
   { href: "/app/combos", label: "Combos", soon: false },
-  { href: "#", label: "Ventas", soon: true },
+  { href: "/app/ventas", label: "Ventas", soon: false },
   { href: "#", label: "Inventario", soon: true },
   { href: "#", label: "Caja", soon: true },
   { href: "#", label: "Configuración", soon: true },

@@ -1,21 +1,23 @@
-function getSteps(hasCombos: boolean, hasProducts: boolean) {
+function getSteps(hasCombos: boolean, hasProducts: boolean, hasSales: boolean) {
   return [
     { label: "Cuenta creada", complete: true },
     { label: "Negocio creado", complete: true },
     { label: "Primer producto", complete: hasProducts },
     { label: "Primer combo", complete: hasCombos },
-    { label: "Primera venta", complete: false },
+    { label: "Primera venta", complete: hasSales },
   ];
 }
 
 export function ActivationProgressCard({
   hasCombos = false,
   hasProducts = false,
+  hasSales = false,
 }: {
   hasCombos?: boolean;
   hasProducts?: boolean;
+  hasSales?: boolean;
 }) {
-  const steps = getSteps(hasCombos, hasProducts);
+  const steps = getSteps(hasCombos, hasProducts, hasSales);
   const completed = steps.filter((step) => step.complete).length;
   const progress = Math.round((completed / steps.length) * 100);
 

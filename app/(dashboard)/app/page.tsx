@@ -57,6 +57,15 @@ export default async function AppHomePage() {
     .from("combos")
     .select("id,status")
     .eq("business_id", business.id);
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const { data: saleRows } = await supabase
+    .from("sales")
+    .select("id,sale_date,status,total_amount,balance_due,gross_profit")
+    .eq("business_id", business.id)
+    .eq("status", "completed")
+    .gte("sale_date", monthStart.toISOString());
   const typedProductRows = (productRows || []) as ProductRow[];
   const activeProducts = typedProductRows.filter(
     (product) => product.status === "active",
@@ -80,17 +89,62 @@ export default async function AppHomePage() {
       (combo) => combo.status === "active",
     ),
   );
+  const typedSaleRows = (saleRows || []) as {
+    id: string;
+    sale_date: string;
+    status: string | null;
+    total_amount: number | string | null;
+    balance_due: number | string | null;
+    gross_profit: number | string | null;
+  }[];
+  const hasSales = typedSaleRows.length > 0;
+  const hasCatalog = hasProducts || hasCombos;
+  const salesTotal = typedSaleRows.reduce(
+    (total, sale) => total + Number(sale.total_amount || 0),
+    0,
+  );
+  const grossProfitTotal = typedSaleRows.reduce(
+    (total, sale) => total + Number(sale.gross_profit || 0),
+    0,
+  );
+  const pendingTotal = typedSaleRows.reduce(
+    (total, sale) => total + Number(sale.balance_due || 0),
+    0,
+  );
+  const performancePoints = Object.values(
+    typedSaleRows.reduce(
+      (acc, sale) => {
+        const day = new Date(sale.sale_date).toLocaleDateString("es-CO", {
+          day: "2-digit",
+          month: "short",
+        });
+
+        acc[day] ||= { grossProfit: 0, label: day, netProfit: null, sales: 0 };
+        acc[day].sales += Number(sale.total_amount || 0);
+        acc[day].grossProfit += Number(sale.gross_profit || 0);
+
+        return acc;
+      },
+      {} as Record<string, { grossProfit: number; label: string; netProfit: null; sales: number }>,
+    ),
+  ).slice(-7);
   const formatter = moneyFormatter(business.currency || "COP");
   const metrics = [
     {
-      detail: "Sin datos de ventas todavía.",
+      badge: hasSales ? "Real" : "Sin datos",
+      detail: hasSales ? "Ventas completadas del mes actual." : "Sin datos de ventas todavía.",
       icon: <SalesIcon className="h-5 w-5" />,
       title: "Ventas",
+      value: hasSales ? formatter.format(salesTotal) : undefined,
     },
     {
-      detail: "Sin datos de utilidad hasta registrar ventas.",
+      badge: hasSales ? "Real" : "Sin datos",
+      detail: hasSales
+        ? "Utilidad bruta estimada del mes."
+        : "Sin datos de utilidad hasta registrar ventas.",
       icon: <ProfitIcon className="h-5 w-5" />,
       title: "Utilidad real",
+      value: hasSales ? formatter.format(grossProfitTotal) : undefined,
     },
     {
       badge: hasProducts ? "Real" : "Sin datos",
@@ -102,9 +156,13 @@ export default async function AppHomePage() {
       value: hasProducts ? activeVariants.length : "—",
     },
     {
-      detail: "Sin datos de caja todavía.",
+      badge: hasSales ? "Por cobrar" : undefined,
+      detail: hasSales
+        ? "Saldo pendiente de ventas del mes."
+        : "Sin datos de caja todavía.",
       icon: <WalletIcon className="h-5 w-5" />,
       title: "Caja",
+      value: hasSales ? formatter.format(pendingTotal) : undefined,
     },
   ];
 
@@ -115,8 +173,8 @@ export default async function AppHomePage() {
 
         <div className="grid min-w-0 grid-cols-12 gap-6">
           <div className="col-span-12 min-w-0 space-y-6 xl:col-span-8">
-            <ActivationProgressCard hasCombos={hasCombos} hasProducts={hasProducts} />
-            <QuickActions hasProducts={hasProducts} />
+            <ActivationProgressCard hasCombos={hasCombos} hasProducts={hasProducts} hasSales={hasSales} />
+            <QuickActions hasCatalog={hasCatalog} hasProducts={hasProducts} />
 
             <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
               {metrics.map((metric) => (
@@ -131,12 +189,17 @@ export default async function AppHomePage() {
               ))}
             </section>
 
-            <BusinessPerformancePanel currency={business.currency || "COP"} />
+            <BusinessPerformancePanel
+              currency={business.currency || "COP"}
+              hasCostData={hasSales}
+              hasSalesData={hasSales}
+              points={performancePoints}
+            />
             <RecentActivity />
           </div>
 
           <aside className="col-span-12 min-w-0 space-y-6 xl:col-span-4">
-            <SetupChecklist hasCombos={hasCombos} hasProducts={hasProducts} />
+            <SetupChecklist hasCombos={hasCombos} hasProducts={hasProducts} hasSales={hasSales} />
             <BusinessStatusCard
               business={{
                 businessType: business.business_type,

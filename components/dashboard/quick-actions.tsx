@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-export function QuickActions({ hasProducts = false }: { hasProducts?: boolean }) {
+export function QuickActions({
+  hasCatalog = false,
+  hasProducts = false,
+}: {
+  hasCatalog?: boolean;
+  hasProducts?: boolean;
+}) {
   const actions = [
     {
       href: "/app/productos/nuevo",
@@ -16,9 +22,13 @@ export function QuickActions({ hasProducts = false }: { hasProducts?: boolean })
       text: hasProducts ? "Arma kits y promociones rentables." : "Primero agrega productos.",
     },
     {
-      soon: true,
+      disabled: !hasCatalog,
+      href: "/app/ventas/nueva",
+      soon: false,
       title: "Registrar venta",
-      text: "Conecta ingresos con utilidad real.",
+      text: hasCatalog
+        ? "Conecta ingresos con utilidad real."
+        : "Primero agrega productos o combos.",
     },
     {
       soon: true,
