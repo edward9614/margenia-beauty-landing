@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ActionHelp } from "@/components/ui/action-help";
 import { trackEvent } from "@/lib/analytics";
+import { dashboardHelp } from "@/lib/help-content";
 
 type PerformanceView = "sales" | "profit";
 
@@ -178,7 +180,10 @@ export function BusinessPerformancePanel({
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-xl font-black text-[#0F172A]">{config.title}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-black text-[#0F172A]">{config.title}</h2>
+            <ActionHelp help={dashboardHelp.performance} />
+          </div>
           <p className="mt-2 text-sm leading-6 text-[#475569]">{config.intro}</p>
         </div>
 

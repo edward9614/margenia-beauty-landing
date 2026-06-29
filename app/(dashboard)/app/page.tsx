@@ -22,6 +22,7 @@ import {
   type ProductRow,
   type ProductVariantRow,
 } from "@/lib/products/product-utils";
+import { dashboardHelp } from "@/lib/help-content";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppHomePage() {
@@ -155,6 +156,7 @@ export default async function AppHomePage() {
     {
       badge: hasSales ? "Real" : "Sin datos",
       detail: hasSales ? "Ventas completadas del mes actual." : "Sin datos de ventas todavía.",
+      help: dashboardHelp.sales,
       icon: <SalesIcon className="h-5 w-5" />,
       title: "Ventas",
       value: hasSales ? formatter.format(salesTotal) : undefined,
@@ -164,6 +166,7 @@ export default async function AppHomePage() {
       detail: hasSales
         ? "Utilidad bruta estimada del mes."
         : "Sin datos de utilidad hasta registrar ventas.",
+      help: dashboardHelp.profit,
       icon: <ProfitIcon className="h-5 w-5" />,
       title: "Utilidad real",
       value: hasSales ? formatter.format(grossProfitTotal) : undefined,
@@ -173,6 +176,7 @@ export default async function AppHomePage() {
       detail: hasProducts
         ? `${lowStockVariants.length} bajo stock · ${outOfStockVariants.length} agotados · valor al costo: ${formatter.format(inventoryValue)}`
         : "Agrega productos para activar el inventario.",
+      help: dashboardHelp.inventory,
       icon: <BoxIcon className="h-5 w-5" />,
       title: "Inventario",
       value: hasProducts ? activeVariants.length : "—",
@@ -182,6 +186,7 @@ export default async function AppHomePage() {
       detail: hasSales
         ? "Saldo pendiente de ventas del mes."
         : "Sin datos de caja todavía.",
+      help: dashboardHelp.pending,
       icon: <WalletIcon className="h-5 w-5" />,
       title: "Caja",
       value: hasSales ? formatter.format(pendingTotal) : undefined,
@@ -209,6 +214,7 @@ export default async function AppHomePage() {
                   key={metric.title}
                   badge={metric.badge}
                   detail={metric.detail}
+                  help={metric.help}
                   icon={metric.icon}
                   title={metric.title}
                   value={metric.value}

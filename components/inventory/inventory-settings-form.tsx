@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { updateInventorySettings } from "@/app/(dashboard)/app/inventario/actions";
+import { FieldLabel } from "@/components/ui/field-label";
+import { inventoryHelp } from "@/lib/help-content";
 import { sanitizeNumericInput } from "@/lib/products/product-utils";
-import { HelpTooltip } from "@/components/ui/help-tooltip";
 
 export function InventorySettingsForm({
   inventoryLocation = "",
@@ -42,18 +43,7 @@ export function InventorySettingsForm({
         Margenia te mostrará una alerta cuando este producto llegue a esta cantidad o menos.
       </p>
       <label className="mt-5 block">
-        <span className="inline-flex items-center gap-2 text-sm font-black text-[#0F172A]">
-          Alerta de stock bajo desde
-          <HelpTooltip
-            title="¿Cuándo aparece la alerta?"
-            content="Define la cantidad mínima desde la cual Margenia debe marcar este producto como Stock bajo."
-            example={
-              unitLabel === "unidades"
-                ? "Ej: si colocas 5 unidades, se alertará cuando queden 5 o menos."
-                : `Ej: si colocas 3 ${unitLabel}, se alertará cuando queden 3 ${unitLabel} o menos.`
-            }
-          />
-        </span>
+        <FieldLabel help={inventoryHelp.lowStockAlert} label="Alerta de stock bajo desde" />
         <div className="mt-2 flex overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-sm focus-within:border-[#2563EB] focus-within:ring-4 focus-within:ring-[#BFDBFE]/60">
           <input
             inputMode="decimal"
@@ -70,14 +60,7 @@ export function InventorySettingsForm({
         </p>
       </label>
       <label className="mt-4 block">
-        <span className="inline-flex items-center gap-2 text-sm font-black text-[#0F172A]">
-          Ubicación en inventario, opcional
-          <HelpTooltip
-            title="¿Qué significa ubicación?"
-            content="Es el lugar interno donde guardas este producto. Sirve para encontrarlo más rápido al vender, contar o reponer inventario."
-            example="Ej: Bodega principal, Estante 2, Vitrina, Nevera, Caja 3."
-          />
-        </span>
+        <FieldLabel help={inventoryHelp.location} label="Ubicación en inventario, opcional" />
         <input
           value={location}
           onChange={(event) => setLocation(event.target.value)}

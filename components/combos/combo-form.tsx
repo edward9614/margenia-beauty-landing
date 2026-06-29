@@ -34,6 +34,10 @@ import {
   type MeasurementUnit,
 } from "@/lib/measurements";
 import { sanitizeNumericInput, toSafeNumber } from "@/lib/products/product-utils";
+import { ActionHelp } from "@/components/ui/action-help";
+import { FieldLabel } from "@/components/ui/field-label";
+import { comboHelp } from "@/lib/help-content";
+import type { HelpContent } from "@/lib/help-content";
 
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
@@ -41,15 +45,17 @@ const inputClass =
 function Field({
   children,
   error,
+  help,
   label,
 }: {
   children: ReactNode;
   error?: string;
+  help?: HelpContent;
   label: string;
 }) {
   return (
     <label className="block">
-      <span className="block text-sm font-black text-[#0F172A]">{label}</span>
+      <FieldLabel help={help} label={label} />
       {children}
       {error && <span className="mt-1 block text-xs font-bold text-[#DC2626]">{error}</span>}
     </label>
@@ -58,17 +64,19 @@ function Field({
 
 function NumberField({
   error,
+  help,
   label,
   onChange,
   value,
 }: {
   error?: string;
+  help?: HelpContent;
   label: string;
   onChange: (value: string) => void;
   value: string;
 }) {
   return (
-    <Field error={error} label={label}>
+    <Field error={error} help={help} label={label}>
       <input
         type="text"
         inputMode="decimal"
@@ -396,7 +404,7 @@ export function ComboForm({
             Combo
           </p>
           <div className="mt-5 grid gap-4">
-            <Field error={fieldErrors.name} label="Nombre del combo">
+            <Field error={fieldErrors.name} help={comboHelp.name} label="Nombre del combo">
               <input
                 value={combo.name}
                 onChange={(event) => updateCombo("name", event.target.value)}
@@ -432,8 +440,9 @@ export function ComboForm({
             currentStep === 2 ? "block" : "hidden"
           }`}
         >
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
+          <p className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
             Productos
+            <ActionHelp help={comboHelp.products} />
           </p>
           <h3 className="mt-2 text-2xl font-black text-[#0F172A]">
             Agrega productos del catálogo
@@ -512,11 +521,12 @@ export function ComboForm({
                       </div>
                       <NumberField
                         error={fieldErrors[`items.${index}.quantity`]}
+                        help={comboHelp.quantity}
                         label="Cantidad"
                         value={item.quantity}
                         onChange={(value) => updateItem(index, { quantity: value })}
                       />
-                      <Field label="Unidad">
+                      <Field help={comboHelp.quantity} label="Unidad">
                         <select
                           value={item.quantityUnit}
                           onChange={(event) => {
@@ -575,6 +585,7 @@ export function ComboForm({
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <NumberField
               error={fieldErrors.packagingCost}
+              help={comboHelp.baseCost}
               label="Costo de empaque del combo"
               value={combo.packagingCost}
               onChange={(value) => updateCombo("packagingCost", value)}
@@ -599,20 +610,24 @@ export function ComboForm({
             />
             <NumberField
               error={fieldErrors.salePrice}
+              help={comboHelp.salePrice}
               label="Precio de venta del combo"
               value={combo.salePrice}
               onChange={(value) => updateCombo("salePrice", value)}
             />
           </div>
 
-          <button
-            type="button"
-            onClick={useSuggestedPrice}
-            disabled={Boolean(suggestion.error)}
-            className="mt-5 rounded-full bg-[#EFF6FF] px-5 py-3 text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Usar precio sugerido
-          </button>
+          <div className="mt-5 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={useSuggestedPrice}
+              disabled={Boolean(suggestion.error)}
+              className="rounded-full bg-[#EFF6FF] px-5 py-3 text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Usar precio sugerido
+            </button>
+            <ActionHelp help={comboHelp.suggestedPrice} />
+          </div>
         </section>
 
         {error && (

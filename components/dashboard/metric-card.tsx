@@ -1,14 +1,18 @@
 import type { ReactNode } from "react";
+import { ActionHelp } from "@/components/ui/action-help";
+import type { HelpContent } from "@/lib/help-content";
 
 export function MetricCard({
   badge = "Sin datos",
   detail,
+  help,
   icon,
   title,
   value = "—",
 }: {
   badge?: string;
   detail: string;
+  help?: HelpContent;
   icon: ReactNode;
   title: string;
   value?: string | number;
@@ -23,7 +27,10 @@ export function MetricCard({
           {badge}
         </span>
       </div>
-      <p className="mt-5 text-sm font-black text-[#475569]">{title}</p>
+      <div className="mt-5 flex items-center gap-2">
+        <p className="text-sm font-black text-[#475569]">{title}</p>
+        {help && <ActionHelp help={help} />}
+      </div>
       <p className="mt-2 text-4xl font-black tracking-tight text-[#0F172A]">{value}</p>
       <p className="mt-3 text-sm leading-6 text-[#475569]">{detail}</p>
     </article>

@@ -23,6 +23,10 @@ import {
 } from "@/lib/sales";
 import { getMeasurementFamily, unitsForFamily, type MeasurementFamily, type MeasurementUnit } from "@/lib/measurements";
 import { moneyFormatter, sanitizeNumericInput, toSafeNumber } from "@/lib/products/product-utils";
+import { ActionHelp } from "@/components/ui/action-help";
+import { FieldLabel } from "@/components/ui/field-label";
+import { salesHelp } from "@/lib/help-content";
+import type { HelpContent } from "@/lib/help-content";
 
 const inputClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
@@ -63,15 +67,17 @@ function compatibleUnits(variant: SaleCatalogProduct) {
 function Field({
   children,
   error,
+  help,
   label,
 }: {
   children: React.ReactNode;
   error?: string;
+  help?: HelpContent;
   label: string;
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-black text-[#0F172A]">{label}</span>
+      <FieldLabel help={help} label={label} />
       {children}
       {error && <span className="mt-1 block text-xs font-bold text-[#DC2626]">{error}</span>}
     </label>
@@ -80,17 +86,19 @@ function Field({
 
 function NumberField({
   error,
+  help,
   label,
   onChange,
   value,
 }: {
   error?: string;
+  help?: HelpContent;
   label: string;
   onChange: (value: string) => void;
   value: string;
 }) {
   return (
-    <Field error={error} label={label}>
+    <Field error={error} help={help} label={label}>
       <input
         inputMode="decimal"
         value={value}
@@ -364,12 +372,15 @@ export function SaleForm({
               ))}
             </div>
 
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Busca por nombre, SKU, variante o combo"
-              className={`${inputClass} mt-5`}
-            />
+            <label className="mt-5 block">
+              <FieldLabel help={salesHelp.searchItem} label="Buscar producto o combo" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Busca por nombre, SKU, variante o combo"
+                className={inputClass}
+              />
+            </label>
 
             <div className="mt-5 grid gap-3">
               {activeTab === "products" &&
@@ -434,7 +445,7 @@ export function SaleForm({
 
         {currentStep === 2 && (
           <div className="grid gap-5 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 md:grid-cols-2">
-            <Field error={fieldErrors.customerName} label="Nombre del cliente">
+            <Field error={fieldErrors.customerName} help={salesHelp.customer} label="Nombre del cliente">
               <input
                 value={form.customerName}
                 onChange={(event) => updateForm("customerName", event.target.value)}
@@ -462,7 +473,7 @@ export function SaleForm({
                 ))}
               </select>
             </Field>
-            <Field label="Estado de pago">
+            <Field help={salesHelp.paymentStatus} label="Estado de pago">
               <select
                 value={form.paymentStatus}
                 onChange={(event) => {
@@ -478,7 +489,7 @@ export function SaleForm({
               </select>
             </Field>
             {form.paymentStatus !== "pending" && (
-              <Field error={fieldErrors.paymentMethod} label="Método de pago">
+              <Field error={fieldErrors.paymentMethod} help={salesHelp.paymentMethod} label="Método de pago">
                 <select
                   value={form.paymentMethod}
                   onChange={(event) => updateForm("paymentMethod", event.target.value as SaleFormInput["paymentMethod"])}
@@ -596,12 +607,13 @@ export function SaleForm({
 
                     <div className="mt-4 grid grid-cols-2 gap-3">
                       <NumberField
-                        error={fieldErrors[`items.${index}.quantity`]}
+                error={fieldErrors[`items.${index}.quantity`]}
+                        help={salesHelp.quantity}
                         label="Cantidad"
                         value={item.quantity}
                         onChange={(value) => updateItem(index, { quantity: value })}
                       />
-                      <Field label="Unidad">
+                      <Field help={salesHelp.unit} label="Unidad">
                         <select
                           value={item.quantityUnit}
                           onChange={(event) =>
@@ -619,11 +631,13 @@ export function SaleForm({
                       </Field>
                       <NumberField
                         error={fieldErrors[`items.${index}.unitPrice`]}
+                        help={salesHelp.unitPrice}
                         label="Precio"
                         value={item.unitPrice}
                         onChange={(value) => updateItem(index, { unitPrice: value })}
                       />
                       <NumberField
+                        help={salesHelp.discount}
                         label="Descuento"
                         value={item.discountAmount}
                         onChange={(value) => updateItem(index, { discountAmount: value })}
@@ -650,6 +664,7 @@ export function SaleForm({
               <span className="font-black text-[#0F172A]">{formatter.format(totals.subtotalAmount)}</span>
             </div>
             <NumberField
+              help={salesHelp.discount}
               label="Descuento general"
               value={form.discountAmount}
               onChange={(value) => updateForm("discountAmount", value)}
@@ -682,18 +697,24 @@ export function SaleForm({
 
           <div className="mt-6 flex flex-col gap-3">
             {currentStep < 3 ? (
-              <button type="button" onClick={goNext} className={primaryButtonClass}>
-                {currentStep === 1 ? "Revisar venta" : "Continuar"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={goNext} className={primaryButtonClass}>
+                  {currentStep === 1 ? "Revisar venta" : "Continuar"}
+                </button>
+                {currentStep === 1 && <ActionHelp help={salesHelp.newSale} />}
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={submit}
-                disabled={isPending}
-                className={primaryButtonClass}
-              >
-                {isPending ? "Registrando..." : "Registrar venta"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={submit}
+                  disabled={isPending}
+                  className={primaryButtonClass}
+                >
+                  {isPending ? "Registrando..." : "Registrar venta"}
+                </button>
+                <ActionHelp help={salesHelp.newSale} />
+              </div>
             )}
             {currentStep > 1 && (
               <button

@@ -9,6 +9,10 @@ import {
 } from "@/app/(dashboard)/app/productos/actions";
 import { trackEvent } from "@/lib/analytics";
 import { ProductArchiveAction } from "@/components/products/product-archive-action";
+import { FieldLabel } from "@/components/ui/field-label";
+import { ActionHelp } from "@/components/ui/action-help";
+import { productHelp } from "@/lib/help-content";
+import type { HelpContent } from "@/lib/help-content";
 import {
   calculateMeasuredVariant,
   calculateVariantProfit,
@@ -69,20 +73,20 @@ const categoryOptions = [
   "Tecnología",
 ];
 
-const labelClass = "block text-sm font-black text-[#0F172A]";
-
 function Field({
   children,
   error,
+  help,
   label,
 }: {
   children: ReactNode;
   error?: string;
+  help?: HelpContent;
   label: string;
 }) {
   return (
     <label className="block">
-      <span className={labelClass}>{label}</span>
+      <FieldLabel help={help} label={label} />
       {children}
       {error && <span className="mt-1 block text-xs font-bold text-[#DC2626]">{error}</span>}
     </label>
@@ -92,18 +96,20 @@ function Field({
 function NumberField({
   error,
   fieldKey,
+  help,
   label,
   onChange,
   value,
 }: {
   error?: string;
   fieldKey: string;
+  help?: HelpContent;
   label: string;
   onChange: (value: string) => void;
   value: string;
 }) {
   return (
-    <Field error={error} label={label}>
+    <Field error={error} help={help} label={label}>
       <input
         data-field-key={fieldKey}
         type="text"
@@ -902,7 +908,7 @@ export function ProductForm({
             Información general
           </p>
           <div className="mt-5 grid gap-4">
-            <Field error={fieldErrors.name} label="Nombre del producto">
+            <Field error={fieldErrors.name} help={productHelp.name} label="Nombre del producto">
               <input
                 data-field-key="name"
                 value={product.name}
@@ -914,7 +920,7 @@ export function ProductForm({
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Categoría">
+              <Field help={productHelp.category} label="Categoría">
                 <select
                   value={categoryChoice}
                   onChange={(event) => {
@@ -1024,8 +1030,9 @@ export function ProductForm({
             )}
 
             <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-              <p className="text-sm font-black text-[#0F172A]">
+              <p className="inline-flex items-center gap-2 text-sm font-black text-[#0F172A]">
                 ¿Cómo vendes este producto?
+                <ActionHelp help={productHelp.sellingMode} />
               </p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {[
@@ -1078,8 +1085,9 @@ export function ProductForm({
                   className="mt-1 h-5 w-5 rounded border-[#CBD5E1] text-[#2563EB] focus:ring-[#BFDBFE]"
                 />
                 <span>
-                  <span className="block text-sm font-black text-[#0F172A]">
+                  <span className="inline-flex items-center gap-2 text-sm font-black text-[#0F172A]">
                     Este producto tiene variantes
+                    <ActionHelp help={productHelp.variants} />
                   </span>
                   <span className="mt-1 block text-xs font-bold leading-5 text-[#475569]">
                     Úsalo si vendes el mismo producto en tallas, colores, tonos,
@@ -1457,6 +1465,7 @@ export function ProductForm({
                           <NumberField
                             error={fieldErrors[`variants.${index}.purchaseCost`]}
                             fieldKey={`variants.${index}.purchaseCost`}
+                            help={productHelp.cost}
                             label="Costo"
                             value={variant.purchaseCost}
                             onChange={(value) =>
@@ -1470,6 +1479,7 @@ export function ProductForm({
                         <NumberField
                           error={fieldErrors[`variants.${index}.salePrice`]}
                           fieldKey={`variants.${index}.salePrice`}
+                          help={productHelp.salePrice}
                           label={
                             isMeasuredVariant
                               ? `Precio por ${getUnitSymbol(variant.defaultSaleUnit)}`
@@ -1486,6 +1496,7 @@ export function ProductForm({
                         <NumberField
                           error={fieldErrors[`variants.${index}.currentStock`]}
                           fieldKey={`variants.${index}.currentStock`}
+                          help={productHelp.currentStock}
                           label={
                             isMeasuredVariant
                               ? `Existencia en ${getUnitSymbol(variant.inventoryUnit)}`
@@ -1538,7 +1549,7 @@ export function ProductForm({
                           id={`variant-options-${index}`}
                           className="mt-4 grid gap-4 rounded-[1.25rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:grid-cols-2"
                         >
-                          <Field error={fieldErrors[`variants.${index}.sku`]} label="SKU">
+                          <Field error={fieldErrors[`variants.${index}.sku`]} help={productHelp.sku} label="SKU">
                             <input
                               data-field-key={`variants.${index}.sku`}
                               value={variant.sku}
@@ -1603,6 +1614,7 @@ export function ProductForm({
                           <NumberField
                             error={fieldErrors[`variants.${index}.minimumStock`]}
                             fieldKey={`variants.${index}.minimumStock`}
+                            help={productHelp.minimumStock}
                             label="Stock mínimo"
                             value={variant.minimumStock}
                             onChange={(value) =>
@@ -1882,7 +1894,7 @@ export function ProductForm({
                           </p>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
-                          <Field label="Nombre de la presentación">
+                          <Field help={productHelp.purchasePackageLabel} label="Nombre de la presentación">
                             <input
                               value={variant.purchasePackageLabel}
                               onChange={(event) =>
@@ -1898,6 +1910,7 @@ export function ProductForm({
                           <NumberField
                             error={fieldErrors[`variants.${index}.purchasePackageQuantity`]}
                             fieldKey={`variants.${index}.purchasePackageQuantity`}
+                            help={productHelp.purchasePackageQuantity}
                             label="Cantidad contenida"
                             value={variant.purchasePackageQuantity}
                             onChange={(value) =>
@@ -1932,6 +1945,7 @@ export function ProductForm({
                           <NumberField
                             error={fieldErrors[`variants.${index}.purchasePackageCost`]}
                             fieldKey={`variants.${index}.purchasePackageCost`}
+                            help={productHelp.cost}
                             label="Costo total de la presentación"
                             value={variant.purchasePackageCost}
                             onChange={(value) =>
@@ -1960,6 +1974,7 @@ export function ProductForm({
                             <NumberField
                               error={fieldErrors[`variants.${index}.currentStock`]}
                               fieldKey={`variants.${index}.currentStock`}
+                              help={productHelp.currentStock}
                               label={`Existencia actual en ${getUnitSymbol(variant.inventoryUnit)}`}
                               value={variant.currentStock}
                               onChange={(value) =>
@@ -1974,6 +1989,7 @@ export function ProductForm({
                             <NumberField
                               error={fieldErrors[`variants.${index}.minimumStock`]}
                               fieldKey={`variants.${index}.minimumStock`}
+                              help={productHelp.minimumStock}
                               label={`Stock mínimo en ${getUnitSymbol(variant.inventoryUnit)}`}
                               value={variant.minimumStock}
                               onChange={(value) =>
@@ -2019,6 +2035,7 @@ export function ProductForm({
                         <div className="grid gap-4 sm:grid-cols-2">
                           <Field
                             error={fieldErrors[`variants.${index}.defaultSaleUnit`]}
+                            help={productHelp.saleUnit}
                             label="Unidad de venta predeterminada"
                           >
                             <select
@@ -2100,6 +2117,7 @@ export function ProductForm({
                       <NumberField
                         error={fieldErrors[`variants.${index}.purchaseCost`]}
                         fieldKey={`variants.${index}.purchaseCost`}
+                        help={productHelp.cost}
                         label="Costo de compra"
                         value={variant.purchaseCost}
                         onChange={(value) =>
@@ -2171,6 +2189,7 @@ export function ProductForm({
                         <NumberField
                           error={fieldErrors[`variants.${index}.salePrice`]}
                           fieldKey={`variants.${index}.salePrice`}
+                          help={productHelp.salePrice}
                           label="Precio de venta"
                           value={variant.salePrice}
                           onChange={(value) =>
@@ -2183,6 +2202,7 @@ export function ProductForm({
                         <NumberField
                           error={fieldErrors[`variants.${index}.currentStock`]}
                           fieldKey={`variants.${index}.currentStock`}
+                          help={productHelp.currentStock}
                           label="Existencia actual"
                           value={variant.currentStock}
                           onChange={(value) =>
@@ -2196,6 +2216,7 @@ export function ProductForm({
                           <NumberField
                             error={fieldErrors[`variants.${index}.minimumStock`]}
                             fieldKey={`variants.${index}.minimumStock`}
+                            help={productHelp.minimumStock}
                             label="Stock mínimo"
                             value={variant.minimumStock}
                             onChange={(value) =>

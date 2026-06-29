@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { loadInventoryVariants } from "@/app/(dashboard)/app/inventario/actions";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
-import { HelpTooltip } from "@/components/ui/help-tooltip";
+import { ActionHelp } from "@/components/ui/action-help";
+import { TableHeaderHelp } from "@/components/ui/table-header-help";
 import {
   inventoryStatus,
   inventoryThreshold,
@@ -11,6 +12,7 @@ import {
   statusClass,
   type InventoryVariant,
 } from "@/lib/inventory";
+import { inventoryHelp } from "@/lib/help-content";
 import { moneyFormatter, toSafeNumber } from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
@@ -43,20 +45,23 @@ function alertLabel(variant: InventoryVariant) {
 
 const tableHeaders = [
   {
-    help: "Cantidad disponible actualmente según entradas, ventas, ajustes y conteos.",
+    help: inventoryHelp.currentStock,
     label: "Stock actual",
   },
   { label: "Unidad" },
   {
-    help: "Cantidad configurada por ti para que Margenia marque el producto como Stock bajo.",
+    help: inventoryHelp.lowStockAlert,
     label: "Alerta de stock bajo",
   },
   {
-    help: "Estado calculado según el stock actual y la alerta que configures para cada producto.",
+    help: {
+      content: "Estado calculado según el stock actual y la alerta que configures para cada producto.",
+      title: "Estado",
+    },
     label: "Estado",
   },
   {
-    help: "Estimación del valor del inventario usando el stock actual y el costo del producto.",
+    help: inventoryHelp.value,
     label: "Valor estimado",
   },
   { label: "Acciones" },
@@ -138,11 +143,7 @@ export default async function InventoryPage({
                 >
                   Registrar movimiento
                 </Link>
-                <HelpTooltip
-                  title="Registrar movimiento"
-                  content="Úsalo para registrar entradas, salidas, mermas, devoluciones o ajustes manuales de inventario."
-                  example="Ej: entraron 10 unidades nuevas o se perdieron 2 por daño."
-                />
+                <ActionHelp help={inventoryHelp.movement} />
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Link
@@ -151,11 +152,7 @@ export default async function InventoryPage({
                 >
                   Conteo físico
                 </Link>
-                <HelpTooltip
-                  title="Conteo físico"
-                  content="Úsalo cuando quieras comparar lo que tienes físicamente con lo que aparece en Margenia."
-                  example="Ej: el sistema dice 20 unidades, pero al contar encuentras 18."
-                />
+                <ActionHelp help={inventoryHelp.count} />
               </div>
             </div>
           </div>
@@ -211,12 +208,7 @@ export default async function InventoryPage({
                   <th className="px-5 py-4">Variante</th>
                   {tableHeaders.map((header) => (
                     <th key={header.label} className="px-5 py-4">
-                      <span className="inline-flex items-center gap-2">
-                        {header.label}
-                        {header.help && (
-                          <HelpTooltip title={header.label} content={header.help} />
-                        )}
-                      </span>
+                      <TableHeaderHelp help={header.help} label={header.label} />
                     </th>
                   ))}
                 </tr>
@@ -240,9 +232,11 @@ export default async function InventoryPage({
                         <div className="flex flex-col items-start gap-1">
                           <span className="inline-flex items-center gap-2">
                             <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
-                            <HelpTooltip
-                              title="Ver detalle"
-                              content="Abre el detalle del producto para revisar stock, movimientos, ubicación y configuración."
+                            <ActionHelp
+                              help={{
+                                content: "Abre el detalle del producto para revisar stock, movimientos, ubicación y configuración.",
+                                title: "Ver detalle",
+                              }}
                             />
                           </span>
                           <Link href={`/app/inventario/${variant.id}#alerta-stock`} className="font-black text-[#0891B2]">
@@ -270,9 +264,11 @@ export default async function InventoryPage({
                     <div className="flex flex-col items-end gap-1">
                       <span className="inline-flex items-center gap-2">
                         <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
-                        <HelpTooltip
-                          title="Ver detalle"
-                          content="Abre el detalle del producto para revisar stock, movimientos, ubicación y configuración."
+                        <ActionHelp
+                          help={{
+                            content: "Abre el detalle del producto para revisar stock, movimientos, ubicación y configuración.",
+                            title: "Ver detalle",
+                          }}
                         />
                       </span>
                       <Link href={`/app/inventario/${variant.id}#alerta-stock`} className="text-xs font-black text-[#0891B2]">

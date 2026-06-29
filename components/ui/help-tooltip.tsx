@@ -6,9 +6,17 @@ type HelpTooltipProps = {
   title?: string;
   content: string;
   example?: string;
+  side?: "bottom" | "left" | "right" | "top";
 };
 
-export function HelpTooltip({ content, example, title }: HelpTooltipProps) {
+const sideClass = {
+  bottom: "left-1/2 top-7 -translate-x-1/2",
+  left: "right-7 top-1/2 -translate-y-1/2",
+  right: "left-7 top-1/2 -translate-y-1/2",
+  top: "bottom-7 left-1/2 -translate-x-1/2",
+};
+
+export function HelpTooltip({ content, example, side = "bottom", title }: HelpTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
   const tooltipId = useId();
 
@@ -43,7 +51,7 @@ export function HelpTooltip({ content, example, title }: HelpTooltipProps) {
         <span
           id={tooltipId}
           role="tooltip"
-          className="absolute left-1/2 top-7 z-50 w-[min(280px,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-[#E2E8F0] bg-white p-4 text-left normal-case tracking-normal text-[#0F172A] shadow-xl shadow-[#0F172A]/10"
+          className={`absolute z-50 w-[min(280px,calc(100vw-2rem))] rounded-2xl border border-[#E2E8F0] bg-white p-4 text-left normal-case tracking-normal text-[#0F172A] shadow-xl shadow-[#0F172A]/10 ${sideClass[side]}`}
         >
           {title && <span className="block text-sm font-black text-[#0F172A]">{title}</span>}
           <span className={`block text-sm leading-5 text-[#475569] ${title ? "mt-1" : ""}`}>
