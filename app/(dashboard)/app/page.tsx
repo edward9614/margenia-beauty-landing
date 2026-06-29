@@ -53,6 +53,10 @@ export default async function AppHomePage() {
     .from("products")
     .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,status)")
     .eq("business_id", business.id);
+  const { data: comboRows } = await supabase
+    .from("combos")
+    .select("id,status")
+    .eq("business_id", business.id);
   const typedProductRows = (productRows || []) as ProductRow[];
   const activeProducts = typedProductRows.filter(
     (product) => product.status === "active",
@@ -71,6 +75,11 @@ export default async function AppHomePage() {
     0,
   );
   const hasProducts = activeProducts.length > 0;
+  const hasCombos = Boolean(
+    ((comboRows || []) as { id: string; status: string | null }[]).some(
+      (combo) => combo.status === "active",
+    ),
+  );
   const formatter = moneyFormatter(business.currency || "COP");
   const metrics = [
     {
@@ -106,8 +115,8 @@ export default async function AppHomePage() {
 
         <div className="grid min-w-0 grid-cols-12 gap-6">
           <div className="col-span-12 min-w-0 space-y-6 xl:col-span-8">
-            <ActivationProgressCard hasProducts={hasProducts} />
-            <QuickActions />
+            <ActivationProgressCard hasCombos={hasCombos} hasProducts={hasProducts} />
+            <QuickActions hasProducts={hasProducts} />
 
             <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
               {metrics.map((metric) => (
@@ -127,7 +136,7 @@ export default async function AppHomePage() {
           </div>
 
           <aside className="col-span-12 min-w-0 space-y-6 xl:col-span-4">
-            <SetupChecklist hasProducts={hasProducts} />
+            <SetupChecklist hasCombos={hasCombos} hasProducts={hasProducts} />
             <BusinessStatusCard
               business={{
                 businessType: business.business_type,

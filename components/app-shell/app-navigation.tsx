@@ -7,7 +7,7 @@ import { BrandLogo } from "@/components/brand-logo";
 const navItems = [
   { href: "/app", label: "Inicio", soon: false },
   { href: "/app/productos", label: "Productos", soon: false },
-  { href: "#", label: "Combos", soon: true },
+  { href: "/app/combos", label: "Combos", soon: false },
   { href: "#", label: "Ventas", soon: true },
   { href: "#", label: "Inventario", soon: true },
   { href: "#", label: "Caja", soon: true },
