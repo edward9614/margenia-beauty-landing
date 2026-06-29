@@ -9,7 +9,7 @@ const navItems = [
   { href: "/app/productos", label: "Productos", soon: false },
   { href: "/app/combos", label: "Combos", soon: false },
   { href: "/app/ventas", label: "Ventas", soon: false },
-  { href: "#", label: "Inventario", soon: true },
+  { href: "/app/inventario", label: "Inventario", soon: false },
   { href: "#", label: "Caja", soon: true },
   { href: "#", label: "Configuración", soon: true },
 ];
@@ -95,10 +95,10 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
+      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
       aria-label="Navegación móvil"
     >
-      {navItems.slice(0, 4).map((item) => {
+      {navItems.slice(0, 5).map((item) => {
         const isActive =
           item.href === "/app"
             ? pathname === "/app"

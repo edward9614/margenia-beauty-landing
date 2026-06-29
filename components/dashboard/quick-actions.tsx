@@ -31,9 +31,13 @@ export function QuickActions({
         : "Primero agrega productos o combos.",
     },
     {
-      soon: true,
+      disabled: !hasProducts,
+      href: "/app/inventario/ajuste",
+      soon: false,
       title: "Registrar movimiento",
-      text: "Controla entradas y salidas de caja.",
+      text: hasProducts
+        ? "Controla entradas, salidas y ajustes de inventario."
+        : "Primero agrega productos con inventario.",
     },
   ];
 

@@ -51,7 +51,7 @@ export default async function AppHomePage() {
       : user.email?.split("@")[0] || "emprendedora";
   const { data: productRows } = await supabase
     .from("products")
-    .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,status)")
+    .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,minimum_stock,status)")
     .eq("business_id", business.id);
   const { data: comboRows } = await supabase
     .from("combos")
@@ -66,6 +66,16 @@ export default async function AppHomePage() {
     .eq("business_id", business.id)
     .eq("status", "completed")
     .gte("sale_date", monthStart.toISOString());
+  const { data: inventoryMovementRows } = await supabase
+    .from("inventory_movements")
+    .select("id")
+    .eq("business_id", business.id)
+    .limit(1);
+  const { data: inventoryCountRows } = await supabase
+    .from("inventory_counts")
+    .select("id")
+    .eq("business_id", business.id)
+    .limit(1);
   const typedProductRows = (productRows || []) as ProductRow[];
   const activeProducts = typedProductRows.filter(
     (product) => product.status === "active",
@@ -98,7 +108,19 @@ export default async function AppHomePage() {
     gross_profit: number | string | null;
   }[];
   const hasSales = typedSaleRows.length > 0;
+  const hasInventoryActivity = Boolean(
+    (inventoryMovementRows || []).length || (inventoryCountRows || []).length,
+  );
   const hasCatalog = hasProducts || hasCombos;
+  const lowStockVariants = activeVariants.filter((variant) => {
+    const stock = Number(variant.current_stock || 0);
+    const threshold = Number(variant.minimum_stock || 0);
+
+    return threshold > 0 && stock > 0 && stock <= threshold;
+  });
+  const outOfStockVariants = activeVariants.filter(
+    (variant) => Number(variant.current_stock || 0) <= 0,
+  );
   const salesTotal = typedSaleRows.reduce(
     (total, sale) => total + Number(sale.total_amount || 0),
     0,
@@ -149,7 +171,7 @@ export default async function AppHomePage() {
     {
       badge: hasProducts ? "Real" : "Sin datos",
       detail: hasProducts
-        ? `Valor al costo: ${formatter.format(inventoryValue)}`
+        ? `${lowStockVariants.length} bajo stock · ${outOfStockVariants.length} agotados · valor al costo: ${formatter.format(inventoryValue)}`
         : "Agrega productos para activar el inventario.",
       icon: <BoxIcon className="h-5 w-5" />,
       title: "Inventario",
@@ -173,7 +195,12 @@ export default async function AppHomePage() {
 
         <div className="grid min-w-0 grid-cols-12 gap-6">
           <div className="col-span-12 min-w-0 space-y-6 xl:col-span-8">
-            <ActivationProgressCard hasCombos={hasCombos} hasProducts={hasProducts} hasSales={hasSales} />
+            <ActivationProgressCard
+              hasCombos={hasCombos}
+              hasInventory={hasInventoryActivity}
+              hasProducts={hasProducts}
+              hasSales={hasSales}
+            />
             <QuickActions hasCatalog={hasCatalog} hasProducts={hasProducts} />
 
             <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
@@ -199,7 +226,12 @@ export default async function AppHomePage() {
           </div>
 
           <aside className="col-span-12 min-w-0 space-y-6 xl:col-span-4">
-            <SetupChecklist hasCombos={hasCombos} hasProducts={hasProducts} hasSales={hasSales} />
+            <SetupChecklist
+              hasCombos={hasCombos}
+              hasInventory={hasInventoryActivity}
+              hasProducts={hasProducts}
+              hasSales={hasSales}
+            />
             <BusinessStatusCard
               business={{
                 businessType: business.business_type,
