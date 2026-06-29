@@ -63,10 +63,6 @@ export default async function AppHomePage({
     redirect("/app/onboarding");
   }
 
-  const displayName =
-    typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()
-      ? user.user_metadata.full_name.trim()
-      : user.email?.split("@")[0] || "emprendedora";
   const { data: productRows } = await supabase
     .from("products")
     .select("id,status,track_inventory,product_variants(id,purchase_cost,current_stock,low_stock_threshold,status)")
@@ -210,7 +206,7 @@ export default async function AppHomePage({
   return (
     <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
       <div className="w-full max-w-none space-y-6">
-        <DashboardHeader businessName={business.name} displayName={displayName} />
+        <DashboardHeader businessName={business.name || "Tu negocio"} />
 
         <div className="grid min-w-0 grid-cols-12 gap-6">
           <div className="col-span-12 min-w-0 space-y-6 xl:col-span-8">

@@ -11,11 +11,11 @@ function formatToday() {
 
 export function DashboardHeader({
   businessName,
-  displayName,
 }: {
   businessName: string;
-  displayName: string;
 }) {
+  const name = businessName?.trim() || "Tu negocio";
+
   return (
     <section className="grid gap-5 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-xl shadow-[#0F172A]/5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center">
       <div>
@@ -23,10 +23,10 @@ export function DashboardHeader({
           Centro de control
         </p>
         <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-          Hola, {displayName}
+          Hola, {name}
         </h1>
         <p className="mt-3 text-base leading-7 text-[#475569]">
-          Así comienza el control de {businessName}.
+          Así va el control de tu negocio hoy.
         </p>
       </div>
 
