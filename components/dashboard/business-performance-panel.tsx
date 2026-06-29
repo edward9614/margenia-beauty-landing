@@ -3,16 +3,13 @@
 import { useMemo, useState } from "react";
 import { ActionHelp } from "@/components/ui/action-help";
 import { trackEvent } from "@/lib/analytics";
+import {
+  summarizePerformance,
+  type PerformancePoint,
+} from "@/lib/dashboard/performance";
 import { dashboardHelp } from "@/lib/help-content";
 
 type PerformanceView = "sales" | "profit";
-
-export type PerformancePoint = {
-  label: string;
-  sales: number;
-  grossProfit: number;
-  netProfit: number | null;
-};
 
 type BusinessPerformancePanelProps = {
   currency?: string;
@@ -26,18 +23,16 @@ const viewConfig = {
   sales: {
     action: "Registrar primera venta",
     badge: "Disponible en el módulo Ventas",
-    emptyText:
-      "Cuando registres tu primera venta, Margenia mostrará aquí su evolución por día, semana y mes.",
-    emptyTitle: "Aún no hay ventas registradas",
-    intro: "Aquí verás cómo evolucionan los ingresos de tu negocio.",
-    title: "Rendimiento de ventas",
+    emptyText: "Registra tu primera venta para visualizar la evolución de tu negocio.",
+    emptyTitle: "Aún no hay ventas registradas.",
+    intro: "Visualiza cómo han evolucionado tus ingresos.",
+    title: "Evolución de ventas",
   },
   profit: {
     action: "Configurar costos",
     badge: "Disponible con Productos y Ventas",
-    emptyText:
-      "Margenia calculará la utilidad cuando existan productos con costos y ventas registradas.",
-    emptyTitle: "Aún no hay datos de utilidad",
+    emptyText: "Registra ventas con costos para visualizar la utilidad real.",
+    emptyTitle: "Aún no hay datos de utilidad.",
     intro:
       "Aquí podrás entender cuánto queda después de cubrir los costos del negocio.",
     title: "Evolución de la utilidad",
@@ -58,6 +53,15 @@ function formatCurrency(value: number, currency: string) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(value);
+}
+
+function formatPercent(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "Sin datos";
+
+  return `${value.toLocaleString("es-CO", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+  })}%`;
 }
 
 function EmptyPerformanceState({
@@ -118,32 +122,120 @@ function PerformanceChart({
   points: PerformancePoint[];
   view: PerformanceView;
 }) {
-  const values = points.map((point) =>
-    view === "sales" ? point.sales : point.netProfit ?? point.grossProfit,
-  );
-  const maxValue = Math.max(...values, 1);
+  const values = points.map((point) => (view === "sales" ? point.sales : point.grossProfit));
+  const chartWidth = 640;
+  const chartHeight = 210;
+  const paddingX = 34;
+  const paddingTop = 22;
+  const paddingBottom = 42;
+  const plotHeight = chartHeight - paddingTop - paddingBottom;
+  const minValue = Math.min(0, ...values);
+  const maxValue = Math.max(0, ...values, 1);
+  const range = maxValue - minValue || 1;
+  const zeroY = paddingTop + ((maxValue - 0) / range) * plotHeight;
+  const barWidth = Math.min(54, Math.max(24, (chartWidth - paddingX * 2) / Math.max(points.length * 1.8, 1)));
+  const gradientId = view === "sales" ? "salesGradient" : "profitGradient";
+  const totalValue = values.reduce((total, value) => total + value, 0);
+
+  function xFor(index: number) {
+    if (points.length === 1) return chartWidth / 2;
+
+    return paddingX + (index * (chartWidth - paddingX * 2)) / (points.length - 1);
+  }
+
+  function yFor(value: number) {
+    return paddingTop + ((maxValue - value) / range) * plotHeight;
+  }
 
   return (
     <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-5">
-      <div className="flex h-56 items-end gap-3">
+      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[#2563EB]">
+            Total del periodo
+          </p>
+          <p className="mt-1 text-2xl font-black text-[#0F172A]">
+            {formatCurrency(totalValue, currency)}
+          </p>
+        </div>
+        <p className="text-sm font-bold text-[#475569]">
+          {points.length} {points.length === 1 ? "día con datos" : "días con datos"}
+        </p>
+      </div>
+
+      <svg
+        role="img"
+        aria-label={`Gráfico de ${view === "sales" ? "ventas" : "utilidad"}`}
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="h-64 w-full overflow-visible"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#2563EB" />
+            <stop offset="100%" stopColor="#06B6D4" />
+          </linearGradient>
+          <linearGradient id="profitGradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#16A34A" />
+            <stop offset="100%" stopColor="#06B6D4" />
+          </linearGradient>
+        </defs>
+        <line
+          x1={paddingX}
+          x2={chartWidth - paddingX}
+          y1={zeroY}
+          y2={zeroY}
+          stroke="#CBD5E1"
+          strokeDasharray="5 6"
+          strokeWidth="1"
+        />
         {points.map((point, index) => {
           const value = values[index] || 0;
-          const height = Math.max((value / maxValue) * 100, 4);
+          const x = xFor(index);
+          const valueY = yFor(value);
+          const barHeight = Math.max(Math.abs(zeroY - valueY), 10);
+          const barY = value >= 0 ? zeroY - barHeight : zeroY;
 
           return (
-            <div key={point.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-              <div
-                className="w-full rounded-t-xl bg-[linear-gradient(180deg,#2563EB_0%,#06B6D4_100%)]"
-                style={{ height: `${height}%` }}
-                title={formatCurrency(value, currency)}
+            <g key={`${point.date}-${view}`}>
+              <rect
+                x={x - barWidth / 2}
+                y={barY}
+                width={barWidth}
+                height={barHeight}
+                rx="12"
+                fill={`url(#${gradientId})`}
+              >
+                <title>
+                  {point.label}: {formatCurrency(value, currency)}
+                </title>
+              </rect>
+              <circle
+                cx={x}
+                cy={value >= 0 ? barY : barY + barHeight}
+                r="4"
+                fill={view === "sales" ? "#1D4ED8" : "#16A34A"}
               />
-              <span className="max-w-full truncate text-xs font-bold text-[#475569]">
+              <text
+                x={x}
+                y={Math.max(14, barY - 8)}
+                textAnchor="middle"
+                className="fill-[#0F172A] text-[11px] font-black"
+              >
+                {formatCurrency(value, currency)}
+              </text>
+              <text
+                x={x}
+                y={chartHeight - 14}
+                textAnchor="middle"
+                className="fill-[#475569] text-[12px] font-bold"
+              >
                 {point.label}
-              </span>
-            </div>
+              </text>
+            </g>
           );
         })}
-      </div>
+      </svg>
     </div>
   );
 }
@@ -158,6 +250,7 @@ export function BusinessPerformancePanel({
   const [view, setView] = useState<PerformanceView>("sales");
   const config = viewConfig[view];
   const hasPoints = points.length > 0;
+  const summary = useMemo(() => summarizePerformance(points), [points]);
   const profitLabel = hasExpenseData
     ? "Utilidad neta estimada"
     : "Utilidad bruta estimada";
@@ -246,6 +339,38 @@ export function BusinessPerformancePanel({
         )}
       </div>
 
+      {hasPoints && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {view === "sales" ? (
+            <>
+              <SummaryPill label="Total vendido" value={formatCurrency(summary.totalSales, currency)} />
+              <SummaryPill label="Número de ventas" value={summary.saleCount.toLocaleString("es-CO")} />
+              <SummaryPill
+                label="Mejor día"
+                value={
+                  summary.bestSalesDay
+                    ? `${summary.bestSalesDay.label} · ${formatCurrency(summary.bestSalesDay.sales, currency)}`
+                    : "Sin datos"
+                }
+              />
+            </>
+          ) : (
+            <>
+              <SummaryPill label="Utilidad total" value={formatCurrency(summary.totalProfit, currency)} />
+              <SummaryPill label="Margen promedio" value={formatPercent(summary.averageMargin)} />
+              <SummaryPill
+                label="Mejor día por utilidad"
+                value={
+                  summary.bestProfitDay
+                    ? `${summary.bestProfitDay.label} · ${formatCurrency(summary.bestProfitDay.grossProfit, currency)}`
+                    : "Sin datos"
+                }
+              />
+            </>
+          )}
+        </div>
+      )}
+
       {view === "profit" && (
         <div className="mt-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -278,5 +403,14 @@ export function BusinessPerformancePanel({
         </div>
       )}
     </section>
+  );
+}
+
+function SummaryPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3">
+      <p className="text-xs font-black uppercase tracking-[0.1em] text-[#64748B]">{label}</p>
+      <p className="mt-1 text-sm font-black text-[#0F172A]">{value}</p>
+    </div>
   );
 }

@@ -18,11 +18,15 @@ import {
   MargeniaInsightCard,
 } from "@/components/dashboard/side-panels";
 import {
+  getDashboardPerformanceData,
+  type DashboardSaleRow,
+} from "@/lib/dashboard/performance";
+import { dashboardHelp } from "@/lib/help-content";
+import {
   moneyFormatter,
   type ProductRow,
   type ProductVariantRow,
 } from "@/lib/products/product-utils";
-import { dashboardHelp } from "@/lib/help-content";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppHomePage() {
@@ -63,10 +67,11 @@ export default async function AppHomePage() {
   monthStart.setHours(0, 0, 0, 0);
   const { data: saleRows } = await supabase
     .from("sales")
-    .select("id,sale_date,status,total_amount,balance_due,gross_profit")
+    .select("id,sale_date,status,payment_status,total_amount,balance_due,gross_profit")
     .eq("business_id", business.id)
     .eq("status", "completed")
-    .gte("sale_date", monthStart.toISOString());
+    .gte("sale_date", monthStart.toISOString())
+    .order("sale_date", { ascending: true });
   const { data: inventoryMovementRows } = await supabase
     .from("inventory_movements")
     .select("id")
@@ -102,6 +107,7 @@ export default async function AppHomePage() {
   );
   const typedSaleRows = (saleRows || []) as {
     id: string;
+    payment_status: string | null;
     sale_date: string;
     status: string | null;
     total_amount: number | string | null;
@@ -131,26 +137,15 @@ export default async function AppHomePage() {
     0,
   );
   const pendingTotal = typedSaleRows.reduce(
-    (total, sale) => total + Number(sale.balance_due || 0),
+    (total, sale) =>
+      sale.payment_status === "partial" || sale.payment_status === "pending"
+        ? total + Number(sale.balance_due || 0)
+        : total,
     0,
   );
-  const performancePoints = Object.values(
-    typedSaleRows.reduce(
-      (acc, sale) => {
-        const day = new Date(sale.sale_date).toLocaleDateString("es-CO", {
-          day: "2-digit",
-          month: "short",
-        });
-
-        acc[day] ||= { grossProfit: 0, label: day, netProfit: null, sales: 0 };
-        acc[day].sales += Number(sale.total_amount || 0);
-        acc[day].grossProfit += Number(sale.gross_profit || 0);
-
-        return acc;
-      },
-      {} as Record<string, { grossProfit: number; label: string; netProfit: null; sales: number }>,
-    ),
-  ).slice(-7);
+  const performancePoints = getDashboardPerformanceData(
+    typedSaleRows as DashboardSaleRow[],
+  ).slice(-14);
   const formatter = moneyFormatter(business.currency || "COP");
   const metrics = [
     {
