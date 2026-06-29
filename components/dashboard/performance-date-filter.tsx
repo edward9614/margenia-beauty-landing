@@ -1,7 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import type { PerformanceDateRange, PerformancePeriod } from "@/lib/dashboard/performance";
 
-const quickPeriods: { label: string; value: PerformancePeriod }[] = [
+const periods: { label: string; value: PerformancePeriod }[] = [
   { label: "Hoy", value: "today" },
   { label: "Últimos 7 días", value: "last_7_days" },
   { label: "Mes actual", value: "current_month" },
@@ -9,63 +12,99 @@ const quickPeriods: { label: string; value: PerformancePeriod }[] = [
   { label: "Personalizado", value: "custom" },
 ];
 
-function periodHref(period: PerformancePeriod) {
-  return period === "current_month" ? "/app" : `/app?period=${period}`;
-}
-
 export function PerformanceDateFilter({ range }: { range: PerformanceDateRange }) {
-  const isCustom = range.period === "custom";
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [period, setPeriod] = useState<PerformancePeriod>(range.period);
+  const [from, setFrom] = useState(range.from);
+  const [to, setTo] = useState(range.to);
+
+  function replaceParams(next: {
+    from?: string;
+    period?: PerformancePeriod;
+    to?: string;
+  }) {
+    const params = new URLSearchParams(searchParams.toString());
+    const nextPeriod = next.period || period;
+
+    params.set("period", nextPeriod);
+
+    if (nextPeriod === "current_month") {
+      params.delete("period");
+    }
+
+    if (nextPeriod === "custom") {
+      params.set("from", next.from || from);
+      params.set("to", next.to || to);
+    } else {
+      params.delete("from");
+      params.delete("to");
+    }
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
+
+  function handlePeriodChange(value: PerformancePeriod) {
+    setPeriod(value);
+    replaceParams({ period: value });
+  }
+
+  function applyCustomRange() {
+    replaceParams({ from, period: "custom", to });
+  }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        {quickPeriods.map((period) => (
-          <Link
-            key={period.value}
-            href={periodHref(period.value)}
-            className={`rounded-full px-3 py-2 text-xs font-black transition ${
-              range.period === period.value
-                ? "bg-[#0F172A] text-white shadow-sm"
-                : "border border-[#E2E8F0] bg-white text-[#475569] hover:border-[#BFDBFE] hover:bg-[#EFF6FF] hover:text-[#2563EB]"
-            }`}
-          >
-            {period.label}
-          </Link>
-        ))}
-      </div>
+    <div className="grid gap-3 sm:grid-cols-[minmax(180px,220px)_1fr] sm:items-end">
+      <label className="grid gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#64748B]">
+        Periodo
+        <select
+          aria-label="Seleccionar periodo"
+          value={period}
+          onChange={(event) => handlePeriodChange(event.target.value as PerformancePeriod)}
+          className="h-12 rounded-2xl border border-[#E2E8F0] bg-white px-4 text-sm font-black normal-case tracking-normal text-[#0F172A] shadow-sm outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+        >
+          {periods.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </label>
 
-      {isCustom && (
-        <form method="get" action="/app" className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-          <input type="hidden" name="period" value="custom" />
-          <label className="grid gap-1 text-xs font-black text-[#475569]">
+      {period === "custom" && (
+        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+          <label className="grid gap-1.5 text-xs font-black text-[#475569]">
             Desde
             <input
               type="date"
-              name="from"
-              defaultValue={range.from}
-              className="rounded-2xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+              value={from}
+              onChange={(event) => setFrom(event.target.value)}
+              className="h-12 rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
             />
           </label>
-          <label className="grid gap-1 text-xs font-black text-[#475569]">
+          <label className="grid gap-1.5 text-xs font-black text-[#475569]">
             Hasta
             <input
               type="date"
-              name="to"
-              defaultValue={range.to}
-              className="rounded-2xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+              value={to}
+              onChange={(event) => setTo(event.target.value)}
+              className="h-12 rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
             />
           </label>
           <button
-            type="submit"
-            className="self-end rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-cyan-500/20"
+            type="button"
+            onClick={applyCustomRange}
+            className="h-12 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-4 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
           >
             Aplicar
           </button>
-        </form>
+        </div>
       )}
 
       {range.error && (
-        <p className="rounded-2xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#B91C1C]">
+        <p className="rounded-2xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#B91C1C] sm:col-span-2">
           {range.error}
         </p>
       )}

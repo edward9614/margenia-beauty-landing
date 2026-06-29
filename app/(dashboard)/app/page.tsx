@@ -21,6 +21,7 @@ import {
   buildDailyPerformanceSeries,
   getDashboardPerformanceData,
   getPerformanceDateRange,
+  getPerformanceView,
   type DashboardSaleRow,
 } from "@/lib/dashboard/performance";
 import { dashboardHelp } from "@/lib/help-content";
@@ -40,6 +41,7 @@ export default async function AppHomePage({
 }) {
   const params = await searchParams;
   const performanceRange = getPerformanceDateRange(params);
+  const performanceView = getPerformanceView(params);
   const supabase = await createClient();
   const {
     data: { user },
@@ -233,9 +235,10 @@ export default async function AppHomePage({
               currency={business.currency || "COP"}
       hasCostData={hasSales}
       hasSalesData={hasSales}
-      range={performanceRange}
-      movementCount={movementPoints.length}
-      points={performancePoints}
+              range={performanceRange}
+              initialView={performanceView}
+              movementCount={movementPoints.length}
+              points={performancePoints}
     />
             <RecentActivity />
           </div>

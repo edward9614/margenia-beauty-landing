@@ -23,6 +23,8 @@ export type PerformancePeriod =
   | "previous_month"
   | "custom";
 
+export type PerformanceView = "sales" | "profit";
+
 export type PerformanceDateRange = {
   days: number;
   endDate: string;
@@ -34,6 +36,12 @@ export type PerformanceDateRange = {
   startIso: string;
   to: string;
 };
+
+export function getPerformanceView(
+  searchParams: Record<string, string | string[] | undefined> | undefined,
+): PerformanceView {
+  return searchParams?.view === "profit" ? "profit" : "sales";
+}
 
 export type PerformanceSummary = {
   totalSales: number;

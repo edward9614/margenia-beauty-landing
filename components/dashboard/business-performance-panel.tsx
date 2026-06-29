@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ActionHelp } from "@/components/ui/action-help";
 import { PerformanceDateFilter } from "@/components/dashboard/performance-date-filter";
@@ -9,13 +10,13 @@ import {
   summarizePerformance,
   type PerformanceDateRange,
   type PerformancePoint,
+  type PerformanceView,
 } from "@/lib/dashboard/performance";
 import { dashboardHelp } from "@/lib/help-content";
 
-type PerformanceView = "sales" | "profit";
-
 type BusinessPerformancePanelProps = {
   currency?: string;
+  initialView?: PerformanceView;
   points?: PerformancePoint[];
   movementCount?: number;
   range: PerformanceDateRange;
@@ -263,17 +264,31 @@ function PerformanceChart({
 
 export function BusinessPerformancePanel({
   currency = "COP",
+  initialView = "sales",
   movementCount = 0,
   points = [],
   range,
 }: BusinessPerformancePanelProps) {
-  const [view, setView] = useState<PerformanceView>("sales");
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [view, setView] = useState<PerformanceView>(initialView);
   const config = viewConfig[view];
   const summary = useMemo(() => summarizePerformance(points), [points]);
   const hasMovement = summary.saleCount > 0;
 
   function changeView(nextView: PerformanceView) {
     setView(nextView);
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextView === "sales") {
+      params.delete("view");
+    } else {
+      params.set("view", nextView);
+    }
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     trackEvent("dashboard_performance_view", { view: nextView });
   }
 
