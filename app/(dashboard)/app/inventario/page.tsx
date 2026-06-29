@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { loadInventoryVariants } from "@/app/(dashboard)/app/inventario/actions";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
+import { HelpTooltip } from "@/components/ui/help-tooltip";
 import {
   inventoryStatus,
   inventoryThreshold,
@@ -39,6 +40,27 @@ function alertLabel(variant: InventoryVariant) {
 
   return `${threshold.toLocaleString("es-CO")} ${inventoryUnitLabel(variant.inventory_unit)}`;
 }
+
+const tableHeaders = [
+  {
+    help: "Cantidad disponible actualmente según entradas, ventas, ajustes y conteos.",
+    label: "Stock actual",
+  },
+  { label: "Unidad" },
+  {
+    help: "Cantidad configurada por ti para que Margenia marque el producto como Stock bajo.",
+    label: "Alerta de stock bajo",
+  },
+  {
+    help: "Estado calculado según el stock actual y la alerta que configures para cada producto.",
+    label: "Estado",
+  },
+  {
+    help: "Estimación del valor del inventario usando el stock actual y el costo del producto.",
+    label: "Valor estimado",
+  },
+  { label: "Acciones" },
+];
 
 export default async function InventoryPage({
   searchParams,
@@ -109,18 +131,32 @@ export default async function InventoryPage({
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/app/inventario/ajuste"
-                className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-4 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20"
-              >
-                Registrar movimiento
-              </Link>
-              <Link
-                href="/app/inventario/conteo"
-                className="rounded-full border border-[#BFDBFE] bg-white px-6 py-4 text-center text-sm font-black text-[#2563EB]"
-              >
-                Conteo físico
-              </Link>
+              <div className="flex items-center justify-center gap-2">
+                <Link
+                  href="/app/inventario/ajuste"
+                  className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-4 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20"
+                >
+                  Registrar movimiento
+                </Link>
+                <HelpTooltip
+                  title="Registrar movimiento"
+                  content="Úsalo para registrar entradas, salidas, mermas, devoluciones o ajustes manuales de inventario."
+                  example="Ej: entraron 10 unidades nuevas o se perdieron 2 por daño."
+                />
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <Link
+                  href="/app/inventario/conteo"
+                  className="rounded-full border border-[#BFDBFE] bg-white px-6 py-4 text-center text-sm font-black text-[#2563EB]"
+                >
+                  Conteo físico
+                </Link>
+                <HelpTooltip
+                  title="Conteo físico"
+                  content="Úsalo cuando quieras comparar lo que tienes físicamente con lo que aparece en Margenia."
+                  example="Ej: el sistema dice 20 unidades, pero al contar encuentras 18."
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -171,8 +207,17 @@ export default async function InventoryPage({
             <table className="min-w-full divide-y divide-[#E2E8F0] text-sm">
               <thead className="bg-[#F8FAFC] text-left text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">
                 <tr>
-                  {["Producto", "Variante", "Stock actual", "Unidad", "Alerta de stock bajo", "Estado", "Valor estimado", "Acciones"].map((header) => (
-                    <th key={header} className="px-5 py-4">{header}</th>
+                  <th className="px-5 py-4">Producto</th>
+                  <th className="px-5 py-4">Variante</th>
+                  {tableHeaders.map((header) => (
+                    <th key={header.label} className="px-5 py-4">
+                      <span className="inline-flex items-center gap-2">
+                        {header.label}
+                        {header.help && (
+                          <HelpTooltip title={header.label} content={header.help} />
+                        )}
+                      </span>
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -192,8 +237,14 @@ export default async function InventoryPage({
                       </td>
                       <td className="px-5 py-4">{formatter.format(inventoryValue(variant))}</td>
                       <td className="px-5 py-4">
-                        <div className="flex flex-col gap-1">
-                          <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="inline-flex items-center gap-2">
+                            <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                            <HelpTooltip
+                              title="Ver detalle"
+                              content="Abre el detalle del producto para revisar stock, movimientos, ubicación y configuración."
+                            />
+                          </span>
                           <Link href={`/app/inventario/${variant.id}#alerta-stock`} className="font-black text-[#0891B2]">
                             Configurar alerta
                           </Link>
@@ -217,7 +268,13 @@ export default async function InventoryPage({
                       <p className="text-sm font-bold text-[#475569]">{variant.name || "Presentación estándar"}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                      <span className="inline-flex items-center gap-2">
+                        <Link href={`/app/inventario/${variant.id}`} className="font-black text-[#2563EB]">Ver</Link>
+                        <HelpTooltip
+                          title="Ver detalle"
+                          content="Abre el detalle del producto para revisar stock, movimientos, ubicación y configuración."
+                        />
+                      </span>
                       <Link href={`/app/inventario/${variant.id}#alerta-stock`} className="text-xs font-black text-[#0891B2]">
                         Configurar alerta
                       </Link>
