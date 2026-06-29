@@ -17,6 +17,7 @@ import {
   BusinessStatusCard,
   MargeniaInsightCard,
 } from "@/components/dashboard/side-panels";
+import { getRecentActivity } from "@/lib/dashboard/activity";
 import {
   buildDailyPerformanceSeries,
   getDashboardPerformanceData,
@@ -92,6 +93,10 @@ export default async function AppHomePage({
     .select("id")
     .eq("business_id", business.id)
     .limit(1);
+  const recentActivity = await getRecentActivity({
+    businessId: business.id,
+    supabase,
+  });
   const typedProductRows = (productRows || []) as ProductRow[];
   const activeProducts = typedProductRows.filter(
     (product) => product.status === "active",
@@ -233,14 +238,14 @@ export default async function AppHomePage({
 
             <BusinessPerformancePanel
               currency={business.currency || "COP"}
-      hasCostData={hasSales}
-      hasSalesData={hasSales}
+              hasCostData={hasSales}
+              hasSalesData={hasSales}
               range={performanceRange}
               initialView={performanceView}
               movementCount={movementPoints.length}
               points={performancePoints}
-    />
-            <RecentActivity />
+            />
+            <RecentActivity items={recentActivity} />
           </div>
 
           <aside className="col-span-12 min-w-0 space-y-6 xl:col-span-4">
