@@ -231,7 +231,60 @@ export const inventoryHelp = {
   },
 } satisfies Record<string, HelpContent>;
 
+export const cashHelp = {
+  close: {
+    content: "Al cerrar caja, Margenia guarda el esperado, lo contado y cualquier diferencia.",
+    example: "Después del cierre no podrás registrar más movimientos en esa sesión.",
+    title: "Cerrar caja",
+  },
+  countedAmount: {
+    content: "Es el valor que confirmaste al contar efectivo o revisar cada método de pago.",
+    example: "Cuenta el efectivo físico y confirma transferencias o pagos por tarjeta.",
+    title: "Monto contado",
+  },
+  difference: {
+    content: "Compara lo contado contra lo que Margenia esperaba según ventas y movimientos.",
+    example: "Si se esperaban $100.000 y contaste $95.000, faltan $5.000.",
+    title: "Diferencia",
+  },
+  expectedCash: {
+    content: "Es el efectivo que Margenia calcula según saldo inicial, ventas en efectivo e ingresos o salidas manuales.",
+    example: "Si abriste con $100.000 y vendiste $50.000 en efectivo, se esperan $150.000 antes de salidas.",
+    title: "Efectivo esperado",
+  },
+  income: {
+    content: "Registra dinero que entra a caja y no viene de una venta.",
+    example: "Ingreso extra, ajuste positivo o devolución de dinero.",
+    title: "Ingreso",
+  },
+  movement: {
+    content: "Usa este formulario para registrar movimientos que no vienen de una venta.",
+    example: "Compra de bolsas, retiro del dueño, ingreso extra o devolución.",
+    title: "Registrar movimiento",
+  },
+  openingCash: {
+    content: "Es el dinero en efectivo con el que empieza tu caja.",
+    example: "Ej: $100.000 para cambio.",
+    title: "Saldo inicial",
+  },
+  outcome: {
+    content: "Registra dinero que sale de caja y no corresponde a una venta.",
+    example: "Pago de domicilio, compra de bolsas o retiro del dueño.",
+    title: "Salida",
+  },
+  paymentMethod: {
+    content: "Indica por dónde entró o salió el dinero.",
+    example: "Efectivo, transferencia, tarjeta, Nequi o Daviplata.",
+    title: "Método de pago",
+  },
+} satisfies Record<string, HelpContent>;
+
 export const dashboardHelp = {
+  cash: {
+    content: "Muestra el estado de la caja abierta o la diferencia del último cierre.",
+    example: "Efectivo esperado, caja sin abrir o diferencia del cierre anterior.",
+    title: "Caja",
+  },
   inventory: {
     content: "Valor o estado actual de tus existencias.",
     example: "Productos disponibles, agotados o con stock bajo.",

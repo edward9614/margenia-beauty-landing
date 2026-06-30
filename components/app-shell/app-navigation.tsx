@@ -10,7 +10,7 @@ const navItems = [
   { href: "/app/combos", label: "Combos", soon: false },
   { href: "/app/ventas", label: "Ventas", soon: false },
   { href: "/app/inventario", label: "Inventario", soon: false },
-  { href: "#", label: "Caja", soon: true },
+  { href: "/app/caja", label: "Caja", soon: false },
   { href: "#", label: "Configuración", soon: true },
 ];
 
@@ -55,7 +55,7 @@ export function SidebarNavigation({
               : item.href !== "#" && pathname.startsWith(item.href);
 
           return (
-            <a
+            <Link
               key={item.label}
               href={item.href}
               className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-black transition ${
@@ -70,7 +70,7 @@ export function SidebarNavigation({
                   Próximamente
                 </span>
               )}
-            </a>
+            </Link>
           );
         })}
       </nav>
@@ -92,25 +92,25 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
+      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-6 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
       aria-label="Navegación móvil"
     >
-      {navItems.slice(0, 5).map((item) => {
+      {navItems.slice(0, 6).map((item) => {
         const isActive =
           item.href === "/app"
             ? pathname === "/app"
             : item.href !== "#" && pathname.startsWith(item.href);
 
         return (
-          <a
+          <Link
             key={item.label}
             href={item.href}
-            className={`rounded-2xl px-2 py-2 text-center text-[11px] font-black ${
+            className={`rounded-2xl px-1.5 py-2 text-center text-[10px] font-black sm:text-[11px] ${
               isActive ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#475569]"
             }`}
           >
             {item.label}
-          </a>
+          </Link>
         );
       })}
     </nav>

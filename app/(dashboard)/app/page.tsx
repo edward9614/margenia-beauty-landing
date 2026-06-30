@@ -17,6 +17,13 @@ import {
   BusinessStatusCard,
   MargeniaInsightCard,
 } from "@/components/dashboard/side-panels";
+import {
+  calculateSessionSummary,
+  formatCashDifference,
+  type CashMovementRow,
+  type CashSalePaymentRow,
+  type CashSessionRow,
+} from "@/lib/cash-register";
 import { getRecentActivity } from "@/lib/dashboard/activity";
 import {
   buildDailyPerformanceSeries,
@@ -78,6 +85,22 @@ export default async function AppHomePage({
     .gte("sale_date", performanceRange.startIso)
     .lte("sale_date", performanceRange.endIso)
     .order("sale_date", { ascending: true });
+  const { data: openCashSession } = await supabase
+    .from("cash_sessions")
+    .select("*")
+    .eq("business_id", business.id)
+    .eq("status", "open")
+    .order("opened_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const { data: lastClosedCashSession } = await supabase
+    .from("cash_sessions")
+    .select("*")
+    .eq("business_id", business.id)
+    .eq("status", "closed")
+    .order("closed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const { data: inventoryMovementRows } = await supabase
     .from("inventory_movements")
     .select("id")
@@ -141,13 +164,45 @@ export default async function AppHomePage({
     (total, sale) => total + Number(sale.gross_profit || 0),
     0,
   );
-  const pendingTotal = typedSaleRows.reduce(
-    (total, sale) =>
-      sale.payment_status === "partial" || sale.payment_status === "pending"
-        ? total + Number(sale.balance_due || 0)
-        : total,
-    0,
-  );
+  const formatter = moneyFormatter(business.currency || "COP");
+  const cashSession = openCashSession as CashSessionRow | null;
+  const lastCashSession = lastClosedCashSession as CashSessionRow | null;
+  let cashMetricValue: string | undefined;
+  let cashMetricDetail = "Caja sin abrir";
+  let cashMetricBadge = "Caja";
+
+  if (cashSession) {
+    const [{ data: cashMovementRows }, { data: cashPaymentRows }] = await Promise.all([
+      supabase
+        .from("cash_movements")
+        .select("*")
+        .eq("business_id", business.id)
+        .eq("session_id", cashSession.id),
+      supabase
+        .from("sale_payments")
+        .select("id,amount,payment_method,paid_at,reference,sales!inner(id,sale_code,status)")
+        .eq("business_id", business.id)
+        .eq("sales.status", "completed")
+        .gte("paid_at", cashSession.opened_at)
+        .lte("paid_at", new Date().toISOString()),
+    ]);
+    const cashSummary = calculateSessionSummary({
+      movements: (cashMovementRows || []) as CashMovementRow[],
+      payments: (cashPaymentRows || []) as unknown as CashSalePaymentRow[],
+      session: cashSession,
+    });
+
+    cashMetricBadge = "Abierta";
+    cashMetricDetail = `Caja abierta desde ${new Intl.DateTimeFormat("es-CO", {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(cashSession.opened_at))}`;
+    cashMetricValue = formatter.format(cashSummary.expectedCash);
+  } else if (lastCashSession) {
+    cashMetricBadge = "Último cierre";
+    cashMetricDetail = formatCashDifference(lastCashSession.total_difference_amount);
+    cashMetricValue = formatter.format(Number(lastCashSession.total_difference_amount || 0));
+  }
   const performanceRows = typedSaleRows as DashboardSaleRow[];
   const movementPoints = getDashboardPerformanceData(performanceRows);
   const performancePoints = buildDailyPerformanceSeries({
@@ -155,7 +210,6 @@ export default async function AppHomePage({
     rawRows: performanceRows,
     startDate: performanceRange.startDate,
   });
-  const formatter = moneyFormatter(business.currency || "COP");
   const metrics = [
     {
       badge: hasSales ? "Periodo" : "Sin datos",
@@ -187,12 +241,12 @@ export default async function AppHomePage({
       variant: "inventory" as const,
     },
     {
-      badge: hasSales ? "Por cobrar" : undefined,
-      detail: hasSales ? "Saldo por cobrar" : "Sin caja aún",
-      help: dashboardHelp.pending,
+      badge: cashMetricBadge,
+      detail: cashMetricDetail,
+      help: dashboardHelp.cash,
       icon: <WalletIcon className="h-5 w-5" />,
       title: "Caja",
-      value: hasSales ? formatter.format(pendingTotal) : undefined,
+      value: cashMetricValue,
       variant: "cash" as const,
     },
   ];
