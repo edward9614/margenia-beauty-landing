@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  CashMovementItem,
+  CashSummaryCard,
+  PaymentMethodUsageCard,
+} from "@/components/cash-register/cash-dashboard-widgets";
+import {
   buildCashTimeline,
   calculateSessionSummary,
   formatCashDifference,
   getCashSessionStatusLabel,
-  getPaymentMethodLabel,
   type CashMovementRow,
   type CashSalePaymentRow,
   type CashSessionRow,
@@ -97,6 +101,13 @@ export default async function CashRegisterPage() {
   const lastClosed = ((recentSessions || []) as CashSessionRow[]).find(
     (item) => item.status === "closed",
   );
+  const methodTotal = summary
+    ? summary.byMethod.reduce((total, item) => total + item.expectedAmount, 0)
+    : 0;
+  const topMethodAmount = summary
+    ? Math.max(...summary.byMethod.map((item) => item.expectedAmount))
+    : 0;
+  const lastDifference = Number(lastClosed?.total_difference_amount || 0);
 
   return (
     <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
@@ -138,74 +149,92 @@ export default async function CashRegisterPage() {
         {summary && session ? (
           <>
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {[
-                ["Efectivo esperado", formatter.format(summary.expectedCash)],
-                ["Ventas cobradas", formatter.format(summary.totalSales)],
-                ["Salidas registradas", formatter.format(summary.totalManualOut)],
-                [
-                  "Última diferencia",
-                  lastClosed
-                    ? formatter.format(Number(lastClosed.total_difference_amount || 0))
-                    : "Sin cierres",
-                ],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">{label}</p>
-                  <p className="mt-3 text-2xl font-black text-[#0F172A]">{value}</p>
-                </div>
-              ))}
+              <CashSummaryCard
+                icon="cash"
+                label="Efectivo esperado"
+                tone="blue"
+                value={formatter.format(summary.expectedCash)}
+              />
+              <CashSummaryCard
+                icon="sale"
+                label="Ventas cobradas"
+                tone="green"
+                value={formatter.format(summary.totalSales)}
+              />
+              <CashSummaryCard
+                icon="out"
+                label="Salidas registradas"
+                tone="red"
+                value={formatter.format(summary.totalManualOut)}
+              />
+              <CashSummaryCard
+                icon="difference"
+                label="Última diferencia"
+                tone={!lastClosed ? "slate" : lastDifference === 0 ? "green" : lastDifference > 0 ? "blue" : "red"}
+                value={lastClosed ? formatter.format(lastDifference) : "Sin cierres"}
+              />
             </section>
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
               <div className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-                <h2 className="text-xl font-black text-[#0F172A]">Movimientos de la caja</h2>
-                <p className="mt-1 text-sm font-bold text-[#475569]">
-                  Ventas cobradas y movimientos manuales de esta sesión.
-                </p>
-                <div className="mt-5 overflow-hidden rounded-2xl border border-[#E2E8F0]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-black text-[#0F172A]">Movimientos de la caja</h2>
+                    <p className="mt-1 text-sm font-bold text-[#475569]">
+                      Ventas cobradas y movimientos manuales de esta sesión.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-[#2563EB]">
+                    {timeline.length} movimiento{timeline.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="mt-5">
                   {timeline.length ? (
-                    <div className="divide-y divide-[#E2E8F0]">
+                    <div className="space-y-3">
                       {timeline.map((item) => (
-                        <div key={item.id} className="grid gap-3 p-4 md:grid-cols-[1.2fr_1fr_1fr_1fr] md:items-center">
-                          <div>
-                            <p className="font-black text-[#0F172A]">{item.title}</p>
-                            <p className="text-xs font-bold text-[#64748B]">{formatDateTime(item.occurredAt)}</p>
-                          </div>
-                          <p className="text-sm font-bold text-[#475569]">
-                            {getPaymentMethodLabel(item.method)}
-                          </p>
-                          <p className="text-sm font-bold text-[#475569]">{item.reference}</p>
-                          <p className={`text-right text-sm font-black ${item.direction === "in" ? "text-[#166534]" : "text-[#991B1B]"}`}>
-                            {item.direction === "in" ? "+" : "-"} {formatter.format(item.amount)}
-                          </p>
-                        </div>
+                        <CashMovementItem
+                          key={item.id}
+                          formatDateTime={formatDateTime}
+                          formatter={formatter}
+                          item={item}
+                        />
                       ))}
                     </div>
                   ) : (
-                    <p className="p-5 text-sm font-bold text-[#475569]">
-                      Aún no hay movimientos en esta caja.
-                    </p>
+                    <div className="rounded-[1.5rem] border border-dashed border-[#BFDBFE] bg-[#F8FAFC] p-6 text-center">
+                      <p className="text-base font-black text-[#0F172A]">Aún no hay movimientos en esta caja</p>
+                      <p className="mt-2 text-sm font-bold leading-6 text-[#475569]">
+                        Cuando registres ventas, ingresos o salidas, aparecerán aquí con su color y método de pago.
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
 
               <aside className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 xl:sticky xl:top-6 xl:self-start">
-                <h2 className="text-xl font-black text-[#0F172A]">Por método de pago</h2>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-[#0F172A]">Por método de pago</h2>
+                    <p className="mt-1 text-sm font-bold text-[#475569]">
+                      Participación del dinero esperado.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#F8FAFC] px-2.5 py-1 text-xs font-black text-[#64748B]">
+                    {formatter.format(methodTotal)}
+                  </span>
+                </div>
                 <div className="mt-5 space-y-3">
                   {summary.byMethod.map((item) => (
-                    <div key={item.paymentMethod} className="rounded-2xl bg-[#F8FAFC] p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-black text-[#0F172A]">
-                          {getPaymentMethodLabel(item.paymentMethod)}
-                        </p>
-                        <p className="text-sm font-black text-[#2563EB]">
-                          {formatter.format(item.expectedAmount)}
-                        </p>
-                      </div>
-                      <p className="mt-1 text-xs font-bold text-[#64748B]">
-                        Ventas {formatter.format(item.sales)} · Salidas {formatter.format(item.manualOut)}
-                      </p>
-                    </div>
+                    <PaymentMethodUsageCard
+                      key={item.paymentMethod}
+                      amount={item.expectedAmount}
+                      formatter={formatter}
+                      isTop={item.expectedAmount > 0 && item.expectedAmount === topMethodAmount}
+                      manualOut={item.manualOut}
+                      paymentMethod={item.paymentMethod}
+                      percentage={methodTotal > 0 ? (item.expectedAmount / methodTotal) * 100 : 0}
+                      sales={item.sales}
+                    />
                   ))}
                 </div>
               </aside>

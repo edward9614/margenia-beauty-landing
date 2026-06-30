@@ -58,6 +58,20 @@ export type CashSalePaymentRow = {
   } | null;
 };
 
+export type CashTimelineItem = {
+  amount: number;
+  category?: string | null;
+  description?: string | null;
+  direction: "in" | "out";
+  id: string;
+  method: string;
+  movementType?: string | null;
+  occurredAt: string;
+  reference: string;
+  title: string;
+  type: "movement" | "sale";
+};
+
 export type CashCountInput = {
   countedAmount: string;
   paymentMethod: CashPaymentMethod;
@@ -274,7 +288,7 @@ export function buildCashTimeline({
 }: {
   movements: CashMovementRow[];
   payments: CashSalePaymentRow[];
-}) {
+}): CashTimelineItem[] {
   return [
     ...payments.map((payment) => ({
       amount: toSafeNumber(payment.amount),
@@ -284,17 +298,20 @@ export function buildCashTimeline({
       occurredAt: payment.paid_at,
       reference: payment.sales?.sale_code || payment.reference || "Venta",
       title: "Venta cobrada",
-      type: "sale",
+      type: "sale" as const,
     })),
     ...movements.map((movement) => ({
       amount: toSafeNumber(movement.amount),
+      category: movement.category,
+      description: movement.description,
       direction: movement.direction === "in" ? ("in" as const) : ("out" as const),
       id: `movement-${movement.id}`,
       method: movement.payment_method,
+      movementType: movement.movement_type,
       occurredAt: movement.occurred_at,
       reference: movement.movement_code,
       title: getMovementTypeLabel(movement.movement_type),
-      type: "movement",
+      type: "movement" as const,
     })),
   ].sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
 }
