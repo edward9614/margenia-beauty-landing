@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type BusinessInfo = {
   businessType: string | null;
   country: string | null;
@@ -32,29 +34,69 @@ export function AlertsCard() {
   );
 }
 
-export function MargeniaInsightCard() {
+export function MargeniaInsightCard({
+  hasCombos,
+  hasProducts,
+  hasSales,
+  hasSettingsComplete,
+}: {
+  hasCombos: boolean;
+  hasProducts: boolean;
+  hasSales: boolean;
+  hasSettingsComplete: boolean;
+}) {
+  const insight = !hasSettingsComplete
+    ? {
+        cta: "Ir a configuración",
+        href: "/app/configuracion",
+        text: "Completa los datos base de tu negocio para que Margenia pueda adaptar moneda, país y operación.",
+        title: "Completa la configuración de tu negocio",
+      }
+    : !hasProducts
+      ? {
+          cta: "Crear producto",
+          href: "/app/productos/nuevo",
+          text: "Registrar costos, precios y existencias te permitirá calcular utilidad, detectar stock bajo y crear combos rentables.",
+          title: "Empieza organizando tus productos",
+        }
+      : !hasCombos
+        ? {
+            cta: "Crear combo",
+            href: "/app/combos/nuevo",
+            text: "Agrupa productos para vender promociones más claras sin perder margen.",
+            title: "Crea tu primer combo",
+          }
+        : !hasSales
+          ? {
+              cta: "Registrar venta",
+              href: "/app/ventas/nueva",
+              text: "Registra tu primera venta para empezar a ver utilidad, caja y evolución del negocio.",
+              title: "Registra tu primera venta",
+            }
+          : {
+              cta: "Registrar venta",
+              href: "/app/ventas/nueva",
+              text: "Sigue operando con ventas, inventario y caja.",
+              title: "Tu negocio ya está listo",
+            };
+
   return (
     <section className="rounded-[2rem] border border-[#BFDBFE] bg-[#EFF6FF] p-5 shadow-sm">
       <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
         Consejo de Margenia
       </p>
       <h2 className="mt-3 text-xl font-black text-[#0F172A]">
-        Empieza organizando tus productos
+        {insight.title}
       </h2>
       <p className="mt-3 text-sm leading-6 text-[#475569]">
-        Registrar costos, precios y existencias te permitirá calcular utilidad,
-        detectar stock bajo y crear combos rentables.
+        {insight.text}
       </p>
-      <button
-        type="button"
-        disabled
-        className="mt-5 w-full rounded-full bg-white px-4 py-3 text-sm font-black text-[#2563EB] opacity-80 ring-1 ring-[#BFDBFE] disabled:cursor-not-allowed"
+      <Link
+        href={insight.href}
+        className="mt-5 block w-full rounded-full bg-white px-4 py-3 text-center text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-[#F8FAFC] hover:text-[#1D4ED8]"
       >
-        Prepararme para productos
-      </button>
-      <p className="mt-2 text-center text-xs font-bold text-[#475569]">
-        Disponible en el próximo módulo
-      </p>
+        {insight.cta}
+      </Link>
     </section>
   );
 }
@@ -70,13 +112,12 @@ export function BusinessStatusCard({ business }: { business: BusinessInfo }) {
         <InfoRow label="Moneda" value={business.currency} />
         <InfoRow label="Canal" value={business.primaryChannel} />
       </div>
-      <button
-        type="button"
-        disabled
-        className="mt-5 w-full rounded-full bg-[#F8FAFC] px-4 py-3 text-sm font-black text-[#475569] ring-1 ring-[#E2E8F0] disabled:cursor-not-allowed"
+      <Link
+        href="/app/configuracion"
+        className="mt-5 block w-full rounded-full bg-[#F8FAFC] px-4 py-3 text-center text-sm font-black text-[#475569] ring-1 ring-[#E2E8F0] transition hover:bg-[#EFF6FF] hover:text-[#2563EB]"
       >
         Editar configuración
-      </button>
+      </Link>
     </section>
   );
 }

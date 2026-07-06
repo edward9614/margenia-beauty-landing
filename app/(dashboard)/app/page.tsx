@@ -315,7 +315,12 @@ export default async function AppHomePage({
               }}
             />
             <AlertsCard />
-            <MargeniaInsightCard />
+            <MargeniaInsightCard
+              hasCombos={hasCombos}
+              hasProducts={hasProducts}
+              hasSales={hasSales}
+              hasSettingsComplete={hasSettingsComplete}
+            />
           </aside>
         </div>
       </div>

@@ -107,7 +107,11 @@ function PerformanceChart({
   points: PerformancePoint[];
   view: PerformanceView;
 }) {
-  const [activePoint, setActivePoint] = useState<PerformancePoint | null>(null);
+  const [activePoint, setActivePoint] = useState<{
+    point: PerformancePoint;
+    x: number;
+    y: number;
+  } | null>(null);
   const values = points.map((point) => (view === "sales" ? point.sales : point.grossProfit));
   const chartWidth = Math.max(680, points.length * 28);
   const chartHeight = 190;
@@ -148,6 +152,21 @@ function PerformanceChart({
     return `${point.label}. Ventas ${formatCurrency(point.sales, currency)}. Utilidad ${formatCurrency(point.grossProfit, currency)}. ${formatSaleCount(point.saleCount)}.`;
   }
 
+  function tooltipPosition() {
+    if (!activePoint) return { left: 0, top: 0 };
+
+    const tooltipWidth = 244;
+    const left = Math.min(
+      Math.max(activePoint.x - tooltipWidth / 2, 8),
+      chartWidth - tooltipWidth - 8,
+    );
+    const top = Math.min(Math.max(activePoint.y - 96, 8), chartHeight - 118);
+
+    return { left, top };
+  }
+
+  const tooltip = tooltipPosition();
+
   return (
     <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:p-5">
       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -165,14 +184,18 @@ function PerformanceChart({
       </div>
 
       <div className="relative -mx-2 overflow-x-auto px-2">
+        <div className="relative" style={{ width: chartWidth }}>
         {activePoint && (
-          <div className="pointer-events-none absolute right-4 top-3 z-10 max-w-60 rounded-2xl border border-[#E2E8F0] bg-white p-3 text-left text-xs shadow-xl shadow-[#0F172A]/10">
-            <p className="font-black text-[#0F172A]">{activePoint.label}</p>
-            {activePoint.saleCount > 0 ? (
+          <div
+            className="pointer-events-none absolute z-10 w-[244px] rounded-2xl border border-[#E2E8F0] bg-white p-3 text-left text-xs shadow-xl shadow-[#0F172A]/10"
+            style={{ left: tooltip.left, top: tooltip.top }}
+          >
+            <p className="font-black text-[#0F172A]">{activePoint.point.label}</p>
+            {activePoint.point.saleCount > 0 ? (
               <div className="mt-2 space-y-1 font-bold text-[#475569]">
-                <p>Ventas: {formatCurrency(activePoint.sales, currency)}</p>
-                <p>Utilidad: {formatCurrency(activePoint.grossProfit, currency)}</p>
-                <p>{formatSaleCount(activePoint.saleCount)}</p>
+                <p>Ventas: {formatCurrency(activePoint.point.sales, currency)}</p>
+                <p>Utilidad: {formatCurrency(activePoint.point.grossProfit, currency)}</p>
+                <p>{formatSaleCount(activePoint.point.saleCount)}</p>
               </div>
             ) : (
               <p className="mt-2 font-bold text-[#64748B]">Sin movimiento</p>
@@ -183,8 +206,9 @@ function PerformanceChart({
           role="img"
           aria-label={`Gráfico de ${view === "sales" ? "ventas" : "utilidad"}`}
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          className="h-[230px] w-full min-w-[680px] overflow-visible"
+          className="h-[230px] overflow-visible"
           preserveAspectRatio="none"
+          style={{ width: chartWidth }}
         >
           <defs>
             <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
@@ -217,6 +241,8 @@ function PerformanceChart({
                 : zeroY
               : zeroY - 2;
             const isBest = hasMovement && value === bestValue && bestValue > 0;
+            const pointY = value >= 0 ? barY : barY + barHeight;
+            const nextActivePoint = { point, x, y: pointY };
 
             return (
               <g
@@ -226,15 +252,15 @@ function PerformanceChart({
                 tabIndex={0}
                 aria-label={pointAriaLabel(point)}
                 onBlur={() => setActivePoint(null)}
-                onClick={() => setActivePoint(point)}
-                onFocus={() => setActivePoint(point)}
+                onClick={() => setActivePoint(nextActivePoint)}
+                onFocus={() => setActivePoint(nextActivePoint)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    setActivePoint(point);
+                    setActivePoint(nextActivePoint);
                   }
                 }}
-                onMouseEnter={() => setActivePoint(point)}
+                onMouseEnter={() => setActivePoint(nextActivePoint)}
                 onMouseLeave={() => setActivePoint(null)}
               >
                 <rect
@@ -247,18 +273,11 @@ function PerformanceChart({
                   opacity={hasMovement ? 1 : 0.75}
                   stroke={isBest ? "#0F172A" : "transparent"}
                   strokeWidth={isBest ? 1.5 : 0}
-                >
-                  <title>
-                    {point.label}
-                    {"\n"}Ventas: {formatCurrency(point.sales, currency)}
-                    {"\n"}Utilidad: {formatCurrency(point.grossProfit, currency)}
-                    {"\n"}Ventas registradas: {point.saleCount}
-                  </title>
-                </rect>
+                />
                 {hasMovement && (
                   <circle
                     cx={x}
-                    cy={value >= 0 ? barY : barY + barHeight}
+                    cy={pointY}
                     r={isBest ? 4.5 : 3.5}
                     fill={view === "sales" ? "#1D4ED8" : "#16A34A"}
                   />
@@ -277,6 +296,7 @@ function PerformanceChart({
             );
           })}
         </svg>
+        </div>
       </div>
 
     </div>
