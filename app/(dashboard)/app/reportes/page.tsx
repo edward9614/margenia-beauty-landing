@@ -5,6 +5,7 @@ import {
   semanticToneStyles,
   type SemanticTone,
 } from "@/components/ui/semantic";
+import { ExcelDownloadButton } from "@/components/reports/excel-download-button";
 import { moneyFormatter, toSafeNumber } from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
@@ -975,12 +976,15 @@ export default async function ReportsPage({
                 Analiza ventas, utilidad, caja, inventario y pagos para tomar mejores decisiones.
               </p>
             </div>
-            <Link
-              href="/app/ventas/nueva"
-              className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
-            >
-              Registrar venta
-            </Link>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <ExcelDownloadButton activeTab={activeTab} />
+              <Link
+                href="/app/ventas/nueva"
+                className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
+              >
+                Registrar venta
+              </Link>
+            </div>
           </div>
         </section>
 
