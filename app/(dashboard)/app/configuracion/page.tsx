@@ -20,6 +20,7 @@ type BusinessRow = {
   id: string;
   instagram: string | null;
   language: string | null;
+  logo_path: string | null;
   logo_url: string | null;
   name: string | null;
   phone: string | null;
@@ -62,6 +63,7 @@ function mapBusiness(row: BusinessRow): BusinessSettings {
     id: row.id,
     instagram: row.instagram || "",
     language: row.language || "es",
+    logoPath: row.logo_path || "",
     logoUrl: row.logo_url || "",
     name: row.name || "",
     phone: row.phone || "",
@@ -84,7 +86,7 @@ export default async function SettingsPage() {
     supabase
       .from("businesses")
       .select(
-        "id,name,description,business_type,country,city,address,phone,contact_email,instagram,website,logo_url,currency,timezone,language,date_format,fiscal_name,fiscal_id,fiscal_regime,fiscal_address,billing_email",
+        "id,name,description,business_type,country,city,address,phone,contact_email,instagram,website,logo_url,logo_path,currency,timezone,language,date_format,fiscal_name,fiscal_id,fiscal_regime,fiscal_address,billing_email",
       )
       .eq("owner_id", user.id)
       .limit(1)

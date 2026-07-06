@@ -28,20 +28,6 @@ alter table public.inventory_movements
 
 do $$
 begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conrelid = 'public.product_variants'::regclass
-      and conname = 'product_variants_id_business_id_unique'
-  ) then
-    alter table public.product_variants
-      add constraint product_variants_id_business_id_unique unique (id, business_id);
-  end if;
-end;
-$$;
-
-do $$
-begin
   if to_regclass('public.inventory_document_number_seq') is null then
     create sequence public.inventory_document_number_seq;
     comment on sequence public.inventory_document_number_seq is 'created_by_007_inventory';
@@ -263,10 +249,6 @@ begin
     raise exception 'La cantidad debe ser mayor que cero.';
   end if;
 
-  if p_unit_cost is not null and p_unit_cost < 0 then
-    raise exception 'El costo unitario no puede ser negativo.';
-  end if;
-
   select pv.*, p.name as product_name, p.status as product_status, p.track_inventory
   into v_variant
   from public.product_variants pv
@@ -369,15 +351,6 @@ begin
     raise exception 'Selecciona al menos un producto.';
   end if;
 
-  if exists (
-    select 1
-    from jsonb_array_elements(p_items) item
-    group by item->>'variant_id'
-    having count(*) > 1
-  ) then
-    raise exception 'No puedes repetir el mismo producto en un conteo.';
-  end if;
-
   v_count_code := 'CNT-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.inventory_document_number_seq')::text, 6, '0');
 
   insert into public.inventory_counts (
@@ -454,8 +427,7 @@ begin
         coalesce(v_variant.inventory_unit, 'unit'), coalesce(v_variant.purchase_cost, 0),
         abs(v_difference) * coalesce(v_variant.purchase_cost, 0),
         'inventory_count', v_count_id, 'Conteo físico ' || v_count_code,
-        'INV-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('public.inventory_document_number_seq')::text, 6, '0'),
-        (select auth.uid()),
+        'CNT-MOV-' || left(v_count_id::text, 8), (select auth.uid()),
         'Conteo físico', v_counted_stock_inventory_unit, 'count'
       );
     end if;

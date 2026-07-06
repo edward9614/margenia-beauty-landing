@@ -2,6 +2,7 @@
 
 import { FormEvent, type ReactNode, useMemo, useState, useTransition } from "react";
 import {
+  saveBusinessLogo,
   saveBusinessSettings,
   saveUserPreferences,
 } from "@/app/(dashboard)/app/configuracion/actions";
@@ -28,6 +29,9 @@ const inputClass =
 
 const readOnlyClass =
   "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3 text-sm font-bold text-[#475569]";
+
+const logoMaxSize = 2 * 1024 * 1024;
+const logoMimeTypes = ["image/png", "image/jpeg", "image/webp"];
 
 const tabs: { id: SettingsTab; label: string }[] = [
   { id: "business", label: "Negocio" },
@@ -117,8 +121,24 @@ function FormMessage({ result }: { result: SettingsActionResult | null }) {
   );
 }
 
+function getBusinessInitials(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const initials = words.slice(0, 2).map((word) => word.charAt(0).toUpperCase()).join("");
+
+  return initials || "M";
+}
+
+function getLogoExtension(file: File) {
+  if (file.type === "image/png") return "png";
+  if (file.type === "image/webp") return "webp";
+
+  return "jpg";
+}
+
 function BusinessSettingsForm({ initialBusiness }: { initialBusiness: BusinessSettings }) {
   const [form, setForm] = useState(initialBusiness);
+  const [isLogoUploading, setIsLogoUploading] = useState(false);
+  const [logoResult, setLogoResult] = useState<SettingsActionResult | null>(null);
   const [result, setResult] = useState<SettingsActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -126,6 +146,93 @@ function BusinessSettingsForm({ initialBusiness }: { initialBusiness: BusinessSe
 
   function updateField(field: keyof BusinessSettings, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function uploadLogo(file: File | null | undefined) {
+    setLogoResult(null);
+
+    if (!file) return;
+
+    if (!logoMimeTypes.includes(file.type)) {
+      setLogoResult({ error: "El archivo debe ser una imagen.", ok: false });
+      return;
+    }
+
+    if (file.size > logoMaxSize) {
+      setLogoResult({ error: "El logo no puede pesar más de 2 MB.", ok: false });
+      return;
+    }
+
+    setIsLogoUploading(true);
+
+    try {
+      const supabase = createClient();
+      const extension = getLogoExtension(file);
+      const logoPath = `businesses/${form.id}/logo-${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage
+        .from("business-assets")
+        .upload(logoPath, file, {
+          cacheControl: "3600",
+          contentType: file.type,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        setLogoResult({ error: "No pudimos subir el logo. Intenta nuevamente.", ok: false });
+        return;
+      }
+
+      const { data } = supabase.storage.from("business-assets").getPublicUrl(logoPath);
+      const logoUrl = data.publicUrl;
+      const response = await saveBusinessLogo({
+        businessId: form.id,
+        logoPath,
+        logoUrl,
+      });
+
+      if (!response.ok) {
+        setLogoResult({
+          error: response.error || "No pudimos subir el logo. Intenta nuevamente.",
+          ok: false,
+        });
+        return;
+      }
+
+      setForm((current) => ({ ...current, logoPath, logoUrl }));
+      setLogoResult(response);
+    } catch {
+      setLogoResult({ error: "No pudimos subir el logo. Intenta nuevamente.", ok: false });
+    } finally {
+      setIsLogoUploading(false);
+    }
+  }
+
+  async function removeLogo() {
+    setLogoResult(null);
+    setIsLogoUploading(true);
+
+    try {
+      const response = await saveBusinessLogo({
+        businessId: form.id,
+        logoPath: "",
+        logoUrl: "",
+      });
+
+      if (!response.ok) {
+        setLogoResult({
+          error: response.error || "No pudimos subir el logo. Intenta nuevamente.",
+          ok: false,
+        });
+        return;
+      }
+
+      setForm((current) => ({ ...current, logoPath: "", logoUrl: "" }));
+      setLogoResult({ message: "Logo eliminado correctamente.", ok: true });
+    } catch {
+      setLogoResult({ error: "No pudimos subir el logo. Intenta nuevamente.", ok: false });
+    } finally {
+      setIsLogoUploading(false);
+    }
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -221,14 +328,69 @@ function BusinessSettingsForm({ initialBusiness }: { initialBusiness: BusinessSe
             </Field>
           </div>
 
-          <Field label="Logo del negocio">
-            <input
-              value={form.logoUrl}
-              onChange={(event) => updateField("logoUrl", event.target.value)}
-              className={inputClass}
-              placeholder="URL del logo, si ya tienes una"
-            />
-          </Field>
+          <section className="rounded-[1.75rem] border border-[#E2E8F0] bg-[#F8FAFC] p-5">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-4">
+                {form.logoUrl ? (
+                  <div
+                    aria-label="Logo actual del negocio"
+                    className="h-20 w-20 shrink-0 rounded-[1.5rem] border border-[#E2E8F0] bg-white bg-cover bg-center shadow-sm"
+                    style={{ backgroundImage: `url(${form.logoUrl})` }}
+                  />
+                ) : (
+                  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-[1.5rem] bg-gradient-to-r from-[#2563EB] to-[#06B6D4] text-2xl font-black text-white shadow-lg shadow-cyan-500/20">
+                    {getBusinessInitials(form.name)}
+                  </div>
+                )}
+
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-[#0F172A]">Logo del negocio</h3>
+                  <p className="mt-1 max-w-xl text-sm leading-6 text-[#475569]">
+                    Sube el logo que representa tu negocio. Lo usaremos para personalizar tu perfil y futuras vistas.
+                  </p>
+                  <p className="mt-2 text-xs font-bold text-[#64748B]">
+                    PNG, JPG, JPEG o WEBP. Máximo 2 MB.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                <label
+                  className={`cursor-pointer rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-5 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 ${
+                    isLogoUploading ? "pointer-events-none opacity-60" : ""
+                  }`}
+                >
+                  {isLogoUploading ? "Subiendo..." : form.logoUrl ? "Cambiar logo" : "Subir logo"}
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="sr-only"
+                    disabled={isLogoUploading}
+                    onChange={(event) => {
+                      void uploadLogo(event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+
+                {form.logoUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void removeLogo();
+                    }}
+                    disabled={isLogoUploading}
+                    className="rounded-full border border-[#CBD5E1] bg-white px-5 py-3 text-sm font-black text-[#475569] transition hover:bg-[#EFF6FF] hover:text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Eliminar logo
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="mt-4">
+              <FormMessage result={logoResult} />
+            </div>
+          </section>
 
           <FormMessage result={result} />
           <SaveBar isSaving={isPending} />
@@ -242,9 +404,17 @@ function BusinessSettingsForm({ initialBusiness }: { initialBusiness: BusinessSe
             </SemanticBadge>
           </div>
           <div className="mt-5 rounded-[1.5rem] bg-[#F8FAFC] p-5">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] text-lg font-black text-white">
-              {(form.name || "M").trim().charAt(0).toUpperCase()}
-            </div>
+            {form.logoUrl ? (
+              <div
+                aria-label="Logo del negocio"
+                className="h-14 w-14 rounded-2xl border border-[#E2E8F0] bg-white bg-cover bg-center shadow-sm"
+                style={{ backgroundImage: `url(${form.logoUrl})` }}
+              />
+            ) : (
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] text-lg font-black text-white">
+                {getBusinessInitials(form.name)}
+              </div>
+            )}
             <h3 className="mt-5 text-2xl font-black text-[#0F172A]">{form.name || "Tu negocio"}</h3>
             <p className="mt-2 text-sm font-bold text-[#475569]">{form.businessType || "Tipo de negocio pendiente"}</p>
             <p className="mt-4 text-sm leading-6 text-[#475569]">

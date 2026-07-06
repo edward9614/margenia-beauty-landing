@@ -49,6 +49,7 @@ export type BusinessSettings = {
   id: string;
   instagram: string;
   language: string;
+  logoPath: string;
   logoUrl: string;
   name: string;
   phone: string;

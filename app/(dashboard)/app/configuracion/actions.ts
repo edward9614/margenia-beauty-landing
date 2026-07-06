@@ -39,6 +39,7 @@ type BusinessRow = {
   id: string;
   instagram: string | null;
   language: string | null;
+  logo_path: string | null;
   logo_url: string | null;
   name: string | null;
   phone: string | null;
@@ -86,7 +87,7 @@ async function getActiveBusiness() {
   const { data: business, error: businessError } = await supabase
     .from("businesses")
     .select(
-      "id,name,description,business_type,country,city,address,phone,contact_email,instagram,website,logo_url,currency,timezone,language,date_format,fiscal_name,fiscal_id,fiscal_regime,fiscal_address,billing_email",
+      "id,name,description,business_type,country,city,address,phone,contact_email,instagram,website,logo_url,logo_path,currency,timezone,language,date_format,fiscal_name,fiscal_id,fiscal_regime,fiscal_address,billing_email",
     )
     .eq("owner_id", user.id)
     .limit(1)
@@ -119,6 +120,7 @@ function mergeBusiness(current: BusinessRow, input: Partial<BusinessSettings>) {
     fiscalRegime: cleanText(input.fiscalRegime ?? current.fiscal_regime),
     instagram: cleanText(input.instagram ?? current.instagram),
     language: cleanText(input.language ?? current.language ?? "es"),
+    logoPath: cleanText(input.logoPath ?? current.logo_path),
     logoUrl: cleanText(input.logoUrl ?? current.logo_url),
     name: cleanText(input.name ?? current.name),
     phone: cleanText(input.phone ?? current.phone),
@@ -201,6 +203,48 @@ export async function saveBusinessSettings(
   revalidatePath("/app/configuracion");
 
   return { message: "Configuración guardada.", ok: true };
+}
+
+export async function saveBusinessLogo({
+  businessId,
+  logoPath,
+  logoUrl,
+}: {
+  businessId: string;
+  logoPath: string;
+  logoUrl: string;
+}): Promise<SettingsActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { error: "Tu sesión expiró. Inicia sesión nuevamente.", ok: false };
+  }
+
+  const { error } = await supabase.rpc("update_business_logo", {
+    p_business_id: businessId,
+    p_logo_path: cleanText(logoPath),
+    p_logo_url: cleanText(logoUrl),
+  });
+
+  if (error) {
+    console.error("saveBusinessLogo failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    });
+
+    return { error: mapSettingsError(error), ok: false };
+  }
+
+  revalidatePath("/app");
+  revalidatePath("/app/configuracion");
+
+  return { message: "Logo actualizado correctamente.", ok: true };
 }
 
 export async function saveUserPreferences(
