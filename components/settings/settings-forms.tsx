@@ -135,6 +135,28 @@ function getLogoExtension(file: File) {
   return "jpg";
 }
 
+function mapLogoUploadError(error: { message?: string; statusCode?: string }) {
+  const message = `${error.message || ""} ${error.statusCode || ""}`.toLowerCase();
+
+  if (message.includes("bucket") || message.includes("not found")) {
+    return "El bucket business-assets no está configurado. Ejecuta la migración 010 en Supabase.";
+  }
+
+  if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) {
+    return "Supabase bloqueó la subida por seguridad. Revisa las policies de Storage de business-assets.";
+  }
+
+  if (message.includes("mime") || message.includes("type")) {
+    return "El archivo debe ser una imagen.";
+  }
+
+  if (message.includes("size") || message.includes("too large")) {
+    return "El logo no puede pesar más de 2 MB.";
+  }
+
+  return "No pudimos subir el logo. Intenta nuevamente.";
+}
+
 function BusinessSettingsForm({ initialBusiness }: { initialBusiness: BusinessSettings }) {
   const [form, setForm] = useState(initialBusiness);
   const [isLogoUploading, setIsLogoUploading] = useState(false);
@@ -174,11 +196,15 @@ function BusinessSettingsForm({ initialBusiness }: { initialBusiness: BusinessSe
         .upload(logoPath, file, {
           cacheControl: "3600",
           contentType: file.type,
-          upsert: true,
+          upsert: false,
         });
 
       if (uploadError) {
-        setLogoResult({ error: "No pudimos subir el logo. Intenta nuevamente.", ok: false });
+        console.error("uploadBusinessLogo failed", {
+          message: uploadError.message,
+          statusCode: uploadError.statusCode,
+        });
+        setLogoResult({ error: mapLogoUploadError(uploadError), ok: false });
         return;
       }
 
