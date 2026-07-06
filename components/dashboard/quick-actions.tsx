@@ -39,6 +39,12 @@ export function QuickActions({
         ? "Controla entradas, salidas y ajustes de inventario."
         : "Primero agrega productos con inventario.",
     },
+    {
+      href: "/app/reportes",
+      soon: false,
+      title: "Ver reportes",
+      text: "Analiza ventas, utilidad, inventario, caja y pagos.",
+    },
   ];
 
   return (

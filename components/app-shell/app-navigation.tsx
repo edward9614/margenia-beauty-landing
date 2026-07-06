@@ -11,6 +11,7 @@ const navItems = [
   { href: "/app/ventas", label: "Ventas", soon: false },
   { href: "/app/inventario", label: "Inventario", soon: false },
   { href: "/app/caja", label: "Caja", soon: false },
+  { href: "/app/reportes", label: "Reportes", soon: false },
   { href: "/app/configuracion", label: "Configuración", soon: false },
 ];
 
@@ -92,7 +93,7 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-7 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
+      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur sm:grid-cols-8 lg:hidden"
       aria-label="Navegación móvil"
     >
       {navItems.map((item) => {

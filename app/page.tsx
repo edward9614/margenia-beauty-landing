@@ -433,10 +433,7 @@ function Footer() {
 
         <div className="mt-10 flex flex-col gap-2 border-t border-[#E2E8F0] pt-6 text-sm text-[#475569] sm:flex-row sm:items-center sm:justify-between">
           <p>Beta inicial para negocios que venden productos.</p>
-git status
-git add "components/dashboard/business-performance-panel.tsx" "components/dashboard/performance-date-filter.tsx"
-git commit -m "Mejora controles y tooltip del grafico"
-git push origin main          <p>© 2026 Margenia. Todos los derechos reservados.</p>
+          <p>© 2026 Margenia. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
