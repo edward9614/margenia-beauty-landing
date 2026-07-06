@@ -3,13 +3,13 @@ import { redirect } from "next/navigation";
 import { loadInventoryVariants } from "@/app/(dashboard)/app/inventario/actions";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
 import { ActionHelp } from "@/components/ui/action-help";
+import { SemanticBadge, ToneCard, type SemanticTone } from "@/components/ui/semantic";
 import { TableHeaderHelp } from "@/components/ui/table-header-help";
 import {
   inventoryStatus,
   inventoryThreshold,
   inventoryUnitLabel,
   inventoryValue,
-  statusClass,
   type InventoryVariant,
 } from "@/lib/inventory";
 import { inventoryHelp } from "@/lib/help-content";
@@ -41,6 +41,12 @@ function alertLabel(variant: InventoryVariant) {
   }
 
   return `${threshold.toLocaleString("es-CO")} ${inventoryUnitLabel(variant.inventory_unit)}`;
+}
+
+function inventoryTone(tone: "danger" | "neutral" | "success" | "warning"): SemanticTone {
+  if (tone === "danger") return "negative";
+  if (tone === "success") return "positive";
+  return tone;
 }
 
 const tableHeaders = [
@@ -160,15 +166,15 @@ export default async function InventoryPage({
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Valor estimado del inventario", formatter.format(totalValue)],
-            ["Productos con stock bajo", lowStock],
-            ["Productos agotados", outStock],
-            ["Movimientos del mes", monthMovements?.length || 0],
-          ].map(([label, value]) => (
-            <article key={label} className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+            ["Valor estimado del inventario", formatter.format(totalValue), "brand"],
+            ["Productos con stock bajo", lowStock, lowStock > 0 ? "warning" : "neutral"],
+            ["Productos agotados", outStock, outStock > 0 ? "negative" : "neutral"],
+            ["Movimientos del mes", monthMovements?.length || 0, "info"],
+          ].map(([label, value, tone]) => (
+            <ToneCard key={label} tone={tone as SemanticTone}>
               <p className="text-sm font-black text-[#475569]">{label}</p>
               <p className="mt-3 text-2xl font-black text-[#0F172A]">{value}</p>
-            </article>
+            </ToneCard>
           ))}
         </section>
 
@@ -225,7 +231,7 @@ export default async function InventoryPage({
                       <td className="px-5 py-4">{inventoryUnitLabel(variant.inventory_unit)}</td>
                       <td className="px-5 py-4 text-[#475569]">{alertLabel(variant)}</td>
                       <td className="px-5 py-4">
-                        <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(status.tone)}`}>{status.label}</span>
+                        <SemanticBadge tone={inventoryTone(status.tone)}>{status.label}</SemanticBadge>
                       </td>
                       <td className="px-5 py-4">{formatter.format(inventoryValue(variant))}</td>
                       <td className="px-5 py-4">
@@ -278,7 +284,12 @@ export default async function InventoryPage({
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                     <p><span className="block font-bold text-[#64748B]">Stock</span>{toSafeNumber(variant.current_stock)} {inventoryUnitLabel(variant.inventory_unit)}</p>
-                    <p><span className="block font-bold text-[#64748B]">Estado</span>{status.label}</p>
+                    <p>
+                      <span className="block font-bold text-[#64748B]">Estado</span>
+                      <SemanticBadge tone={inventoryTone(status.tone)} className="mt-1">
+                        {status.label}
+                      </SemanticBadge>
+                    </p>
                     <p><span className="block font-bold text-[#64748B]">Valor</span>{formatter.format(inventoryValue(variant))}</p>
                     <p><span className="block font-bold text-[#64748B]">Alerta</span>{alertLabel(variant)}</p>
                   </div>

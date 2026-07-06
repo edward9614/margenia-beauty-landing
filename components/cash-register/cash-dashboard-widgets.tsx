@@ -2,67 +2,33 @@ import {
   getPaymentMethodLabel,
   type CashTimelineItem,
 } from "@/lib/cash-register";
+import {
+  semanticToneStyles,
+  UsageProgressBar as SemanticUsageProgressBar,
+  type SemanticTone,
+} from "@/components/ui/semantic";
 
 type Tone = "amber" | "blue" | "green" | "red" | "slate";
 
-const toneStyles: Record<
-  Tone,
-  {
-    badge: string;
-    border: string;
-    glow: string;
-    icon: string;
-    meter: string;
-    soft: string;
-    text: string;
-  }
-> = {
-  amber: {
-    badge: "bg-[#FEF3C7] text-[#92400E] ring-[#FDE68A]",
-    border: "border-l-[#F59E0B]",
-    glow: "bg-[#F59E0B]/10",
-    icon: "bg-[#FEF3C7] text-[#B45309] ring-[#FDE68A]",
-    meter: "bg-[#F59E0B]",
-    soft: "bg-[#FFFBEB]",
-    text: "text-[#B45309]",
-  },
-  blue: {
-    badge: "bg-[#EFF6FF] text-[#1D4ED8] ring-[#BFDBFE]",
-    border: "border-l-[#2563EB]",
-    glow: "bg-[#2563EB]/10",
-    icon: "bg-[#EFF6FF] text-[#2563EB] ring-[#BFDBFE]",
-    meter: "bg-[#2563EB]",
-    soft: "bg-[#EFF6FF]",
-    text: "text-[#1D4ED8]",
-  },
-  green: {
-    badge: "bg-[#DCFCE7] text-[#166534] ring-[#BBF7D0]",
-    border: "border-l-[#16A34A]",
-    glow: "bg-[#16A34A]/10",
-    icon: "bg-[#DCFCE7] text-[#166534] ring-[#BBF7D0]",
-    meter: "bg-[#16A34A]",
-    soft: "bg-[#F0FDF4]",
-    text: "text-[#166534]",
-  },
-  red: {
-    badge: "bg-[#FEE2E2] text-[#991B1B] ring-[#FECACA]",
-    border: "border-l-[#EF4444]",
-    glow: "bg-[#EF4444]/10",
-    icon: "bg-[#FEE2E2] text-[#B91C1C] ring-[#FECACA]",
-    meter: "bg-[#EF4444]",
-    soft: "bg-[#FEF2F2]",
-    text: "text-[#B91C1C]",
-  },
-  slate: {
-    badge: "bg-[#F1F5F9] text-[#475569] ring-[#E2E8F0]",
-    border: "border-l-[#64748B]",
-    glow: "bg-[#64748B]/10",
-    icon: "bg-[#F1F5F9] text-[#475569] ring-[#E2E8F0]",
-    meter: "bg-[#64748B]",
-    soft: "bg-[#F8FAFC]",
-    text: "text-[#334155]",
-  },
+const toneMap: Record<Tone, SemanticTone> = {
+  amber: "warning",
+  blue: "info",
+  green: "positive",
+  red: "negative",
+  slate: "neutral",
 };
+
+const glowStyles: Record<Tone, string> = {
+  amber: "bg-[#F59E0B]/10",
+  blue: "bg-[#2563EB]/10",
+  green: "bg-[#16A34A]/10",
+  red: "bg-[#EF4444]/10",
+  slate: "bg-[#64748B]/10",
+};
+
+function toneStyles(tone: Tone) {
+  return semanticToneStyles[toneMap[tone]];
+}
 
 function MiniIcon({ kind }: { kind: "cash" | "difference" | "out" | "sale" }) {
   if (kind === "sale") {
@@ -128,11 +94,11 @@ export function CashSummaryCard({
   tone: Tone;
   value: string;
 }) {
-  const styles = toneStyles[tone];
+  const styles = toneStyles(tone);
 
   return (
     <div className={`group relative overflow-hidden rounded-[1.6rem] border border-[#E2E8F0] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0F172A]/8`}>
-      <div className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${styles.glow}`} />
+      <div className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${glowStyles[tone]}`} />
       <div className="relative flex items-start justify-between gap-4">
         <div className={`grid h-12 w-12 place-items-center rounded-2xl ring-1 ${styles.icon}`}>
           <MiniIcon kind={icon} />
@@ -161,15 +127,8 @@ export function UsageProgressBar({
   percentage: number;
   tone?: Tone;
 }) {
-  const styles = toneStyles[tone];
-
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-[#E2E8F0]">
-      <span
-        className={`block h-full rounded-full ${styles.meter} transition-all duration-500`}
-        style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }}
-      />
-    </div>
+    <SemanticUsageProgressBar percentage={percentage} tone={toneMap[tone]} />
   );
 }
 
@@ -191,7 +150,7 @@ export function PaymentMethodUsageCard({
   sales: number;
 }) {
   const tone: Tone = amount > 0 ? (isTop ? "blue" : "green") : "slate";
-  const styles = toneStyles[tone];
+  const styles = toneStyles(tone);
 
   return (
     <div className={`rounded-2xl border p-4 transition duration-300 hover:-translate-y-0.5 ${amount > 0 ? "border-[#BFDBFE] bg-white shadow-sm" : "border-[#E2E8F0] bg-[#F8FAFC] opacity-75"}`}>
@@ -213,7 +172,7 @@ export function PaymentMethodUsageCard({
       </div>
       <p className="mt-4 text-xl font-black text-[#0F172A]">{formatter.format(amount)}</p>
       <div className="mt-3">
-        <UsageProgressBar percentage={percentage} tone={tone} />
+        <SemanticUsageProgressBar percentage={percentage} tone={toneMap[tone]} />
       </div>
     </div>
   );
@@ -223,7 +182,7 @@ export function MovementTypeBadge({ item }: { item: CashTimelineItem }) {
   const tone = movementTone(item);
 
   return (
-    <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] ring-1 ${toneStyles[tone].badge}`}>
+    <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] ring-1 ${toneStyles(tone).badge}`}>
       {movementBadge(item)}
     </span>
   );
@@ -239,7 +198,7 @@ export function CashMovementItem({
   item: CashTimelineItem;
 }) {
   const tone = movementTone(item);
-  const styles = toneStyles[tone];
+  const styles = toneStyles(tone);
   const sign = item.direction === "in" ? "+" : "-";
 
   return (

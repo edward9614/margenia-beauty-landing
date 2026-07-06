@@ -1,17 +1,46 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { InventorySettingsForm } from "@/components/inventory/inventory-settings-form";
+import { SemanticBadge, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import {
   inventoryStatus,
   inventoryUnitLabel,
   inventoryValue,
   movementTypeLabel,
-  statusClass,
   type InventoryMovementRow,
   type InventoryVariant,
 } from "@/lib/inventory";
 import { moneyFormatter, toSafeNumber } from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
+
+function inventoryTone(tone: "danger" | "neutral" | "success" | "warning"): SemanticTone {
+  if (tone === "danger") return "negative";
+  if (tone === "success") return "positive";
+  return tone;
+}
+
+function movementTone(movement: InventoryMovementRow): SemanticTone {
+  if (movement.movement_type === "purchase" || movement.movement_type === "return" || movement.movement_type === "sale_void") {
+    return "positive";
+  }
+
+  if (movement.movement_type === "waste" || movement.movement_type === "sale") {
+    return "negative";
+  }
+
+  if (movement.source === "count") {
+    return "info";
+  }
+
+  if (movement.movement_type === "adjustment") {
+    const quantity = toSafeNumber(movement.quantity);
+    if (quantity > 0) return "positive";
+    if (quantity < 0) return "negative";
+    return "warning";
+  }
+
+  return "neutral";
+}
 
 export default async function InventoryDetailPage({
   params,
@@ -129,25 +158,29 @@ export default async function InventoryDetailPage({
             <article className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-black text-[#0F172A]">Historial de movimientos</h2>
-                <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(status.tone)}`}>
+                <SemanticBadge tone={inventoryTone(status.tone)}>
                   {status.label}
-                </span>
+                </SemanticBadge>
               </div>
               <div className="mt-5 space-y-3">
                 {movementRows.length ? (
-                  movementRows.map((movement) => (
-                    <div key={movement.id} className="flex items-start justify-between gap-4 rounded-2xl bg-[#F8FAFC] p-4">
-                      <div>
-                        <p className="font-black text-[#0F172A]">{movementTypeLabel(movement.movement_type)}</p>
-                        <p className="text-sm font-bold text-[#475569]">
-                          {new Date(movement.created_at).toLocaleString("es-CO")} · {movement.reason || movement.source || "Sin motivo"}
+                  movementRows.map((movement) => {
+                    const tone = movementTone(movement);
+
+                    return (
+                      <div key={movement.id} className={`flex items-start justify-between gap-4 rounded-2xl border border-[#E2E8F0] border-l-4 ${semanticToneStyles[tone].border} ${semanticToneStyles[tone].soft} p-4`}>
+                        <div>
+                          <SemanticBadge tone={tone}>{movementTypeLabel(movement.movement_type)}</SemanticBadge>
+                          <p className="mt-2 text-sm font-bold text-[#475569]">
+                            {new Date(movement.created_at).toLocaleString("es-CO")} · {movement.reason || movement.source || "Sin motivo"}
+                          </p>
+                        </div>
+                        <p className={`font-black ${semanticToneStyles[tone].text}`}>
+                          {toSafeNumber(movement.quantity)} {inventoryUnitLabel(movement.stock_unit)}
                         </p>
                       </div>
-                      <p className="font-black text-[#0F172A]">
-                        {toSafeNumber(movement.quantity)} {inventoryUnitLabel(movement.stock_unit)}
-                      </p>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="rounded-2xl bg-[#F8FAFC] p-4 text-sm font-bold text-[#475569]">
                     Sin movimientos registrados.

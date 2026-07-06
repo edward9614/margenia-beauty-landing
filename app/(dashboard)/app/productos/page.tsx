@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
 import { ProductRowActions } from "@/components/products/product-row-actions";
+import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import { createClient } from "@/lib/supabase/server";
 import {
   calculateVariantProfit,
@@ -24,7 +25,7 @@ function productInitial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "P";
 }
 
-type StockTone = "danger" | "neutral" | "success" | "warning";
+type StockTone = "negative" | "neutral" | "positive" | "warning";
 
 type ProductVariantWithTrackInventory = ProductVariantRow & {
   track_inventory?: boolean | null;
@@ -48,30 +49,20 @@ function stockStatus(product: ProductRow) {
   );
 
   if (totalStock === 0) {
-    return { label: "Agotado", tone: "danger" as StockTone };
+    return { label: "Agotado", tone: "negative" as StockTone };
   }
 
   if (totalStock <= minimumStock) {
     return { label: "Stock bajo", tone: "warning" as StockTone };
   }
 
-  return { label: "Normal", tone: "success" as StockTone };
+  return { label: "Normal", tone: "positive" as StockTone };
 }
 
-function statusClass(tone: StockTone) {
-  if (tone === "danger") {
-    return "bg-[#FEE2E2] text-[#991B1B]";
-  }
-
-  if (tone === "warning") {
-    return "bg-[#FEF3C7] text-[#92400E]";
-  }
-
-  if (tone === "success") {
-    return "bg-[#DCFCE7] text-[#166534]";
-  }
-
-  return "bg-[#F8FAFC] text-[#475569] ring-1 ring-[#E2E8F0]";
+function marginTone(margin: number): SemanticTone {
+  if (margin < 0) return "negative";
+  if (margin < 20) return "warning";
+  return "positive";
 }
 
 function productStats(product: ProductRow, currency: string) {
@@ -372,18 +363,18 @@ export default async function ProductsPage({
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Productos activos", activeProducts.length],
-            ["Variantes activas", activeVariants.length],
-            ["Stock bajo", stockLowCount],
-            ["Valor inventario al costo", formatter.format(inventoryCostValue)],
-          ].map(([label, value]) => (
-            <article
+            ["Productos activos", activeProducts.length, "positive"],
+            ["Variantes activas", activeVariants.length, "info"],
+            ["Stock bajo", stockLowCount, stockLowCount > 0 ? "warning" : "neutral"],
+            ["Valor inventario al costo", formatter.format(inventoryCostValue), "brand"],
+          ].map(([label, value, tone]) => (
+            <ToneCard
               key={label}
-              className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm"
+              tone={tone as SemanticTone}
             >
               <p className="text-sm font-black text-[#475569]">{label}</p>
               <p className="mt-3 text-3xl font-black text-[#0F172A]">{value}</p>
-            </article>
+            </ToneCard>
           ))}
         </section>
 
@@ -534,7 +525,7 @@ export default async function ProductsPage({
                         <td className="px-5 py-4 font-bold text-[#0F172A]">
                           {stats.priceLabel}
                         </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
+                        <td className={`px-5 py-4 font-black ${semanticToneStyles[marginTone(stats.avgMargin)].text}`}>
                           {stats.avgMargin.toFixed(1)}%
                         </td>
                         <td className="px-5 py-4 text-[#475569]">
@@ -543,9 +534,9 @@ export default async function ProductsPage({
                             : "Sin control de stock"}
                         </td>
                         <td className="px-5 py-4">
-                          <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(stock.tone)}`}>
+                          <SemanticBadge tone={product.status === "archived" ? "neutral" : stock.tone}>
                             {product.status === "archived" ? "Archivado" : stock.label}
-                          </span>
+                          </SemanticBadge>
                         </td>
                         <td className="px-5 py-4">
                           <ProductRowActions
@@ -583,9 +574,9 @@ export default async function ProductsPage({
                           </span>
                         )}
                       </div>
-                      <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(stock.tone)}`}>
+                      <SemanticBadge tone={product.status === "archived" ? "neutral" : stock.tone}>
                         {product.status === "archived" ? "Archivado" : stock.label}
-                      </span>
+                      </SemanticBadge>
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                       <p>
@@ -604,7 +595,7 @@ export default async function ProductsPage({
                       </p>
                       <p>
                         <span className="block text-[#475569]">Margen</span>
-                        <strong>{stats.avgMargin.toFixed(1)}%</strong>
+                        <strong className={semanticToneStyles[marginTone(stats.avgMargin)].text}>{stats.avgMargin.toFixed(1)}%</strong>
                       </p>
                     </div>
                     <ProductRowActions

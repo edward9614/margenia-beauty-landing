@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SemanticBadge, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import {
   inventoryUnitLabel,
   movementTypeLabel,
@@ -13,6 +14,37 @@ type SearchParams = Record<string, string | string[] | undefined>;
 function getParam(params: SearchParams | undefined, key: string, fallback = "") {
   const value = params?.[key];
   return typeof value === "string" ? value : fallback;
+}
+
+function movementTone(movement: InventoryMovementRow): SemanticTone {
+  if (movement.movement_type === "purchase" || movement.movement_type === "return" || movement.movement_type === "sale_void") {
+    return "positive";
+  }
+
+  if (movement.movement_type === "waste" || movement.movement_type === "sale") {
+    return "negative";
+  }
+
+  if (movement.source === "count") {
+    return "info";
+  }
+
+  if (movement.movement_type === "adjustment") {
+    const quantity = toSafeNumber(movement.quantity);
+    if (quantity > 0) return "positive";
+    if (quantity < 0) return "negative";
+    return "warning";
+  }
+
+  return "neutral";
+}
+
+function movementSourceLabel(source: string | null | undefined) {
+  if (source === "sale") return "Venta";
+  if (source === "sale_void") return "Anulación";
+  if (source === "count") return "Conteo";
+  if (source === "manual") return "Manual";
+  return "Manual";
 }
 
 export default async function InventoryMovementsPage({
@@ -134,20 +166,32 @@ export default async function InventoryMovementsPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
-                {rows.map((movement) => (
-                  <tr key={movement.id}>
-                    <td className="px-5 py-4 text-[#475569]">{new Date(movement.created_at).toLocaleString("es-CO")}</td>
-                    <td className="px-5 py-4 font-black text-[#0F172A]">
-                      {movement.product_variants?.products?.name || "Producto"} · {movement.product_variants?.name || "Presentación"}
-                    </td>
-                    <td className="px-5 py-4">{movementTypeLabel(movement.movement_type)}</td>
-                    <td className="px-5 py-4 font-black text-[#0F172A]">{toSafeNumber(movement.quantity).toLocaleString("es-CO")} {inventoryUnitLabel(movement.stock_unit)}</td>
-                    <td className="px-5 py-4">{movement.balance_after ?? "—"}</td>
-                    <td className="px-5 py-4">{movement.reason || movement.notes || "Sin motivo"}</td>
-                    <td className="px-5 py-4">{movement.reference_type || "Manual"}</td>
-                    <td className="px-5 py-4">{formatter.format(toSafeNumber(movement.total_cost))}</td>
-                  </tr>
-                ))}
+                {rows.map((movement) => {
+                  const tone = movementTone(movement);
+                  const styles = semanticToneStyles[tone];
+
+                  return (
+                    <tr key={movement.id} className={`border-l-4 ${styles.border} align-top`}>
+                      <td className="px-5 py-4 text-[#475569]">{new Date(movement.created_at).toLocaleString("es-CO")}</td>
+                      <td className="px-5 py-4 font-black text-[#0F172A]">
+                        {movement.product_variants?.products?.name || "Producto"} · {movement.product_variants?.name || "Presentación"}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-col items-start gap-2">
+                          <SemanticBadge tone={tone}>
+                            {movementTypeLabel(movement.movement_type)}
+                          </SemanticBadge>
+                          <span className="text-xs font-bold text-[#64748B]">{movementSourceLabel(movement.source)}</span>
+                        </div>
+                      </td>
+                      <td className={`px-5 py-4 font-black ${styles.text}`}>{toSafeNumber(movement.quantity).toLocaleString("es-CO")} {inventoryUnitLabel(movement.stock_unit)}</td>
+                      <td className="px-5 py-4">{movement.balance_after ?? "—"}</td>
+                      <td className="px-5 py-4">{movement.reason || movement.notes || "Sin motivo"}</td>
+                      <td className="px-5 py-4">{movement.reference_type || "Manual"}</td>
+                      <td className="px-5 py-4">{formatter.format(toSafeNumber(movement.total_cost))}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

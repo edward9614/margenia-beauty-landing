@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
+import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import {
   salePaymentStatusLabel,
   saleStatusLabel,
@@ -35,6 +36,28 @@ function dateRange(range: string) {
   start.setDate(1);
   start.setHours(0, 0, 0, 0);
   return start.toISOString();
+}
+
+function paymentTone(status: string | null | undefined): SemanticTone {
+  if (status === "paid") return "positive";
+  if (status === "partial") return "warning";
+  if (status === "pending") return "negative";
+  return "neutral";
+}
+
+function saleStatusTone(status: string | null | undefined): SemanticTone {
+  if (status === "voided") return "neutral";
+  return "info";
+}
+
+function amountTone(value: number): SemanticTone {
+  if (value > 0) return "positive";
+  if (value < 0) return "negative";
+  return "neutral";
+}
+
+function pendingTone(value: number): SemanticTone {
+  return value > 0 ? "warning" : "neutral";
 }
 
 export default async function SalesPage({
@@ -180,15 +203,15 @@ export default async function SalesPage({
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Ventas de hoy", formatter.format(metrics.today)],
-            ["Ingresos del mes", formatter.format(metrics.month)],
-            ["Utilidad bruta estimada", formatter.format(metrics.profit)],
-            ["Pendiente por cobrar", formatter.format(metrics.pending)],
-          ].map(([label, value]) => (
-            <article key={label} className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+            ["Ventas de hoy", formatter.format(metrics.today), metrics.today > 0 ? "info" : "neutral"],
+            ["Ingresos del mes", formatter.format(metrics.month), metrics.month > 0 ? "positive" : "neutral"],
+            ["Utilidad bruta estimada", formatter.format(metrics.profit), amountTone(metrics.profit)],
+            ["Pendiente por cobrar", formatter.format(metrics.pending), pendingTone(metrics.pending)],
+          ].map(([label, value, tone]) => (
+            <ToneCard key={label} tone={tone as SemanticTone}>
               <p className="text-sm font-black text-[#475569]">{label}</p>
               <p className="mt-3 text-2xl font-black text-[#0F172A]">{value}</p>
-            </article>
+            </ToneCard>
           ))}
         </section>
 
@@ -258,47 +281,72 @@ export default async function SalesPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E2E8F0]">
-                  {saleList.map((sale) => (
-                    <tr key={sale.id}>
-                      <td className="px-5 py-4 font-black text-[#0F172A]">{sale.sale_code}</td>
-                      <td className="px-5 py-4 text-[#475569]">{new Date(sale.sale_date).toLocaleDateString("es-CO")}</td>
-                      <td className="px-5 py-4 text-[#475569]">{sale.customer_name || "Sin cliente"}</td>
-                      <td className="px-5 py-4 font-black text-[#0F172A]">{formatter.format(toSafeNumber(sale.total_amount))}</td>
-                      <td className="px-5 py-4">{formatter.format(toSafeNumber(sale.paid_amount))}</td>
-                      <td className="px-5 py-4">{formatter.format(toSafeNumber(sale.balance_due))}</td>
-                      <td className="px-5 py-4">{formatter.format(toSafeNumber(sale.gross_profit))}</td>
-                      <td className="px-5 py-4">{salePaymentStatusLabel(sale.payment_status)}</td>
-                      <td className="px-5 py-4">{saleStatusLabel(sale.status)}</td>
-                      <td className="px-5 py-4">
-                        <Link href={`/app/ventas/${sale.id}`} className="font-black text-[#2563EB]">
-                          Ver
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
+                  {saleList.map((sale) => {
+                    const balanceDue = toSafeNumber(sale.balance_due);
+                    const grossProfit = toSafeNumber(sale.gross_profit);
+
+                    return (
+                      <tr key={sale.id}>
+                        <td className="px-5 py-4 font-black text-[#0F172A]">{sale.sale_code}</td>
+                        <td className="px-5 py-4 text-[#475569]">{new Date(sale.sale_date).toLocaleDateString("es-CO")}</td>
+                        <td className="px-5 py-4 text-[#475569]">{sale.customer_name || "Sin cliente"}</td>
+                        <td className="px-5 py-4 font-black text-[#0F172A]">{formatter.format(toSafeNumber(sale.total_amount))}</td>
+                        <td className={`px-5 py-4 font-black ${semanticToneStyles[amountTone(toSafeNumber(sale.paid_amount))].text}`}>{formatter.format(toSafeNumber(sale.paid_amount))}</td>
+                        <td className={`px-5 py-4 font-black ${semanticToneStyles[pendingTone(balanceDue)].text}`}>{formatter.format(balanceDue)}</td>
+                        <td className={`px-5 py-4 font-black ${semanticToneStyles[amountTone(grossProfit)].text}`}>{formatter.format(grossProfit)}</td>
+                        <td className="px-5 py-4">
+                          <SemanticBadge tone={paymentTone(sale.payment_status)}>
+                            {salePaymentStatusLabel(sale.payment_status)}
+                          </SemanticBadge>
+                        </td>
+                        <td className="px-5 py-4">
+                          <SemanticBadge tone={saleStatusTone(sale.status)}>
+                            {saleStatusLabel(sale.status)}
+                          </SemanticBadge>
+                        </td>
+                        <td className="px-5 py-4">
+                          <Link href={`/app/ventas/${sale.id}`} className="font-black text-[#2563EB]">
+                            Ver
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
             <div className="grid gap-4 p-4 lg:hidden">
-              {saleList.map((sale) => (
-                <article key={sale.id} className="rounded-[1.5rem] border border-[#E2E8F0] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-black text-[#0F172A]">{sale.sale_code}</p>
-                      <p className="text-sm font-bold text-[#475569]">{sale.customer_name || "Sin cliente"}</p>
+              {saleList.map((sale) => {
+                const balanceDue = toSafeNumber(sale.balance_due);
+
+                return (
+                  <article key={sale.id} className="rounded-[1.5rem] border border-[#E2E8F0] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-black text-[#0F172A]">{sale.sale_code}</p>
+                        <p className="text-sm font-bold text-[#475569]">{sale.customer_name || "Sin cliente"}</p>
+                      </div>
+                      <Link href={`/app/ventas/${sale.id}`} className="font-black text-[#2563EB]">
+                        Ver
+                      </Link>
                     </div>
-                    <Link href={`/app/ventas/${sale.id}`} className="font-black text-[#2563EB]">
-                      Ver
-                    </Link>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                    <p><span className="block font-bold text-[#64748B]">Total</span>{formatter.format(toSafeNumber(sale.total_amount))}</p>
-                    <p><span className="block font-bold text-[#64748B]">Pago</span>{salePaymentStatusLabel(sale.payment_status)}</p>
-                    <p><span className="block font-bold text-[#64748B]">Pendiente</span>{formatter.format(toSafeNumber(sale.balance_due))}</p>
-                    <p><span className="block font-bold text-[#64748B]">Fecha</span>{new Date(sale.sale_date).toLocaleDateString("es-CO")}</p>
-                  </div>
-                </article>
-              ))}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <SemanticBadge tone={paymentTone(sale.payment_status)}>
+                        {salePaymentStatusLabel(sale.payment_status)}
+                      </SemanticBadge>
+                      <SemanticBadge tone={saleStatusTone(sale.status)}>
+                        {saleStatusLabel(sale.status)}
+                      </SemanticBadge>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                      <p><span className="block font-bold text-[#64748B]">Total</span>{formatter.format(toSafeNumber(sale.total_amount))}</p>
+                      <p><span className="block font-bold text-[#64748B]">Utilidad</span><strong className={semanticToneStyles[amountTone(toSafeNumber(sale.gross_profit))].text}>{formatter.format(toSafeNumber(sale.gross_profit))}</strong></p>
+                      <p><span className="block font-bold text-[#64748B]">Pendiente</span><strong className={semanticToneStyles[pendingTone(balanceDue)].text}>{formatter.format(balanceDue)}</strong></p>
+                      <p><span className="block font-bold text-[#64748B]">Fecha</span>{new Date(sale.sale_date).toLocaleDateString("es-CO")}</p>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         ) : (

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyActivityIcon } from "@/components/dashboard/dashboard-icons";
+import { SemanticBadge, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import type { RecentActivityItem, RecentActivityType } from "@/lib/dashboard/activity";
 
 const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -45,13 +46,13 @@ function friendlyDate(value: string) {
   return `${shortDateFormatter.format(date).replace(".", "")}, ${time}`;
 }
 
-function toneClass(type: RecentActivityType) {
-  if (type === "sale_created") return "bg-[#EFF6FF] text-[#2563EB]";
-  if (type === "sale_voided") return "bg-[#FEF2F2] text-[#B91C1C]";
-  if (type === "inventory_count") return "bg-[#ECFEFF] text-[#0891B2]";
-  if (type === "inventory_movement") return "bg-[#F0FDF4] text-[#16A34A]";
-  if (type === "combo_created") return "bg-[#F5F3FF] text-[#7C3AED]";
-  return "bg-[#F8FAFC] text-[#475569]";
+function activityTone(type: RecentActivityType): SemanticTone {
+  if (type === "sale_created") return "info";
+  if (type === "sale_voided") return "negative";
+  if (type === "inventory_count") return "brand";
+  if (type === "inventory_movement") return "positive";
+  if (type === "combo_created") return "brand";
+  return "neutral";
 }
 
 function activityGlyph(type: RecentActivityType) {
@@ -84,20 +85,20 @@ export function RecentActivity({
           {items.map((item, index) => (
             <article
               key={item.id}
-              className={`grid gap-3 py-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center ${
+              className={`grid gap-3 border-l-4 py-4 pl-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center ${semanticToneStyles[activityTone(item.type)].border} ${
                 index > 4 ? "hidden sm:grid" : ""
               }`}
             >
-              <div className={`grid h-10 w-10 place-items-center rounded-2xl text-sm font-black ${toneClass(item.type)}`}>
+              <div className={`grid h-10 w-10 place-items-center rounded-2xl text-sm font-black ring-1 ${semanticToneStyles[activityTone(item.type)].icon}`}>
                 {activityGlyph(item.type)}
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-black text-[#0F172A]">{item.title}</h3>
                   {item.badge && (
-                    <span className="rounded-full bg-[#EFF6FF] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] text-[#2563EB]">
+                    <SemanticBadge tone={activityTone(item.type)} className="px-2.5 py-1 text-[10px] uppercase tracking-[0.08em]">
                       {item.badge}
-                    </span>
+                    </SemanticBadge>
                   )}
                 </div>
                 <p className="mt-1 text-sm font-bold leading-6 text-[#475569]">{item.description}</p>

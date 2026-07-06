@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SaleVoidAction } from "@/components/sales/sale-void-action";
+import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import {
   saleChannelLabel,
   salePaymentMethodLabel,
@@ -28,6 +29,32 @@ type InventoryMovementRow = {
     } | null;
   } | null;
 };
+
+function paymentTone(status: string | null | undefined): SemanticTone {
+  if (status === "paid") return "positive";
+  if (status === "partial") return "warning";
+  if (status === "pending") return "negative";
+  return "neutral";
+}
+
+function saleStatusTone(status: string | null | undefined): SemanticTone {
+  if (status === "voided") return "neutral";
+  return "info";
+}
+
+function amountTone(value: number): SemanticTone {
+  if (value > 0) return "positive";
+  if (value < 0) return "negative";
+  return "neutral";
+}
+
+function pendingTone(value: number): SemanticTone {
+  return value > 0 ? "warning" : "neutral";
+}
+
+function movementTone(movement: InventoryMovementRow): SemanticTone {
+  return movement.movement_type === "sale_void" ? "positive" : "negative";
+}
 
 export default async function SaleDetailPage({
   params,
@@ -104,12 +131,12 @@ export default async function SaleDetailPage({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-[#EFF6FF] px-4 py-2 text-sm font-black text-[#2563EB]">
+              <SemanticBadge tone={paymentTone(typedSale.payment_status)} className="px-4 py-2 text-sm">
                 {salePaymentStatusLabel(typedSale.payment_status)}
-              </span>
-              <span className="rounded-full bg-[#F8FAFC] px-4 py-2 text-sm font-black text-[#0F172A] ring-1 ring-[#E2E8F0]">
+              </SemanticBadge>
+              <SemanticBadge tone={saleStatusTone(typedSale.status)} className="px-4 py-2 text-sm">
                 {saleStatusLabel(typedSale.status)}
-              </span>
+              </SemanticBadge>
               <SaleVoidAction disabled={typedSale.status === "voided"} saleId={typedSale.id} />
             </div>
           </div>
@@ -117,15 +144,15 @@ export default async function SaleDetailPage({
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Total", formatter.format(toSafeNumber(typedSale.total_amount))],
-            ["Pendiente", formatter.format(toSafeNumber(typedSale.balance_due))],
-            ["Costo", formatter.format(toSafeNumber(typedSale.total_cost))],
-            ["Utilidad", formatter.format(toSafeNumber(typedSale.gross_profit))],
-          ].map(([label, value]) => (
-            <article key={label} className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+            ["Total", formatter.format(toSafeNumber(typedSale.total_amount)), "info"],
+            ["Pendiente", formatter.format(toSafeNumber(typedSale.balance_due)), pendingTone(toSafeNumber(typedSale.balance_due))],
+            ["Costo", formatter.format(toSafeNumber(typedSale.total_cost)), "neutral"],
+            ["Utilidad", formatter.format(toSafeNumber(typedSale.gross_profit)), amountTone(toSafeNumber(typedSale.gross_profit))],
+          ].map(([label, value, tone]) => (
+            <ToneCard key={label} tone={tone as SemanticTone}>
               <p className="text-sm font-black text-[#475569]">{label}</p>
               <p className="mt-3 text-2xl font-black text-[#0F172A]">{value}</p>
-            </article>
+            </ToneCard>
           ))}
         </section>
 
@@ -162,22 +189,26 @@ export default async function SaleDetailPage({
               <h2 className="text-xl font-black text-[#0F172A]">Movimientos de inventario</h2>
               <div className="mt-5 space-y-3">
                 {movementRows.length ? (
-                  movementRows.map((movement) => (
-                    <div key={movement.id} className="flex items-start justify-between gap-4 rounded-2xl bg-[#F8FAFC] p-4">
-                      <div>
-                        <p className="font-black text-[#0F172A]">
-                          {movement.product_variants?.products?.name || "Producto"} ·{" "}
-                          {movement.product_variants?.name || "Presentación"}
-                        </p>
-                        <p className="text-sm font-bold text-[#475569]">
-                          {movement.movement_type === "sale_void" ? "Restauración" : "Salida por venta"}
+                  movementRows.map((movement) => {
+                    const tone = movementTone(movement);
+
+                    return (
+                      <div key={movement.id} className={`flex items-start justify-between gap-4 rounded-2xl border border-[#E2E8F0] border-l-4 ${semanticToneStyles[tone].border} ${semanticToneStyles[tone].soft} p-4`}>
+                        <div>
+                          <p className="font-black text-[#0F172A]">
+                            {movement.product_variants?.products?.name || "Producto"} ·{" "}
+                            {movement.product_variants?.name || "Presentación"}
+                          </p>
+                          <p className="mt-1 text-sm font-bold text-[#475569]">
+                            {movement.movement_type === "sale_void" ? "Restauración" : "Salida por venta"}
+                          </p>
+                        </div>
+                        <p className={`font-black ${semanticToneStyles[tone].text}`}>
+                          {toSafeNumber(movement.quantity)} {saleUnitLabel(movement.stock_unit)}
                         </p>
                       </div>
-                      <p className="font-black text-[#0F172A]">
-                        {toSafeNumber(movement.quantity)} {saleUnitLabel(movement.stock_unit)}
-                      </p>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="rounded-2xl bg-[#F8FAFC] p-4 text-sm font-bold text-[#475569]">
                     Esta venta no generó movimientos de inventario.

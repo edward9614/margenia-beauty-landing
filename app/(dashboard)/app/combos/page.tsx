@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ComboRowActions } from "@/components/combos/combo-row-actions";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
+import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
 import {
   calculateAvailableComboStock,
   calculateComboBaseCost,
@@ -78,6 +79,23 @@ function comboStats(combo: ComboRow) {
     profit: profit.profit,
     stock,
   };
+}
+
+function comboMarginTone(margin: number): SemanticTone {
+  if (margin < 0) return "negative";
+  if (margin < 25) return "warning";
+  return "positive";
+}
+
+function comboStockTone(stock: number | null): SemanticTone {
+  if (stock === null) return "neutral";
+  if (stock <= 0) return "negative";
+  if (stock <= 3) return "warning";
+  return "positive";
+}
+
+function comboStatusTone(status: string | null | undefined): SemanticTone {
+  return status === "archived" ? "neutral" : "positive";
 }
 
 export default async function CombosPage({
@@ -231,18 +249,18 @@ export default async function CombosPage({
 
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            ["Combos activos", activeCombos.length],
-            ["Combos archivados", archivedCombos.length],
-            ["Mejor margen estimado", `${bestMargin.toFixed(1)}%`],
-            ["Con stock disponible", combosWithStock],
-          ].map(([label, value]) => (
-            <article
+            ["Combos activos", activeCombos.length, "positive"],
+            ["Combos archivados", archivedCombos.length, "neutral"],
+            ["Mejor margen estimado", `${bestMargin.toFixed(1)}%`, comboMarginTone(bestMargin)],
+            ["Con stock disponible", combosWithStock, combosWithStock > 0 ? "positive" : "warning"],
+          ].map(([label, value, tone]) => (
+            <ToneCard
               key={label}
-              className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-5 shadow-sm"
+              tone={tone as SemanticTone}
             >
               <p className="text-sm font-black text-[#475569]">{label}</p>
               <p className="mt-3 text-3xl font-black text-[#0F172A]">{value}</p>
-            </article>
+            </ToneCard>
           ))}
         </section>
 
@@ -349,16 +367,18 @@ export default async function CombosPage({
                         <td className="px-5 py-4 font-bold text-[#0F172A]">
                           {formatter.format(toSafeNumber(combo.sale_price))}
                         </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
+                        <td className={`px-5 py-4 font-black ${semanticToneStyles[comboMarginTone(stats.margin)].text}`}>
                           {stats.margin.toFixed(1)}%
                         </td>
-                        <td className="px-5 py-4 text-[#475569]">
+                        <td className="px-5 py-4">
+                          <SemanticBadge tone={comboStockTone(stats.stock)}>
                           {comboStockLabel(stats.stock)}
+                          </SemanticBadge>
                         </td>
                         <td className="px-5 py-4">
-                          <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-black text-[#2563EB]">
+                          <SemanticBadge tone={comboStatusTone(combo.status)}>
                             {comboStatusLabel(combo.status)}
-                          </span>
+                          </SemanticBadge>
                         </td>
                         <td className="px-5 py-4">
                           <ComboRowActions
@@ -385,8 +405,11 @@ export default async function CombosPage({
                     className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm"
                   >
                     <p className="text-lg font-black text-[#0F172A]">{combo.name}</p>
-                    <p className="mt-1 text-sm text-[#475569]">
-                      {stats.itemCount} productos · {comboStockLabel(stats.stock)}
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[#475569]">
+                      <span>{stats.itemCount} productos</span>
+                      <SemanticBadge tone={comboStockTone(stats.stock)} className="px-2 py-0.5 text-[10px]">
+                        {comboStockLabel(stats.stock)}
+                      </SemanticBadge>
                     </p>
                     <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                       <p>
@@ -395,7 +418,7 @@ export default async function CombosPage({
                       </p>
                       <p>
                         <span className="block text-[#475569]">Margen</span>
-                        <strong>{stats.margin.toFixed(1)}%</strong>
+                        <strong className={semanticToneStyles[comboMarginTone(stats.margin)].text}>{stats.margin.toFixed(1)}%</strong>
                       </p>
                     </div>
                     <ComboRowActions
