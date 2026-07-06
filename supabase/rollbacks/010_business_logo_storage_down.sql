@@ -4,6 +4,7 @@
 begin;
 
 drop function if exists public.update_business_logo(uuid, text, text);
+drop function if exists public.user_owns_business_asset(text);
 
 do $$
 begin

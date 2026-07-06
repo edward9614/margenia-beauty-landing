@@ -39,6 +39,37 @@ set
   file_size_limit = excluded.file_size_limit,
   public = true;
 
+create or replace function public.user_owns_business_asset(p_business_id text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_business_id uuid;
+  v_user_id uuid := auth.uid();
+begin
+  if v_user_id is null
+    or p_business_id is null
+    or p_business_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+    return false;
+  end if;
+
+  v_business_id := p_business_id::uuid;
+
+  return exists (
+    select 1
+    from public.businesses b
+    where b.id = v_business_id
+      and b.owner_id = v_user_id
+  );
+end;
+$$;
+
+revoke all on function public.user_owns_business_asset(text) from public;
+revoke all on function public.user_owns_business_asset(text) from anon;
+grant execute on function public.user_owns_business_asset(text) to authenticated;
+
 drop policy if exists "Public can view business assets" on storage.objects;
 create policy "Public can view business assets"
   on storage.objects
@@ -54,12 +85,7 @@ create policy "Users can upload logos for their businesses"
   with check (
     bucket_id = 'business-assets'
     and (storage.foldername(name))[1] = 'businesses'
-    and exists (
-      select 1
-      from public.businesses b
-      where b.id::text = (storage.foldername(name))[2]
-        and b.owner_id = (select auth.uid())
-    )
+    and public.user_owns_business_asset((storage.foldername(name))[2])
   );
 
 drop policy if exists "Users can update logos for their businesses" on storage.objects;
@@ -70,22 +96,12 @@ create policy "Users can update logos for their businesses"
   using (
     bucket_id = 'business-assets'
     and (storage.foldername(name))[1] = 'businesses'
-    and exists (
-      select 1
-      from public.businesses b
-      where b.id::text = (storage.foldername(name))[2]
-        and b.owner_id = (select auth.uid())
-    )
+    and public.user_owns_business_asset((storage.foldername(name))[2])
   )
   with check (
     bucket_id = 'business-assets'
     and (storage.foldername(name))[1] = 'businesses'
-    and exists (
-      select 1
-      from public.businesses b
-      where b.id::text = (storage.foldername(name))[2]
-        and b.owner_id = (select auth.uid())
-    )
+    and public.user_owns_business_asset((storage.foldername(name))[2])
   );
 
 drop policy if exists "Users can delete logos for their businesses" on storage.objects;
@@ -96,12 +112,7 @@ create policy "Users can delete logos for their businesses"
   using (
     bucket_id = 'business-assets'
     and (storage.foldername(name))[1] = 'businesses'
-    and exists (
-      select 1
-      from public.businesses b
-      where b.id::text = (storage.foldername(name))[2]
-        and b.owner_id = (select auth.uid())
-    )
+    and public.user_owns_business_asset((storage.foldername(name))[2])
   );
 
 create or replace function public.update_business_logo(
