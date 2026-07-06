@@ -63,6 +63,9 @@ export function SetupChecklist({
   hasSettingsComplete?: boolean;
 }) {
   const steps = getSteps(hasCombos, hasInventory, hasProducts, hasSales, hasSettingsComplete);
+  const completedSteps = steps.filter((step) => step.status === "completed").length;
+
+  if (completedSteps === steps.length) return null;
 
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">

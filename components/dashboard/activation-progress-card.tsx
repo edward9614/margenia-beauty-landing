@@ -35,31 +35,7 @@ export function ActivationProgressCard({
   const progress = Math.round((completed / steps.length) * 100);
   const nextStep = steps.find((step) => !step.complete);
 
-  if (progress >= 100) {
-    return (
-      <section className="rounded-[2rem] border border-[#BBF7D0] bg-[linear-gradient(135deg,#F0FDF4_0%,#FFFFFF_58%,#EFF6FF_100%)] p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#16A34A]">
-              Activación completa
-            </p>
-            <h2 className="mt-3 text-2xl font-black text-[#0F172A]">
-              Tu negocio está listo
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[#475569]">
-              Ya puedes operar con productos, ventas, inventario y caja.
-            </p>
-          </div>
-          <Link
-            href="/app/ventas/nueva"
-            className="w-full rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-5 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 sm:w-fit"
-          >
-            Registrar venta
-          </Link>
-        </div>
-      </section>
-    );
-  }
+  if (progress >= 100 || completed === steps.length) return null;
 
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-[linear-gradient(135deg,#FFFFFF_0%,#F8FAFC_58%,#EFF6FF_100%)] p-5 shadow-sm sm:p-6">
