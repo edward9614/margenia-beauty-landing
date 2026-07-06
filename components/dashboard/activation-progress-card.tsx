@@ -3,10 +3,11 @@ function getSteps(
   hasInventory: boolean,
   hasProducts: boolean,
   hasSales: boolean,
+  hasSettingsComplete: boolean,
 ) {
   return [
     { label: "Cuenta creada", complete: true },
-    { label: "Negocio creado", complete: true },
+    { label: "Configuración", complete: hasSettingsComplete },
     { label: "Primer producto", complete: hasProducts },
     { label: "Primer combo", complete: hasCombos },
     { label: "Inventario configurado", complete: hasInventory },
@@ -19,13 +20,15 @@ export function ActivationProgressCard({
   hasInventory = false,
   hasProducts = false,
   hasSales = false,
+  hasSettingsComplete = false,
 }: {
   hasCombos?: boolean;
   hasInventory?: boolean;
   hasProducts?: boolean;
   hasSales?: boolean;
+  hasSettingsComplete?: boolean;
 }) {
-  const steps = getSteps(hasCombos, hasInventory, hasProducts, hasSales);
+  const steps = getSteps(hasCombos, hasInventory, hasProducts, hasSales, hasSettingsComplete);
   const completed = steps.filter((step) => step.complete).length;
   const progress = Math.round((completed / steps.length) * 100);
 

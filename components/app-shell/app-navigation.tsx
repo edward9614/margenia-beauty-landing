@@ -11,7 +11,7 @@ const navItems = [
   { href: "/app/ventas", label: "Ventas", soon: false },
   { href: "/app/inventario", label: "Inventario", soon: false },
   { href: "/app/caja", label: "Caja", soon: false },
-  { href: "#", label: "Configuración", soon: true },
+  { href: "/app/configuracion", label: "Configuración", soon: false },
 ];
 
 export function SidebarNavigation({
@@ -92,10 +92,10 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-6 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
+      className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-7 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur lg:hidden"
       aria-label="Navegación móvil"
     >
-      {navItems.slice(0, 6).map((item) => {
+      {navItems.map((item) => {
         const isActive =
           item.href === "/app"
             ? pathname === "/app"
@@ -105,7 +105,7 @@ export function MobileNavigation() {
           <Link
             key={item.label}
             href={item.href}
-            className={`rounded-2xl px-1.5 py-2 text-center text-[10px] font-black sm:text-[11px] ${
+            className={`rounded-2xl px-1 py-2 text-center text-[9px] font-black sm:text-[10px] ${
               isActive ? "bg-[#EFF6FF] text-[#2563EB]" : "text-[#475569]"
             }`}
           >

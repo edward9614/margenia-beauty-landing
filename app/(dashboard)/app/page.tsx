@@ -60,7 +60,7 @@ export default async function AppHomePage({
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id,name,business_type,country,currency,primary_channel")
+    .select("id,name,business_type,country,currency,primary_channel,timezone")
     .eq("owner_id", user.id)
     .limit(1)
     .maybeSingle();
@@ -147,6 +147,9 @@ export default async function AppHomePage({
     (inventoryMovementRows || []).length || (inventoryCountRows || []).length,
   );
   const hasCatalog = hasProducts || hasCombos;
+  const hasSettingsComplete = Boolean(
+    business.name && business.country && business.currency && business.timezone,
+  );
   const lowStockVariants = activeVariants.filter((variant) => {
     const stock = Number(variant.current_stock || 0);
     const threshold = Number(variant.low_stock_threshold || 0);
@@ -263,6 +266,7 @@ export default async function AppHomePage({
               hasInventory={hasInventoryActivity}
               hasProducts={hasProducts}
               hasSales={hasSales}
+              hasSettingsComplete={hasSettingsComplete}
             />
             <QuickActions hasCatalog={hasCatalog} hasProducts={hasProducts} />
 
@@ -299,6 +303,7 @@ export default async function AppHomePage({
               hasInventory={hasInventoryActivity}
               hasProducts={hasProducts}
               hasSales={hasSales}
+              hasSettingsComplete={hasSettingsComplete}
             />
             <BusinessStatusCard
               business={{

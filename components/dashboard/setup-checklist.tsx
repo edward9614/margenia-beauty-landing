@@ -3,6 +3,7 @@ function getSteps(
   hasInventory: boolean,
   hasProducts: boolean,
   hasSales: boolean,
+  hasSettingsComplete: boolean,
 ) {
   return [
     {
@@ -11,15 +12,17 @@ function getSteps(
       title: "Crear tu cuenta",
     },
     {
-      detail: "El negocio base ya está configurado.",
-      status: "completed",
-      title: "Configurar tu negocio",
+      detail: hasSettingsComplete
+        ? "Nombre, país, moneda y zona horaria están definidos."
+        : "Completa nombre, país, moneda y zona horaria.",
+      status: hasSettingsComplete ? "completed" : "next",
+      title: "Completar configuración",
     },
     {
       detail: hasProducts
         ? "Ya tienes al menos un producto en tu catálogo."
         : "Será el primer módulo operativo de Margenia.",
-      status: hasProducts ? "completed" : "next",
+      status: hasProducts ? "completed" : hasSettingsComplete ? "next" : "pending",
       title: "Agregar tu primer producto",
     },
     {
@@ -51,13 +54,15 @@ export function SetupChecklist({
   hasInventory = false,
   hasProducts = false,
   hasSales = false,
+  hasSettingsComplete = false,
 }: {
   hasCombos?: boolean;
   hasInventory?: boolean;
   hasProducts?: boolean;
   hasSales?: boolean;
+  hasSettingsComplete?: boolean;
 }) {
-  const steps = getSteps(hasCombos, hasInventory, hasProducts, hasSales);
+  const steps = getSteps(hasCombos, hasInventory, hasProducts, hasSales, hasSettingsComplete);
 
   return (
     <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
