@@ -2,6 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ComboForm } from "@/components/combos/combo-form";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
+import {
+  AppPageHeader,
+  DashboardEmptyState,
+  DashboardShell,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
 import type { ComboCatalogVariant } from "@/lib/combos";
 import { createClient } from "@/lib/supabase/server";
 
@@ -60,43 +67,31 @@ export default async function NewComboPage() {
   });
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
       <ProductAnalyticsEvent eventName="combo_create_start" />
-      <div className="space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-            Nuevo combo
-          </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-            Crea un combo rentable
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-            Combina productos reales de tu catálogo y revisa costo, precio, margen y
-            stock posible antes de vender.
-          </p>
-        </section>
-
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Nuevo combo"
+          title="Crea un combo rentable"
+          description="Combina productos reales de tu catálogo y revisa costo, precio, margen y stock posible antes de vender."
+          actions={<Link href="/app/combos" className={dashboardSecondaryActionClass}>Volver a combos</Link>}
+        />
+        <div className="p-4 sm:p-6 lg:p-8">
         {variants.length ? (
           <ComboForm
+            appearance="premium"
             currency={business.currency || "COP"}
             mode="create"
             variants={variants}
           />
         ) : (
-          <section className="rounded-[2rem] border border-dashed border-[#BFDBFE] bg-white p-8 text-center shadow-sm">
-            <h2 className="text-2xl font-black text-[#0F172A]">Primero agrega productos</h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#475569]">
-              Para crear un combo necesitas tener productos activos en tu catálogo.
-            </p>
-            <Link
-              href="/app/productos/nuevo"
-              className="mt-6 inline-flex rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-sm font-black text-white"
-            >
-              Ir a productos
-            </Link>
-          </section>
+          <div>
+            <DashboardEmptyState title="Primero agrega productos" description="Para crear un combo necesitas tener productos activos en tu catálogo." />
+            <div className="mt-4 text-center"><Link href="/app/productos/nuevo" className={dashboardPrimaryActionClass}>Ir a productos</Link></div>
+          </div>
         )}
-      </div>
+        </div>
+      </DashboardShell>
     </main>
   );
 }

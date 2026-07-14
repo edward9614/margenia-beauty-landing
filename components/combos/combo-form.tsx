@@ -116,16 +116,19 @@ function buildItem(variant: ComboCatalogVariant, position: number): ComboFormIte
 }
 
 export function ComboForm({
+  appearance = "default",
   currency = "COP",
   initialCombo,
   mode,
   variants,
 }: {
+  appearance?: "default" | "premium";
   currency?: string;
   initialCombo?: ComboFormInput & { id: string };
   mode: "create" | "edit";
   variants: ComboCatalogVariant[];
 }) {
+  const isPremium = appearance === "premium";
   const [combo, setCombo] = useState<ComboFormInput>(initialCombo || emptyComboForm());
   const [currentStep, setCurrentStep] = useState(1);
   const [search, setSearch] = useState("");
@@ -369,9 +372,9 @@ export function ComboForm({
         : "Rentable";
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className={`grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] ${isPremium ? "combo-form-premium" : ""}`}>
       <div className="space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+        <section className="combo-form-section combo-wizard-card rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[#2563EB]">
             Paso {currentStep} de 3
           </p>
@@ -396,7 +399,7 @@ export function ComboForm({
         </section>
 
         <section
-          className={`rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
+          className={`combo-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
             currentStep === 1 ? "block" : "hidden"
           }`}
         >
@@ -436,7 +439,7 @@ export function ComboForm({
         </section>
 
         <section
-          className={`rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
+          className={`combo-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
             currentStep === 2 ? "block" : "hidden"
           }`}
         >
@@ -465,7 +468,7 @@ export function ComboForm({
                 key={variant.id}
                 type="button"
                 onClick={() => addVariant(variant)}
-                className="rounded-[1.25rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-left transition hover:border-[#BFDBFE] hover:bg-white"
+                className="combo-catalog-option rounded-[1.25rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-left transition hover:border-[#BFDBFE] hover:bg-white"
               >
                 <span className="block font-black text-[#0F172A]">
                   {variantLabel(variant)}
@@ -503,7 +506,7 @@ export function ComboForm({
                 return (
                   <div
                     key={item.variantId}
-                    className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4"
+                    className="combo-item-card rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4"
                   >
                     <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr_1fr_auto] lg:items-start">
                       <div>
@@ -575,7 +578,7 @@ export function ComboForm({
         </section>
 
         <section
-          className={`rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
+          className={`combo-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
             currentStep === 3 ? "block" : "hidden"
           }`}
         >
@@ -638,7 +641,7 @@ export function ComboForm({
       </div>
 
       <aside className="space-y-5">
-        <section className="sticky top-6 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+        <section className="combo-summary-card sticky top-6 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
           <p className="text-sm font-black text-[#0F172A]">Resumen del combo</p>
           <dl className="mt-4 grid gap-3 text-sm">
             {[
@@ -714,7 +717,7 @@ export function ComboForm({
         </section>
 
         {mode === "edit" && initialCombo && (
-          <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+          <section className="combo-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
             <p className="font-black text-[#0F172A]">Estado del combo</p>
             <p className="mt-2 text-sm leading-6 text-[#475569]">
               Archivar conserva el historial y oculta el combo del catálogo activo.

@@ -266,3 +266,132 @@ textarea {
     border-radius: 1.25rem !important;
   }
 }
+
+/* Scoped premium theme for combo creation and editing. */
+.combo-form-premium .combo-form-section,
+.combo-form-premium .combo-summary-card {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(145deg, rgba(15, 31, 49, 0.88), rgba(7, 19, 33, 0.94)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 42px rgba(2, 6, 23, 0.18) !important;
+  backdrop-filter: blur(14px);
+}
+
+.combo-form-premium .combo-wizard-card,
+.combo-form-premium .combo-summary-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.combo-form-premium .combo-wizard-card::before,
+.combo-form-premium .combo-summary-card::before {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.6), transparent);
+}
+
+.combo-form-premium .combo-summary-card {
+  border-color: rgba(34, 211, 238, 0.18) !important;
+}
+
+.combo-form-premium [class*="text-[#0F172A]"] {
+  color: #f8fafc !important;
+}
+
+.combo-form-premium [class*="text-[#475569]"] {
+  color: #94a3b8 !important;
+}
+
+.combo-form-premium [class*="text-[#64748B]"],
+.combo-form-premium [class*="placeholder:text-[#94A3B8]"]::placeholder {
+  color: #64748b !important;
+}
+
+.combo-form-premium [class*="text-[#2563EB]"] {
+  color: #67e8f9 !important;
+}
+
+.combo-form-premium [class*="bg-white"] {
+  background-color: rgba(8, 21, 36, 0.92) !important;
+}
+
+.combo-form-premium [class*="bg-[#F8FAFC]"] {
+  background-color: rgba(2, 6, 23, 0.28) !important;
+}
+
+.combo-form-premium [class*="bg-[#EFF6FF]"] {
+  background-color: rgba(34, 211, 238, 0.075) !important;
+}
+
+.combo-form-premium [class*="bg-[#DCFCE7]"] {
+  background-color: rgba(52, 211, 153, 0.1) !important;
+}
+
+.combo-form-premium [class*="bg-[#FEF3C7]"] {
+  background-color: rgba(251, 191, 36, 0.1) !important;
+}
+
+.combo-form-premium [class*="bg-[#FEE2E2]"] {
+  background-color: rgba(251, 113, 133, 0.1) !important;
+}
+
+.combo-form-premium [class*="text-[#166534]"] {
+  color: #a7f3d0 !important;
+}
+
+.combo-form-premium [class*="text-[#92400E]"] {
+  color: #fde68a !important;
+}
+
+.combo-form-premium [class*="text-[#991B1B]"] {
+  color: #fecdd3 !important;
+}
+
+.combo-form-premium [class*="border-[#E2E8F0]"],
+.combo-form-premium [class*="border-[#BFDBFE]"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.combo-form-premium input,
+.combo-form-premium select,
+.combo-form-premium textarea {
+  color-scheme: dark;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: rgba(5, 16, 29, 0.88) !important;
+  color: #e2e8f0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.combo-form-premium input:hover,
+.combo-form-premium select:hover,
+.combo-form-premium textarea:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.combo-form-premium input:focus,
+.combo-form-premium select:focus,
+.combo-form-premium textarea:focus {
+  border-color: rgba(103, 232, 249, 0.62) !important;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1) !important;
+}
+
+.combo-form-premium .combo-catalog-option,
+.combo-form-premium .combo-item-card {
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  background: rgba(2, 6, 23, 0.25) !important;
+}
+
+.combo-form-premium .combo-catalog-option:hover {
+  border-color: rgba(103, 232, 249, 0.35) !important;
+  background: rgba(14, 35, 55, 0.94) !important;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 639px) {
+  .combo-form-premium .combo-form-section,
+  .combo-form-premium .combo-summary-card {
+    border-radius: 1.25rem !important;
+  }
+}

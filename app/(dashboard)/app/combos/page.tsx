@@ -1,8 +1,21 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ComboFilters } from "@/components/combos/combo-filters";
 import { ComboRowActions } from "@/components/combos/combo-row-actions";
+import {
+  ComboMetricCard,
+  ComboMobileMetric,
+  ComboStatusBadge,
+  comboDarkTone,
+} from "@/components/combos/combo-dashboard-ui";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
-import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
+import {
+  AppPageHeader,
+  DashboardShell,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
+import type { SemanticTone } from "@/components/ui/semantic";
 import {
   calculateAvailableComboStock,
   calculateComboBaseCost,
@@ -211,255 +224,83 @@ export default async function CombosPage({
     : 0;
   const combosWithStock = activeStats.filter((item) => item.stock === null || item.stock > 0).length;
   const totalPages = Math.max(Math.ceil((count || 0) / pageSize), 1);
+  const hasFilters = Boolean(q || status !== "active" || category !== "all" || sort !== "recent");
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
       <ProductAnalyticsEvent eventName="combo_module_view" />
-      <div className="w-full max-w-none space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-                Combos
-              </p>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-                Combos y kits
-              </h1>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-                Crea paquetes rentables combinando productos de tu catálogo.
-              </p>
-            </div>
-            {hasProducts ? (
-              <Link
-                href="/app/combos/nuevo"
-                className="rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
-              >
-                Nuevo combo
-              </Link>
-            ) : (
-              <Link
-                href="/app/productos/nuevo"
-                className="rounded-full bg-white px-6 py-4 text-center text-base font-black text-[#2563EB] ring-1 ring-[#BFDBFE]"
-              >
-                Primero agrega productos
-              </Link>
-            )}
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Combos"
+          title="Combos y kits"
+          description="Crea paquetes rentables combinando productos de tu catálogo."
+          actions={hasProducts ? <Link href="/app/combos/nuevo" className={dashboardPrimaryActionClass}>Nuevo combo</Link> : <Link href="/app/productos/nuevo" className={dashboardSecondaryActionClass}>Primero agrega productos</Link>}
+        />
+
+        <div className="space-y-5 p-4 sm:p-6 lg:p-8">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <ComboMetricCard label="Combos activos" value={String(activeCombos.length)} description="Kits disponibles en tu catálogo" icon="active" tone="positive" />
+            <ComboMetricCard label="Combos archivados" value={String(archivedCombos.length)} description="Historial fuera del catálogo activo" icon="archived" tone="neutral" />
+            <ComboMetricCard label="Mejor margen estimado" value={`${bestMargin.toFixed(1)}%`} description="Mayor rentabilidad entre combos activos" icon="margin" tone={comboMarginTone(bestMargin)} />
+            <ComboMetricCard label="Con stock disponible" value={String(combosWithStock)} description="Combos que puedes vender ahora" icon="stock" tone={combosWithStock > 0 ? "positive" : "warning"} />
+          </section>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div><p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">Control comercial</p><h2 className="mt-1 text-xl font-black text-white">Catálogo de combos</h2></div>
+            <p className="text-xs font-bold text-slate-500">{comboList.length} combos en esta página</p>
           </div>
-        </section>
+          <ComboFilters categories={categories} category={category} query={q} sort={sort} status={status} />
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            ["Combos activos", activeCombos.length, "positive"],
-            ["Combos archivados", archivedCombos.length, "neutral"],
-            ["Mejor margen estimado", `${bestMargin.toFixed(1)}%`, comboMarginTone(bestMargin)],
-            ["Con stock disponible", combosWithStock, combosWithStock > 0 ? "positive" : "warning"],
-          ].map(([label, value, tone]) => (
-            <ToneCard
-              key={label}
-              tone={tone as SemanticTone}
-            >
-              <p className="text-sm font-black text-[#475569]">{label}</p>
-              <p className="mt-3 text-3xl font-black text-[#0F172A]">{value}</p>
-            </ToneCard>
-          ))}
-        </section>
-
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
-          <form className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_repeat(3,minmax(150px,190px))]">
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Buscar por combo o categoría"
-              className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
-            />
-            <select name="status" defaultValue={status} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="active">Activos</option>
-              <option value="archived">Archivados</option>
-              <option value="all">Todos</option>
-            </select>
-            <select name="category" defaultValue={category} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="all">Todas las categorías</option>
-              {categories.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-            <select name="sort" defaultValue={sort} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="recent">Más recientes</option>
-              <option value="name">Nombre A-Z</option>
-              <option value="margin">Mayor margen</option>
-              <option value="stock">Menor disponibilidad</option>
-            </select>
-            <input type="hidden" name="page" value="1" />
-            <button className="rounded-full bg-[#0F172A] px-5 py-3 text-sm font-black text-white lg:col-start-4">
-              Aplicar
-            </button>
-          </form>
-        </section>
-
-        {error ? (
-          <section className="rounded-[2rem] border border-[#FECACA] bg-[#FEE2E2] p-6 text-[#991B1B]">
-            <h2 className="text-xl font-black">No pudimos cargar combos</h2>
-            <p className="mt-2 text-sm font-bold">
-              Revisa que la migración 005_combos.sql exista en Supabase.
-            </p>
-          </section>
-        ) : !hasProducts ? (
-          <section className="rounded-[2rem] border border-dashed border-[#BFDBFE] bg-white p-8 text-center shadow-sm">
-            <h2 className="text-2xl font-black text-[#0F172A]">Primero agrega productos</h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#475569]">
-              Para crear un combo necesitas tener productos activos en tu catálogo.
-            </p>
-            <Link
-              href="/app/productos/nuevo"
-              className="mt-6 inline-flex rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-sm font-black text-white"
-            >
-              Ir a productos
-            </Link>
-          </section>
-        ) : !comboList.length ? (
-          <section className="rounded-[2rem] border border-dashed border-[#BFDBFE] bg-white p-8 text-center shadow-sm">
-            <h2 className="text-2xl font-black text-[#0F172A]">Crea tu primer combo</h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#475569]">
-              Combina productos de tu catálogo y Margenia calculará costo, precio
-              sugerido y margen.
-            </p>
-            <Link
-              href="/app/combos/nuevo"
-              className="mt-6 inline-flex rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-sm font-black text-white"
-            >
-              Crear combo
-            </Link>
-          </section>
-        ) : (
-          <section className="overflow-hidden rounded-[2rem] border border-[#E2E8F0] bg-white shadow-sm">
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-xs uppercase tracking-[0.12em] text-[#475569]">
-                  <tr>
-                    {["Combo", "Productos incluidos", "Costo", "Precio", "Margen", "Stock posible", "Estado", "Acciones"].map((header) => (
-                      <th key={header} className="px-5 py-4 font-black">
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E8F0]">
-                  {comboList.map((combo) => {
+          {error ? (
+            <section className="rounded-2xl border border-rose-300/20 bg-rose-300/10 p-6 text-rose-100"><h2 className="text-xl font-black">No pudimos cargar combos</h2><p className="mt-2 text-sm font-semibold text-rose-100/70">Revisa que la migración 005_combos.sql exista en Supabase.</p></section>
+          ) : !hasProducts ? (
+            <section className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] px-5 py-12 text-center"><h2 className="text-xl font-black text-white">Primero agrega productos</h2><p className="mx-auto mt-2 max-w-lg text-sm font-semibold leading-6 text-slate-400">Para crear un combo necesitas productos activos en tu catálogo.</p><Link href="/app/productos/nuevo" className={`${dashboardPrimaryActionClass} mt-5`}>Ir a productos</Link></section>
+          ) : !comboList.length ? (
+            <section className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] px-5 py-12 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-7 w-7"><path d="M5 7.5 12 4l7 3.5-7 3.5-7-3.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /><path d="m5 12 7 3.5 7-3.5M5 16.5l7 3.5 7-3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg></div>
+              <h2 className="mt-4 text-xl font-black text-white">{hasFilters ? "No encontramos combos" : "Aún no has creado combos"}</h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm font-semibold leading-6 text-slate-400">{hasFilters ? "Prueba otros filtros o limpia la búsqueda para ampliar los resultados." : "Crea kits y paquetes con productos de tu catálogo para vender más y mejorar tu ticket promedio."}</p>
+              <Link href={hasFilters ? "/app/combos" : "/app/combos/nuevo"} className={`${dashboardPrimaryActionClass} mt-5`}>{hasFilters ? "Quitar filtros" : "Nuevo combo"}</Link>
+            </section>
+          ) : (
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035]">
+              <div className="hidden overflow-x-auto xl:block">
+                <table className="w-full min-w-[1080px] text-left text-sm">
+                  <thead className="border-b border-white/[0.08] bg-black/15 text-[0.68rem] font-black uppercase tracking-[0.1em] text-slate-500"><tr>{["Combo", "Productos incluidos", "Costo", "Precio", "Margen", "Stock posible", "Estado", "Acciones"].map((header) => <th key={header} className="px-4 py-4">{header}</th>)}</tr></thead>
+                  <tbody className="divide-y divide-white/[0.06]">{comboList.map((combo) => {
                     const stats = comboStats(combo);
+                    const marginTone = comboMarginTone(stats.margin);
                     const statusValue = combo.status === "archived" ? "archived" : "active";
+                    return <tr key={combo.id} className="align-top transition duration-200 hover:bg-white/[0.045]">
+                      <td className="px-4 py-4"><Link href={`/app/combos/${combo.id}/editar`} className="font-black text-white transition hover:text-cyan-200">{combo.name}</Link><p className="mt-1 text-xs font-semibold text-slate-500">{combo.category || "Sin categoría"}</p></td>
+                      <td className="px-4 py-4 font-bold text-slate-300">{stats.itemCount} productos</td>
+                      <td className="px-4 py-4 font-bold text-slate-400">{formatter.format(stats.baseCost)}</td>
+                      <td className="px-4 py-4 font-black text-cyan-100">{formatter.format(toSafeNumber(combo.sale_price))}</td>
+                      <td className={`px-4 py-4 font-black ${comboDarkTone[marginTone].text}`}>{stats.margin.toFixed(1)}%</td>
+                      <td className="px-4 py-4"><ComboStatusBadge tone={comboStockTone(stats.stock)}>{comboStockLabel(stats.stock)}</ComboStatusBadge></td>
+                      <td className="px-4 py-4"><ComboStatusBadge tone={comboStatusTone(combo.status)}>{comboStatusLabel(combo.status)}</ComboStatusBadge></td>
+                      <td className="px-4 py-4"><ComboRowActions appearance="dark" comboId={combo.id} editHref={`/app/combos/${combo.id}/editar`} status={statusValue} /></td>
+                    </tr>;
+                  })}</tbody>
+                </table>
+              </div>
 
-                    return (
-                      <tr key={combo.id} className="align-top">
-                        <td className="px-5 py-4">
-                          <p className="font-black text-[#0F172A]">{combo.name}</p>
-                          <p className="mt-1 text-xs text-[#475569]">
-                            {combo.category || "Sin categoría"}
-                          </p>
-                        </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
-                          {stats.itemCount} productos
-                        </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
-                          {formatter.format(stats.baseCost)}
-                        </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
-                          {formatter.format(toSafeNumber(combo.sale_price))}
-                        </td>
-                        <td className={`px-5 py-4 font-black ${semanticToneStyles[comboMarginTone(stats.margin)].text}`}>
-                          {stats.margin.toFixed(1)}%
-                        </td>
-                        <td className="px-5 py-4">
-                          <SemanticBadge tone={comboStockTone(stats.stock)}>
-                          {comboStockLabel(stats.stock)}
-                          </SemanticBadge>
-                        </td>
-                        <td className="px-5 py-4">
-                          <SemanticBadge tone={comboStatusTone(combo.status)}>
-                            {comboStatusLabel(combo.status)}
-                          </SemanticBadge>
-                        </td>
-                        <td className="px-5 py-4">
-                          <ComboRowActions
-                            comboId={combo.id}
-                            editHref={`/app/combos/${combo.id}/editar`}
-                            status={statusValue}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="grid gap-4 p-4 lg:hidden">
-              {comboList.map((combo) => {
+              <div className="grid gap-3 p-3 xl:hidden">{comboList.map((combo) => {
                 const stats = comboStats(combo);
+                const marginTone = comboMarginTone(stats.margin);
                 const statusValue = combo.status === "archived" ? "archived" : "active";
+                return <article key={combo.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition hover:border-cyan-300/25 hover:bg-white/[0.055]">
+                  <div className="flex items-start justify-between gap-3"><div><Link href={`/app/combos/${combo.id}/editar`} className="font-black text-white">{combo.name}</Link><p className="mt-1 text-sm font-semibold text-slate-500">{combo.category || "Sin categoría"} · {stats.itemCount} productos</p></div><ComboStatusBadge tone={comboStatusTone(combo.status)}>{comboStatusLabel(combo.status)}</ComboStatusBadge></div>
+                  <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.07]"><ComboMobileMetric label="Precio" value={formatter.format(toSafeNumber(combo.sale_price))} tone="brand" /><ComboMobileMetric label="Margen" value={`${stats.margin.toFixed(1)}%`} tone={marginTone} /><ComboMobileMetric label="Stock posible" value={comboStockLabel(stats.stock)} tone={comboStockTone(stats.stock)} /><ComboMobileMetric label="Costo" value={formatter.format(stats.baseCost)} /></div>
+                  <ComboRowActions appearance="dark" comboId={combo.id} editHref={`/app/combos/${combo.id}/editar`} status={statusValue} variant="block" />
+                </article>;
+              })}</div>
+            </section>
+          )}
 
-                return (
-                  <article
-                    key={combo.id}
-                    className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm"
-                  >
-                    <p className="text-lg font-black text-[#0F172A]">{combo.name}</p>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[#475569]">
-                      <span>{stats.itemCount} productos</span>
-                      <SemanticBadge tone={comboStockTone(stats.stock)} className="px-2 py-0.5 text-[10px]">
-                        {comboStockLabel(stats.stock)}
-                      </SemanticBadge>
-                    </p>
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <p>
-                        <span className="block text-[#475569]">Precio</span>
-                        <strong>{formatter.format(toSafeNumber(combo.sale_price))}</strong>
-                      </p>
-                      <p>
-                        <span className="block text-[#475569]">Margen</span>
-                        <strong className={semanticToneStyles[comboMarginTone(stats.margin)].text}>{stats.margin.toFixed(1)}%</strong>
-                      </p>
-                    </div>
-                    <ComboRowActions
-                      comboId={combo.id}
-                      editHref={`/app/combos/${combo.id}/editar`}
-                      status={statusValue}
-                      variant="block"
-                    />
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        <div className="flex flex-col items-center justify-between gap-3 rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 sm:flex-row">
-          <Link
-            href={{ pathname: "/app/combos", query: { ...params, page: Math.max(page - 1, 1) } }}
-            className={`rounded-full px-5 py-3 text-sm font-black ring-1 ring-[#BFDBFE] ${
-              page <= 1
-                ? "pointer-events-none bg-[#F8FAFC] text-[#94A3B8]"
-                : "bg-white text-[#2563EB]"
-            }`}
-          >
-            Anterior
-          </Link>
-          <p className="text-sm font-black text-[#475569]">
-            Página {page} de {totalPages}
-          </p>
-          <Link
-            href={{ pathname: "/app/combos", query: { ...params, page: Math.min(page + 1, totalPages) } }}
-            className={`rounded-full px-5 py-3 text-sm font-black ring-1 ring-[#BFDBFE] ${
-              page >= totalPages
-                ? "pointer-events-none bg-[#F8FAFC] text-[#94A3B8]"
-                : "bg-white text-[#2563EB]"
-            }`}
-          >
-            Siguiente
-          </Link>
+          {comboList.length > 0 && <nav className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:flex-row" aria-label="Paginación de combos"><Link href={{ pathname: "/app/combos", query: { ...params, page: Math.max(page - 1, 1) } }} className={`${dashboardSecondaryActionClass} w-full sm:w-auto ${page <= 1 ? "pointer-events-none opacity-40" : ""}`}>Anterior</Link><span className="text-sm font-black text-slate-500">Página {page} de {totalPages}</span><Link href={{ pathname: "/app/combos", query: { ...params, page: Math.min(page + 1, totalPages) } }} className={`${dashboardSecondaryActionClass} w-full sm:w-auto ${page >= totalPages ? "pointer-events-none opacity-40" : ""}`}>Siguiente</Link></nav>}
         </div>
-      </div>
+      </DashboardShell>
     </main>
   );
 }

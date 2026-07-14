@@ -1,5 +1,11 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ComboForm } from "@/components/combos/combo-form";
+import {
+  AppPageHeader,
+  DashboardShell,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
 import type {
   ComboCatalogVariant,
   ComboFormInput,
@@ -109,28 +115,24 @@ export default async function EditComboPage({
   };
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
-      <div className="space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-            Editar combo
-          </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-            {typedCombo.name}
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-            Ajusta productos, cantidades, precio y margen. Los items retirados se
-            archivan, no se borran.
-          </p>
-        </section>
-
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Editar combo"
+          title={typedCombo.name}
+          description="Ajusta productos, cantidades, precio y margen. Los items retirados se archivan, no se borran."
+          actions={<Link href="/app/combos" className={dashboardSecondaryActionClass}>Volver a combos</Link>}
+        />
+        <div className="p-4 sm:p-6 lg:p-8">
         <ComboForm
+          appearance="premium"
           currency={business.currency || "COP"}
           initialCombo={initialCombo}
           mode="edit"
           variants={variants}
         />
-      </div>
+        </div>
+      </DashboardShell>
     </main>
   );
 }
