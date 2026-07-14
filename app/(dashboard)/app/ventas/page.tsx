@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
-import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
+import { SaleMobileMetric, SalesMetricCard, SalesStatusBadge, salesDarkTone } from "@/components/sales/sales-dashboard-ui";
+import { SalesFilters } from "@/components/sales/sales-filters";
+import { AppPageHeader, DashboardShell, dashboardPrimaryActionClass, dashboardSecondaryActionClass } from "@/components/ui/dashboard-primitives";
+import type { SemanticTone } from "@/components/ui/semantic";
 import {
   salePaymentStatusLabel,
   saleStatusLabel,
@@ -165,239 +168,74 @@ export default async function SalesPage({
     { month: 0, pending: 0, profit: 0, today: 0 },
   );
   const totalPages = Math.max(Math.ceil((count || 0) / pageSize), 1);
+  const hasFilters = Boolean(q || status !== "completed" || payment !== "all" || range !== "month" || channel !== "all" || method !== "all");
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
       <ProductAnalyticsEvent eventName="sales_module_view" />
-      <div className="w-full max-w-none space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-                Ventas
-              </p>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-                Ventas
-              </h1>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-                Registra ingresos, controla pagos pendientes y entiende la utilidad de cada venta.
-              </p>
-            </div>
-            {hasCatalog ? (
-              <Link
-                href="/app/ventas/nueva"
-                className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
-              >
-                Nueva venta
-              </Link>
-            ) : (
-              <Link
-                href="/app/productos"
-                className="rounded-full border border-[#BFDBFE] bg-white px-6 py-4 text-center text-base font-black text-[#2563EB]"
-              >
-                Primero crea productos
-              </Link>
-            )}
-          </div>
-        </section>
-
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            ["Ventas de hoy", formatter.format(metrics.today), metrics.today > 0 ? "info" : "neutral"],
-            ["Ingresos del mes", formatter.format(metrics.month), metrics.month > 0 ? "positive" : "neutral"],
-            ["Utilidad bruta estimada", formatter.format(metrics.profit), amountTone(metrics.profit)],
-            ["Pendiente por cobrar", formatter.format(metrics.pending), pendingTone(metrics.pending)],
-          ].map(([label, value, tone]) => (
-            <ToneCard key={label} tone={tone as SemanticTone}>
-              <p className="text-sm font-black text-[#475569]">{label}</p>
-              <p className="mt-3 text-2xl font-black text-[#0F172A]">{value}</p>
-            </ToneCard>
-          ))}
-        </section>
-
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
-          <form className="grid gap-4 xl:grid-cols-[minmax(220px,1fr)_repeat(5,minmax(130px,170px))]">
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Buscar por código o cliente"
-              className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
-            />
-            <select name="status" defaultValue={status} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="completed">Completadas</option>
-              <option value="voided">Anuladas</option>
-              <option value="all">Todas</option>
-            </select>
-            <select name="payment" defaultValue={payment} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="all">Todos los pagos</option>
-              <option value="paid">Pagadas</option>
-              <option value="partial">Parciales</option>
-              <option value="pending">Pendientes</option>
-            </select>
-            <select name="range" defaultValue={range} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="today">Hoy</option>
-              <option value="7d">Últimos 7 días</option>
-              <option value="month">Mes actual</option>
-              <option value="all">Todas</option>
-            </select>
-            <select name="channel" defaultValue={channel} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="all">Todos los canales</option>
-              <option value="local">Local</option>
-              <option value="instagram">Instagram</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="online_store">Tienda online</option>
-              <option value="feria">Feria</option>
-              <option value="otro">Otro</option>
-            </select>
-            <select name="method" defaultValue={method} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="all">Método</option>
-              <option value="cash">Efectivo</option>
-              <option value="transfer">Transferencia</option>
-              <option value="card">Tarjeta</option>
-              <option value="nequi">Nequi</option>
-              <option value="daviplata">Daviplata</option>
-              <option value="other">Otro</option>
-            </select>
-            <button className="rounded-2xl bg-[#0F172A] px-4 py-3 text-sm font-black text-white">
-              Filtrar
-            </button>
-          </form>
-        </section>
-
-        {error ? (
-          <section className="rounded-[2rem] border border-[#FECACA] bg-[#FEF2F2] p-6 text-[#991B1B]">
-            <h2 className="text-xl font-black">No pudimos cargar ventas</h2>
-            <p className="mt-2 text-sm font-bold">Revisa que la migración 006_sales.sql exista en Supabase.</p>
+      <DashboardShell>
+        <AppPageHeader eyebrow="Ventas" title="Ventas" description="Registra ingresos, controla pagos pendientes y entiende la utilidad de cada venta." actions={hasCatalog ? <Link href="/app/ventas/nueva" className={dashboardPrimaryActionClass}>Nueva venta</Link> : <Link href="/app/productos" className={dashboardSecondaryActionClass}>Primero crea productos</Link>} />
+        <div className="space-y-5 p-4 sm:p-6 lg:p-8">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <SalesMetricCard label="Ventas de hoy" value={formatter.format(metrics.today)} description="Ingresos registrados durante el día" icon="sales" tone={metrics.today > 0 ? "info" : "neutral"} />
+            <SalesMetricCard label="Ingresos del mes" value={formatter.format(metrics.month)} description="Facturación acumulada del periodo" icon="income" tone={metrics.month > 0 ? "positive" : "neutral"} />
+            <SalesMetricCard label="Utilidad bruta" value={formatter.format(metrics.profit)} description="Ganancia estimada antes de otros gastos" icon="profit" tone={amountTone(metrics.profit)} />
+            <SalesMetricCard label="Pendiente por cobrar" value={formatter.format(metrics.pending)} description="Saldo abierto de ventas completadas" icon="pending" tone={pendingTone(metrics.pending)} />
           </section>
-        ) : saleList.length ? (
-          <section className="overflow-hidden rounded-[2rem] border border-[#E2E8F0] bg-white shadow-sm">
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="min-w-full divide-y divide-[#E2E8F0] text-sm">
-                <thead className="bg-[#F8FAFC] text-left text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">
-                  <tr>
-                    {["Venta", "Fecha", "Cliente", "Total", "Pagado", "Pendiente", "Utilidad", "Pago", "Estado", "Acciones"].map((header) => (
-                      <th key={header} className="px-5 py-4">{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E8F0]">
-                  {saleList.map((sale) => {
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">Control comercial</p><h2 className="mt-1 text-xl font-black text-white">Historial de ventas</h2></div><p className="text-xs font-bold text-slate-500">{saleList.length} ventas en esta página</p></div>
+          <SalesFilters channel={channel} method={method} payment={payment} query={q} range={range} status={status} />
+
+          {error ? (
+            <section className="rounded-2xl border border-rose-300/20 bg-rose-300/10 p-6 text-rose-100"><h2 className="text-xl font-black">No pudimos cargar ventas</h2><p className="mt-2 text-sm font-semibold text-rose-100/70">Revisa que la migración 006_sales.sql exista en Supabase.</p></section>
+          ) : saleList.length ? (
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035]">
+              <div className="hidden overflow-x-auto xl:block">
+                <table className="min-w-[1180px] w-full text-sm">
+                  <thead className="border-b border-white/[0.08] bg-black/15 text-left text-[0.68rem] font-black uppercase tracking-[0.1em] text-slate-500"><tr>{["Venta", "Fecha", "Cliente", "Total", "Pagado", "Pendiente", "Utilidad", "Pago", "Estado", "Acciones"].map((header) => <th key={header} className="px-4 py-4">{header}</th>)}</tr></thead>
+                  <tbody className="divide-y divide-white/[0.06]">{saleList.map((sale) => {
                     const balanceDue = toSafeNumber(sale.balance_due);
                     const grossProfit = toSafeNumber(sale.gross_profit);
-
-                    return (
-                      <tr key={sale.id}>
-                        <td className="px-5 py-4 font-black text-[#0F172A]">{sale.sale_code}</td>
-                        <td className="px-5 py-4 text-[#475569]">{new Date(sale.sale_date).toLocaleDateString("es-CO")}</td>
-                        <td className="px-5 py-4 text-[#475569]">{sale.customer_name || "Sin cliente"}</td>
-                        <td className="px-5 py-4 font-black text-[#0F172A]">{formatter.format(toSafeNumber(sale.total_amount))}</td>
-                        <td className={`px-5 py-4 font-black ${semanticToneStyles[amountTone(toSafeNumber(sale.paid_amount))].text}`}>{formatter.format(toSafeNumber(sale.paid_amount))}</td>
-                        <td className={`px-5 py-4 font-black ${semanticToneStyles[pendingTone(balanceDue)].text}`}>{formatter.format(balanceDue)}</td>
-                        <td className={`px-5 py-4 font-black ${semanticToneStyles[amountTone(grossProfit)].text}`}>{formatter.format(grossProfit)}</td>
-                        <td className="px-5 py-4">
-                          <SemanticBadge tone={paymentTone(sale.payment_status)}>
-                            {salePaymentStatusLabel(sale.payment_status)}
-                          </SemanticBadge>
-                        </td>
-                        <td className="px-5 py-4">
-                          <SemanticBadge tone={saleStatusTone(sale.status)}>
-                            {saleStatusLabel(sale.status)}
-                          </SemanticBadge>
-                        </td>
-                        <td className="px-5 py-4">
-                          <Link href={`/app/ventas/${sale.id}`} className="font-black text-[#2563EB]">
-                            Ver
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div className="grid gap-4 p-4 lg:hidden">
-              {saleList.map((sale) => {
+                    const paidTone = amountTone(toSafeNumber(sale.paid_amount));
+                    const balanceTone = pendingTone(balanceDue);
+                    const profitTone = amountTone(grossProfit);
+                    return <tr key={sale.id} className="transition duration-200 hover:bg-white/[0.045]">
+                      <td className="px-4 py-4"><Link href={`/app/ventas/${sale.id}`} className="font-black text-white transition hover:text-cyan-200">{sale.sale_code}</Link></td>
+                      <td className="px-4 py-4 font-semibold text-slate-500">{new Date(sale.sale_date).toLocaleDateString("es-CO")}</td>
+                      <td className="px-4 py-4 font-bold text-slate-300">{sale.customer_name || "Sin cliente"}</td>
+                      <td className="px-4 py-4 font-black text-cyan-100">{formatter.format(toSafeNumber(sale.total_amount))}</td>
+                      <td className={`px-4 py-4 font-black ${salesDarkTone[paidTone].text}`}>{formatter.format(toSafeNumber(sale.paid_amount))}</td>
+                      <td className={`px-4 py-4 font-black ${salesDarkTone[balanceTone].text}`}>{formatter.format(balanceDue)}</td>
+                      <td className={`px-4 py-4 font-black ${salesDarkTone[profitTone].text}`}>{formatter.format(grossProfit)}</td>
+                      <td className="px-4 py-4"><SalesStatusBadge tone={paymentTone(sale.payment_status)}>{salePaymentStatusLabel(sale.payment_status)}</SalesStatusBadge></td>
+                      <td className="px-4 py-4"><SalesStatusBadge tone={saleStatusTone(sale.status)}>{saleStatusLabel(sale.status)}</SalesStatusBadge></td>
+                      <td className="px-4 py-4"><Link href={`/app/ventas/${sale.id}`} className={`${dashboardSecondaryActionClass} min-h-9 px-3 py-1.5 text-xs`}>Ver</Link></td>
+                    </tr>;
+                  })}</tbody>
+                </table>
+              </div>
+              <div className="grid gap-3 p-3 xl:hidden">{saleList.map((sale) => {
                 const balanceDue = toSafeNumber(sale.balance_due);
+                const profit = toSafeNumber(sale.gross_profit);
+                return <article key={sale.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition hover:border-cyan-300/25 hover:bg-white/[0.055]">
+                  <div className="flex items-start justify-between gap-3"><div><Link href={`/app/ventas/${sale.id}`} className="font-black text-white">{sale.sale_code}</Link><p className="mt-1 text-sm font-semibold text-slate-500">{sale.customer_name || "Sin cliente"} · {new Date(sale.sale_date).toLocaleDateString("es-CO")}</p></div><SalesStatusBadge tone={paymentTone(sale.payment_status)}>{salePaymentStatusLabel(sale.payment_status)}</SalesStatusBadge></div>
+                  <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.07]"><SaleMobileMetric label="Total" value={formatter.format(toSafeNumber(sale.total_amount))} tone="brand" /><SaleMobileMetric label="Utilidad" value={formatter.format(profit)} tone={amountTone(profit)} /><SaleMobileMetric label="Pendiente" value={formatter.format(balanceDue)} tone={pendingTone(balanceDue)} /><SaleMobileMetric label="Estado" value={saleStatusLabel(sale.status)} tone={saleStatusTone(sale.status)} /></div>
+                  <Link href={`/app/ventas/${sale.id}`} className={`${dashboardSecondaryActionClass} mt-3 w-full`}>Ver venta</Link>
+                </article>;
+              })}</div>
+            </section>
+          ) : (
+            <section className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] px-5 py-12 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-7 w-7"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
+              <h2 className="mt-4 text-xl font-black text-white">{hasFilters ? "No encontramos ventas" : hasCatalog ? "Aún no tienes ventas registradas" : "Primero crea productos"}</h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm font-semibold leading-6 text-slate-400">{hasFilters ? "Prueba otros filtros o limpia la búsqueda para ampliar los resultados." : hasCatalog ? "Cuando registres ventas, Margenia actualizará ingresos, utilidad, pagos e inventario." : "Para registrar ventas necesitas productos o combos activos."}</p>
+              <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">{hasFilters ? <Link href="/app/ventas" className={dashboardPrimaryActionClass}>Quitar filtros</Link> : hasCatalog ? <Link href="/app/ventas/nueva" className={dashboardPrimaryActionClass}>Nueva venta</Link> : <><Link href="/app/productos" className={dashboardPrimaryActionClass}>Ir a Productos</Link><Link href="/app/combos" className={dashboardSecondaryActionClass}>Ir a Combos</Link></>}</div>
+            </section>
+          )}
 
-                return (
-                  <article key={sale.id} className="rounded-[1.5rem] border border-[#E2E8F0] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-black text-[#0F172A]">{sale.sale_code}</p>
-                        <p className="text-sm font-bold text-[#475569]">{sale.customer_name || "Sin cliente"}</p>
-                      </div>
-                      <Link href={`/app/ventas/${sale.id}`} className="font-black text-[#2563EB]">
-                        Ver
-                      </Link>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <SemanticBadge tone={paymentTone(sale.payment_status)}>
-                        {salePaymentStatusLabel(sale.payment_status)}
-                      </SemanticBadge>
-                      <SemanticBadge tone={saleStatusTone(sale.status)}>
-                        {saleStatusLabel(sale.status)}
-                      </SemanticBadge>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <p><span className="block font-bold text-[#64748B]">Total</span>{formatter.format(toSafeNumber(sale.total_amount))}</p>
-                      <p><span className="block font-bold text-[#64748B]">Utilidad</span><strong className={semanticToneStyles[amountTone(toSafeNumber(sale.gross_profit))].text}>{formatter.format(toSafeNumber(sale.gross_profit))}</strong></p>
-                      <p><span className="block font-bold text-[#64748B]">Pendiente</span><strong className={semanticToneStyles[pendingTone(balanceDue)].text}>{formatter.format(balanceDue)}</strong></p>
-                      <p><span className="block font-bold text-[#64748B]">Fecha</span>{new Date(sale.sale_date).toLocaleDateString("es-CO")}</p>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        ) : (
-          <section className="rounded-[2rem] border border-dashed border-[#BFDBFE] bg-[#EFF6FF] p-8 text-center">
-            <h2 className="text-2xl font-black text-[#0F172A]">
-              {hasCatalog ? "Registra tu primera venta" : "Primero crea productos"}
-            </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm font-bold leading-6 text-[#475569]">
-              {hasCatalog
-                ? "Cuando vendas productos o combos, Margenia actualizará inventario, utilidad y pagos pendientes."
-                : "Para registrar ventas necesitas productos o combos activos."}
-            </p>
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              {hasCatalog ? (
-                <Link href="/app/ventas/nueva" className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-sm font-black text-white">
-                  Nueva venta
-                </Link>
-              ) : (
-                <>
-                  <Link href="/app/productos" className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-sm font-black text-white">
-                    Ir a Productos
-                  </Link>
-                  <Link href="/app/combos" className="rounded-full border border-[#BFDBFE] bg-white px-6 py-3 text-sm font-black text-[#2563EB]">
-                    Ir a Combos
-                  </Link>
-                </>
-              )}
-            </div>
-          </section>
-        )}
-
-        {saleList.length > 0 && (
-          <div className="flex items-center justify-between">
-            <Link
-              href={{ pathname: "/app/ventas", query: { ...params, page: Math.max(page - 1, 1) } }}
-              className="rounded-full border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-black text-[#0F172A]"
-            >
-              Anterior
-            </Link>
-            <span className="text-sm font-bold text-[#64748B]">
-              Página {page} de {totalPages}
-            </span>
-            <Link
-              href={{ pathname: "/app/ventas", query: { ...params, page: Math.min(page + 1, totalPages) } }}
-              className="rounded-full border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-black text-[#0F172A]"
-            >
-              Siguiente
-            </Link>
-          </div>
-        )}
-      </div>
+          {saleList.length > 0 && <nav className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:flex-row" aria-label="Paginación de ventas"><Link href={{ pathname: "/app/ventas", query: { ...params, page: Math.max(page - 1, 1) } }} className={`${dashboardSecondaryActionClass} w-full sm:w-auto ${page <= 1 ? "pointer-events-none opacity-40" : ""}`}>Anterior</Link><span className="text-sm font-black text-slate-500">Página {page} de {totalPages}</span><Link href={{ pathname: "/app/ventas", query: { ...params, page: Math.min(page + 1, totalPages) } }} className={`${dashboardSecondaryActionClass} w-full sm:w-auto ${page >= totalPages ? "pointer-events-none opacity-40" : ""}`}>Siguiente</Link></nav>}
+        </div>
+      </DashboardShell>
     </main>
   );
 }

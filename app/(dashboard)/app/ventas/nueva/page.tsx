@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SaleForm } from "@/components/sales/sale-form";
+import {
+  AppPageHeader,
+  DashboardEmptyState,
+  DashboardShell,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
 import type { SaleCatalogCombo, SaleCatalogProduct } from "@/lib/sales";
 import { createClient } from "@/lib/supabase/server";
 
@@ -80,40 +87,40 @@ export default async function NewSalePage({
 
   if (!products.length && !combos.length) {
     return (
-      <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
-        <section className="mx-auto max-w-3xl rounded-[2rem] border border-[#E2E8F0] bg-white p-8 text-center shadow-sm">
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2563EB]">
-            Ventas
-          </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A]">
-            Primero crea productos
-          </h1>
-          <p className="mt-3 text-sm font-bold leading-6 text-[#475569]">
-            Para registrar ventas necesitas productos o combos activos.
-          </p>
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/app/productos"
-              className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20"
-            >
-              Ir a Productos
-            </Link>
-            <Link
-              href="/app/combos"
-              className="rounded-full border border-[#BFDBFE] bg-white px-6 py-3 text-sm font-black text-[#2563EB]"
-            >
-              Ir a Combos
-            </Link>
+      <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+        <DashboardShell>
+          <AppPageHeader
+            eyebrow="Ventas"
+            title="Nueva venta"
+            description="Registra productos, pagos y datos del cliente en un flujo claro y seguro."
+            actions={<Link href="/app/ventas" className={dashboardSecondaryActionClass}>Volver a ventas</Link>}
+          />
+          <div className="p-4 sm:p-6 lg:p-8">
+            <DashboardEmptyState
+              title="Primero crea productos"
+              description="Para registrar ventas necesitas productos o combos activos."
+            />
+            <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
+              <Link href="/app/productos" className={dashboardPrimaryActionClass}>Ir a Productos</Link>
+              <Link href="/app/combos" className={dashboardSecondaryActionClass}>Ir a Combos</Link>
+            </div>
           </div>
-        </section>
+        </DashboardShell>
       </main>
     );
   }
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
-      <div className="w-full max-w-none space-y-6">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Ventas"
+          title="Nueva venta"
+          description="Selecciona lo que vendiste, registra el pago y revisa el impacto antes de confirmar."
+        />
+        <div className="p-4 sm:p-6 lg:p-8">
         <SaleForm
+          appearance="premium"
           combos={combos}
           currency={business.currency || "COP"}
           customers={(customerRows || []).map((customer) => ({
@@ -124,7 +131,8 @@ export default async function NewSalePage({
           initialCustomerId={initialCustomerId}
           products={products}
         />
-      </div>
+        </div>
+      </DashboardShell>
     </main>
   );
 }

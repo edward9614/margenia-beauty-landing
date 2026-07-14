@@ -161,3 +161,108 @@ textarea {
     border-radius: 1.25rem !important;
   }
 }
+
+/* Scoped premium theme for the sales creation flow. */
+.sale-form-premium .sale-form-section,
+.sale-form-premium .sale-cart-card {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(145deg, rgba(15, 31, 49, 0.88), rgba(7, 19, 33, 0.94)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 42px rgba(2, 6, 23, 0.18) !important;
+  backdrop-filter: blur(14px);
+}
+
+.sale-form-premium .sale-wizard-card,
+.sale-form-premium .sale-cart-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.sale-form-premium .sale-wizard-card::before,
+.sale-form-premium .sale-cart-card::before {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.6), transparent);
+}
+
+.sale-form-premium .sale-cart-card {
+  border-color: rgba(34, 211, 238, 0.18) !important;
+}
+
+.sale-form-premium [class*="text-[#0F172A]"] {
+  color: #f8fafc !important;
+}
+
+.sale-form-premium [class*="text-[#475569]"] {
+  color: #94a3b8 !important;
+}
+
+.sale-form-premium [class*="text-[#64748B]"],
+.sale-form-premium [class*="placeholder:text-[#94A3B8]"]::placeholder {
+  color: #64748b !important;
+}
+
+.sale-form-premium [class*="text-[#2563EB]"],
+.sale-form-premium [class*="text-[#1E40AF]"] {
+  color: #67e8f9 !important;
+}
+
+.sale-form-premium [class*="bg-white"] {
+  background-color: rgba(8, 21, 36, 0.92) !important;
+}
+
+.sale-form-premium [class*="bg-[#F8FAFC]"] {
+  background-color: rgba(2, 6, 23, 0.28) !important;
+}
+
+.sale-form-premium [class*="bg-[#EFF6FF]"] {
+  background-color: rgba(34, 211, 238, 0.075) !important;
+}
+
+.sale-form-premium [class*="border-[#E2E8F0]"],
+.sale-form-premium [class*="border-[#BFDBFE]"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sale-form-premium input,
+.sale-form-premium select,
+.sale-form-premium textarea {
+  color-scheme: dark;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: rgba(5, 16, 29, 0.88) !important;
+  color: #e2e8f0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.sale-form-premium input:hover,
+.sale-form-premium select:hover,
+.sale-form-premium textarea:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.sale-form-premium input:focus,
+.sale-form-premium select:focus,
+.sale-form-premium textarea:focus {
+  border-color: rgba(103, 232, 249, 0.62) !important;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1) !important;
+}
+
+.sale-form-premium .sale-catalog-option {
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  background: rgba(2, 6, 23, 0.25) !important;
+}
+
+.sale-form-premium .sale-catalog-option:hover {
+  border-color: rgba(103, 232, 249, 0.35) !important;
+  background: rgba(14, 35, 55, 0.94) !important;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 639px) {
+  .sale-form-premium .sale-form-section,
+  .sale-form-premium .sale-cart-card {
+    border-radius: 1.25rem !important;
+  }
+}

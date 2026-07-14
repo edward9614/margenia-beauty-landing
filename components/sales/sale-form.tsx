@@ -110,18 +110,21 @@ function NumberField({
 }
 
 export function SaleForm({
+  appearance = "default",
   combos,
   currency = "COP",
   customers = [],
   initialCustomerId = "",
   products,
 }: {
+  appearance?: "default" | "premium";
   combos: SaleCatalogCombo[];
   currency?: string;
   customers?: { fullName: string; id: string; phone: string }[];
   initialCustomerId?: string;
   products: SaleCatalogProduct[];
 }) {
+  const isPremium = appearance === "premium";
   const formatter = moneyFormatter(currency);
   const [form, setForm] = useState<SaleFormInput>(() => {
     const initial = emptySaleForm();
@@ -339,9 +342,9 @@ export function SaleForm({
   const cartHasItems = form.items.length > 0;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+    <div className={`grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)] ${isPremium ? "sale-form-premium" : ""}`}>
       <section className="space-y-6">
-        <div className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+        <div className="sale-form-section sale-wizard-card rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2563EB]">
@@ -366,7 +369,7 @@ export function SaleForm({
         </div>
 
         {currentStep === 1 && (
-          <div className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+          <div className="sale-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
             <div className="flex rounded-full border border-[#E2E8F0] bg-[#F8FAFC] p-1">
               {[
                 ["products", "Productos"],
@@ -404,7 +407,7 @@ export function SaleForm({
                     key={product.id}
                     type="button"
                     onClick={() => addProduct(product)}
-                    className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-left transition hover:border-[#BFDBFE] hover:bg-white"
+                    className="sale-catalog-option rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-left transition hover:border-[#BFDBFE] hover:bg-white"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -437,7 +440,7 @@ export function SaleForm({
                       key={combo.id}
                       type="button"
                       onClick={() => addCombo(combo)}
-                      className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-left transition hover:border-[#BFDBFE] hover:bg-white"
+                      className="sale-catalog-option rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-left transition hover:border-[#BFDBFE] hover:bg-white"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -459,7 +462,7 @@ export function SaleForm({
         )}
 
         {currentStep === 2 && (
-          <div className="grid gap-5 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 md:grid-cols-2">
+          <div className="sale-form-section grid gap-5 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 md:grid-cols-2">
             <Field label="Cliente guardado">
               <select
                 value={form.customerId}
@@ -568,7 +571,7 @@ export function SaleForm({
         )}
 
         {currentStep === 3 && (
-          <div className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+          <div className="sale-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-xl font-black text-[#0F172A]">Resumen de la venta</h2>
             <div className="mt-5 space-y-3">
               {form.items.map((item) => {
@@ -606,7 +609,7 @@ export function SaleForm({
       </section>
 
       <aside className="xl:sticky xl:top-6 xl:self-start">
-        <div className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+        <div className="sale-cart-card rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xl font-black text-[#0F172A]">Carrito</h2>
             <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-black text-[#2563EB]">
