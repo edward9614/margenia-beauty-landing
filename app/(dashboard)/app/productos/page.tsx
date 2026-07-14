@@ -342,7 +342,7 @@ export default async function ProductsPage({
   const activeProducts = metricProductList.filter(
     (product) => product.status === "active",
   );
-  const activeVariants = activeProducts.flatMap((product) =>
+  const catalogActiveVariants = activeProducts.flatMap((product) =>
     (product.product_variants || [])
       .filter((variant) => variant.status === "active")
       .map((variant) => ({
@@ -350,13 +350,22 @@ export default async function ProductsPage({
         track_inventory: product.track_inventory,
       })),
   );
-  const stockLowCount = activeVariants.filter(
+  const availableVariants = catalogActiveVariants.filter(
+    (variant: ProductVariantWithTrackInventory) =>
+      !variant.track_inventory || Number(variant.current_stock || 0) > 0,
+  );
+  const stockLowCount = catalogActiveVariants.filter(
     (variant: ProductVariantWithTrackInventory) =>
       variant.track_inventory &&
       Number(variant.current_stock || 0) > 0 &&
       Number(variant.current_stock || 0) <= Number(variant.minimum_stock || 0),
   ).length;
-  const inventoryCostValue = activeVariants.reduce(
+  const outOfStockCount = catalogActiveVariants.filter(
+    (variant: ProductVariantWithTrackInventory) =>
+      variant.track_inventory && Number(variant.current_stock || 0) <= 0,
+  ).length;
+  const stockAttentionCount = stockLowCount + outOfStockCount;
+  const inventoryCostValue = catalogActiveVariants.reduce(
     (total: number, variant: ProductVariantWithTrackInventory) =>
       total + Number(variant.current_stock || 0) * Number(variant.purchase_cost || 0),
     0,
@@ -383,23 +392,23 @@ export default async function ProductsPage({
               <HeroSummaryCard
                 label="Catálogo activo"
                 value={String(activeProducts.length)}
-                description="Productos listos para vender y operar dentro de Margenia."
+                description="Productos visibles y administrables dentro de tu catálogo."
               >
-                <MetricChip label="Variantes" value={String(activeVariants.length)} tone="brand" />
-                <MetricChip label="Stock bajo" value={String(stockLowCount)} tone={stockLowCount ? "warning" : "success"} />
+                <MetricChip label="Disponibles" value={String(availableVariants.length)} tone="brand" />
+                <MetricChip label="Por atender" value={String(stockAttentionCount)} tone={outOfStockCount ? "danger" : stockLowCount ? "warning" : "success"} />
                 <MetricChip label="Moneda" value={currency} tone="default" />
               </HeroSummaryCard>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:col-span-7">
               <BentoCard tone="brand">
-                <p className="text-xs font-black uppercase tracking-[0.13em] text-cyan-200/70">Variantes activas</p>
-                <p className="mt-4 text-4xl font-black text-white">{activeVariants.length}</p>
-                <p className="mt-2 text-sm font-semibold text-slate-400">Presentaciones disponibles para vender</p>
+                <p className="text-xs font-black uppercase tracking-[0.13em] text-cyan-200/70">Variantes disponibles</p>
+                <p className="mt-4 text-4xl font-black text-white">{availableVariants.length}</p>
+                <p className="mt-2 text-sm font-semibold text-slate-400">Presentaciones con existencias para vender</p>
               </BentoCard>
-              <BentoCard tone={stockLowCount ? "warning" : "success"}>
-                <p className="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Stock bajo</p>
-                <p className={`mt-4 text-4xl font-black ${stockLowCount ? "text-amber-200" : "text-emerald-200"}`}>{stockLowCount}</p>
-                <p className="mt-2 text-sm font-semibold text-slate-400">Variantes que necesitan atención</p>
+              <BentoCard tone={outOfStockCount ? "danger" : stockLowCount ? "warning" : "success"}>
+                <p className="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Stock por atender</p>
+                <p className={`mt-4 text-4xl font-black ${outOfStockCount ? "text-rose-200" : stockLowCount ? "text-amber-200" : "text-emerald-200"}`}>{stockAttentionCount}</p>
+                <p className="mt-2 text-sm font-semibold text-slate-400">{stockLowCount} con stock bajo · {outOfStockCount} {outOfStockCount === 1 ? "agotada" : "agotadas"}</p>
               </BentoCard>
               <BentoCard className="sm:col-span-2" tone="violet">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
