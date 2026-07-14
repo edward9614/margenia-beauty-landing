@@ -8,10 +8,12 @@ import {
 } from "@/app/(dashboard)/app/clientes/actions";
 
 export function CustomerRowActions({
+  appearance = "light",
   customerId,
   status,
   variant = "inline",
 }: {
+  appearance?: "dark" | "light";
   customerId: string;
   status: string;
   variant?: "block" | "inline";
@@ -21,6 +23,7 @@ export function CustomerRowActions({
   const [isPending, startTransition] = useTransition();
   const isArchived = status === "archived";
   const isBlock = variant === "block";
+  const dark = appearance === "dark";
 
   function runRestore() {
     setError("");
@@ -44,21 +47,21 @@ export function CustomerRowActions({
 
   return (
     <div className={isBlock ? "grid gap-2 sm:grid-cols-3" : "flex flex-wrap gap-2"}>
-      <Link href={`/app/clientes/${customerId}`} className="rounded-full bg-[#EFF6FF] px-4 py-2 text-center text-xs font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-[#DBEAFE]">
+      <Link href={`/app/clientes/${customerId}`} className={`rounded-full px-4 py-2 text-center text-xs font-black ring-1 transition ${dark ? "bg-cyan-300/10 text-cyan-200 ring-cyan-300/20 hover:bg-cyan-300/20" : "bg-[#EFF6FF] text-[#2563EB] ring-[#BFDBFE] hover:bg-[#DBEAFE]"}`}>
         Ver
       </Link>
-      <Link href={`/app/clientes/${customerId}/editar`} className="rounded-full bg-white px-4 py-2 text-center text-xs font-black text-[#475569] ring-1 ring-[#CBD5E1] transition hover:bg-[#F8FAFC]">
+      <Link href={`/app/clientes/${customerId}/editar`} className={`rounded-full px-4 py-2 text-center text-xs font-black ring-1 transition ${dark ? "bg-white/[0.05] text-slate-300 ring-white/10 hover:bg-white/10 hover:text-white" : "bg-white text-[#475569] ring-[#CBD5E1] hover:bg-[#F8FAFC]"}`}>
         Editar
       </Link>
       <button
         type="button"
         disabled={isPending}
         onClick={isArchived ? runRestore : () => setDialogOpen(true)}
-        className={`rounded-full px-4 py-2 text-xs font-black transition disabled:opacity-60 ${isArchived ? "bg-[#DCFCE7] text-[#166534] hover:bg-[#BBF7D0]" : "bg-[#FEF3C7] text-[#92400E] hover:bg-[#FDE68A]"}`}
+        className={`rounded-full px-4 py-2 text-xs font-black transition disabled:opacity-60 ${isArchived ? (dark ? "bg-emerald-300/10 text-emerald-200 hover:bg-emerald-300/20" : "bg-[#DCFCE7] text-[#166534] hover:bg-[#BBF7D0]") : (dark ? "bg-amber-300/10 text-amber-200 hover:bg-amber-300/20" : "bg-[#FEF3C7] text-[#92400E] hover:bg-[#FDE68A]")}`}
       >
         {isPending ? (isArchived ? "Restaurando..." : "Archivando...") : isArchived ? "Restaurar" : "Archivar"}
       </button>
-      {error && <p className="text-xs font-bold text-[#DC2626] sm:col-span-3">{error}</p>}
+      {error && <p className={`text-xs font-bold sm:col-span-3 ${dark ? "text-rose-300" : "text-[#DC2626]"}`}>{error}</p>}
 
       {dialogOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-[#0F172A]/40 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="archive-customer-title">

@@ -4,10 +4,12 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function CustomerExportButton({
+  appearance = "light",
   customerId,
   label = "Exportar clientes",
   scope = "list",
 }: {
+  appearance?: "dark" | "light";
   customerId?: string;
   label?: string;
   scope?: "debts" | "history" | "list";
@@ -49,11 +51,11 @@ export function CustomerExportButton({
 
   return (
     <div>
-      <button type="button" onClick={download} disabled={isGenerating} className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE] transition hover:bg-[#EFF6FF] disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="button" onClick={download} disabled={isGenerating} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-black ring-1 transition duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${appearance === "dark" ? "bg-white/[0.06] text-slate-100 ring-white/15 hover:bg-cyan-300/10 hover:text-white hover:ring-cyan-300/30" : "bg-white text-[#2563EB] ring-[#BFDBFE] hover:bg-[#EFF6FF]"}`}>
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-4 w-4"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         {isGenerating ? "Generando Excel..." : label}
       </button>
-      {error && <p className="mt-2 max-w-xs text-xs font-bold text-[#DC2626]">{error}</p>}
+      {error && <p className={`mt-2 max-w-xs text-xs font-bold ${appearance === "dark" ? "text-rose-300" : "text-[#DC2626]"}`}>{error}</p>}
     </div>
   );
 }
