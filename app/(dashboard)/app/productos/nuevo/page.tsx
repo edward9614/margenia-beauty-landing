@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { ProductForm } from "@/components/products/product-form";
+import {
+  AppPageHeader,
+  DashboardShell,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NewProductPage() {
@@ -24,23 +30,18 @@ export default async function NewProductPage() {
   }
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
-      <div className="space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-            Nuevo producto
-          </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-            Agrega un producto al catálogo
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-            Registra costos, precios, variantes y existencias para alimentar los
-            próximos módulos de Margenia.
-          </p>
-        </section>
-
-        <ProductForm currency={business.currency || "COP"} mode="create" />
-      </div>
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Nuevo producto"
+          title="Agrega un producto al catálogo"
+          description="Registra costos, precios, variantes y existencias para alimentar los próximos módulos de Margenia."
+          actions={<Link href="/app/productos" className={dashboardSecondaryActionClass}>Volver al catálogo</Link>}
+        />
+        <div className="p-4 sm:p-6 lg:p-8">
+          <ProductForm appearance="premium" currency={business.currency || "COP"} mode="create" />
+        </div>
+      </DashboardShell>
     </main>
   );
 }

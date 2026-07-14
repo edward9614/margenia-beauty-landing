@@ -39,6 +39,7 @@ import {
 } from "@/lib/measurements";
 
 type ProductFormProps = {
+  appearance?: "default" | "premium";
   currency?: string;
   initialProduct?: ProductFormInput & { id: string };
   mode: "create" | "edit";
@@ -336,6 +337,7 @@ function MeasuredPreview({
 }
 
 export function ProductForm({
+  appearance = "default",
   currency = "COP",
   initialProduct,
   mode,
@@ -343,6 +345,7 @@ export function ProductForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<ProductFieldErrors>({});
+  const isPremium = appearance === "premium";
   const [currentStep, setCurrentStep] = useState(1);
   const [saleMode, setSaleMode] = useState<"measured" | "unit" | null>(
     initialProduct ? initialProduct.inventoryMode : null,
@@ -857,9 +860,9 @@ export function ProductForm({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+    <div className={`grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:gap-6 ${isPremium ? "product-form-premium" : ""}`}>
       <div className="space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+        <section className="product-form-section product-wizard-card rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-[#2563EB]">
             Paso {currentStep} de 3
           </p>
@@ -900,7 +903,7 @@ export function ProductForm({
         </section>
 
         <section
-          className={`rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
+          className={`product-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
             currentStep === 1 ? "block" : "hidden"
           }`}
         >
@@ -1029,7 +1032,7 @@ export function ProductForm({
               </div>
             )}
 
-            <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+            <div className="product-selling-mode-panel rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
               <p className="inline-flex items-center gap-2 text-sm font-black text-[#0F172A]">
                 ¿Cómo vendes este producto?
                 <ActionHelp help={productHelp.sellingMode} />
@@ -1054,9 +1057,9 @@ export function ProductForm({
                     type="button"
                     onClick={() => selectSellingMode(option.value as "measured" | "unit")}
                     data-field-key="saleMode"
-                    className={`rounded-[1.25rem] border p-4 text-left transition ${
+                    className={`product-sale-option rounded-[1.25rem] border p-4 text-left transition ${
                       saleMode === option.value
-                        ? "border-[#2563EB] bg-white shadow-sm ring-4 ring-[#BFDBFE]/70"
+                        ? "is-selected border-[#2563EB] bg-white shadow-sm ring-4 ring-[#BFDBFE]/70"
                         : "border-[#E2E8F0] bg-white hover:border-[#BFDBFE]"
                     }`}
                   >
@@ -1077,7 +1080,7 @@ export function ProductForm({
                   {fieldErrors.saleMode}
                 </p>
               )}
-              <label className="mt-4 flex cursor-pointer flex-col gap-3 rounded-[1.25rem] border border-[#E2E8F0] bg-white p-4 transition hover:border-[#BFDBFE] sm:flex-row sm:items-start">
+              <label className={`product-variants-option mt-4 flex cursor-pointer flex-col gap-3 rounded-[1.25rem] border border-[#E2E8F0] bg-white p-4 transition hover:border-[#BFDBFE] sm:flex-row sm:items-start ${hasVariants ? "is-selected" : ""}`}>
                 <input
                   type="checkbox"
                   checked={hasVariants}
@@ -1103,7 +1106,7 @@ export function ProductForm({
         </section>
 
         <section
-          className={`rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
+          className={`product-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
             currentStep === 2 ? "block" : "hidden"
           }`}
         >
@@ -2343,7 +2346,7 @@ export function ProductForm({
         </section>
 
         <section
-          className={`rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
+          className={`product-form-section rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 ${
             currentStep === 3 ? "block" : "hidden"
           }`}
         >
@@ -2503,7 +2506,7 @@ export function ProductForm({
       </div>
 
       <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+        <section className="product-summary-card rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
           <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
             Resumen
           </p>
