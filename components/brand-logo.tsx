@@ -4,15 +4,17 @@ import Image from "next/image";
 import { useState } from "react";
 
 type BrandLogoProps = {
+  compact?: boolean;
   showImage: boolean;
+  tone?: "dark" | "light";
 };
 
-export function BrandLogo({ showImage }: BrandLogoProps) {
+export function BrandLogo({ compact = false, showImage, tone = "dark" }: BrandLogoProps) {
   const [hasImageError, setHasImageError] = useState(false);
 
   if (!showImage || hasImageError) {
     return (
-      <span className="text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
+      <span className={`${compact ? "text-2xl" : "text-3xl sm:text-4xl"} font-black tracking-tight ${tone === "light" ? "text-white" : "text-[#0F172A]"}`}>
         Margenia
       </span>
     );
@@ -25,7 +27,7 @@ export function BrandLogo({ showImage }: BrandLogoProps) {
       width={220}
       height={64}
       priority
-      className="max-h-11 w-auto object-contain sm:max-h-14"
+      className={`${compact ? "max-h-9" : "max-h-11 sm:max-h-14"} w-auto object-contain`}
       onError={() => setHasImageError(true)}
     />
   );

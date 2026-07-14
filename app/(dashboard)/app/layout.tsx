@@ -29,7 +29,7 @@ export default async function PrivateAppLayout({
       <div className="flex min-h-screen w-full">
         <SidebarNavigation businessName={business?.name} userEmail={user.email} />
         <div className="min-w-0 flex-1 bg-[#F8FAFC] pb-24 lg:pb-0">
-          <PrivateHeader email={user.email} />
+          <PrivateHeader businessName={business?.name} email={user.email} />
           {children}
         </div>
       </div>
