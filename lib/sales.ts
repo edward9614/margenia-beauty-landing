@@ -64,6 +64,7 @@ export type SaleCartItem = {
 };
 
 export type SaleFormInput = {
+  customerId: string;
   customerName: string;
   customerPhone: string;
   customerNote: string;
@@ -175,6 +176,7 @@ export const salePaymentMethods: { label: string; value: SalePaymentMethod }[] =
 export function emptySaleForm(): SaleFormInput {
   return {
     channel: "local",
+    customerId: "",
     customerName: "",
     customerNote: "",
     customerPhone: "",

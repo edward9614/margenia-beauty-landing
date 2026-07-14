@@ -232,9 +232,10 @@ export async function createSale(input: SaleFormInput): Promise<ActionResult> {
         ? 0
         : validation.totals.paidAmount;
 
-  const { error } = await supabase.rpc("create_sale_with_items", {
+  const { error } = await supabase.rpc("create_sale_with_customer", {
     p_business_id: business.id,
     p_channel: input.channel,
+    p_customer_id: input.customerId || null,
     p_customer_name: input.customerName,
     p_customer_note: input.customerNote,
     p_customer_phone: input.customerPhone,
@@ -261,6 +262,10 @@ export async function createSale(input: SaleFormInput): Promise<ActionResult> {
   revalidatePath("/app");
   revalidatePath("/app/ventas");
   revalidatePath("/app/productos");
+  if (input.customerId) {
+    revalidatePath("/app/clientes");
+    revalidatePath(`/app/clientes/${input.customerId}`);
+  }
   redirect("/app/ventas");
 }
 

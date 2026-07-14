@@ -4,7 +4,15 @@ import { SaleForm } from "@/components/sales/sale-form";
 import type { SaleCatalogCombo, SaleCatalogProduct } from "@/lib/sales";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function NewSalePage() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function NewSalePage({
+  searchParams,
+}: {
+  searchParams?: Promise<SearchParams>;
+}) {
+  const params = await searchParams;
+  const initialCustomerId = typeof params?.customerId === "string" ? params.customerId : "";
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,7 +33,7 @@ export default async function NewSalePage() {
     redirect("/app/onboarding");
   }
 
-  const [{ data: productRows }, { data: comboRows }] = await Promise.all([
+  const [{ data: productRows }, { data: comboRows }, { data: customerRows }] = await Promise.all([
     supabase
       .from("product_variants")
       .select(
@@ -41,6 +49,12 @@ export default async function NewSalePage() {
       )
       .eq("business_id", business.id)
       .eq("status", "active"),
+    supabase
+      .from("customers")
+      .select("id,full_name,phone")
+      .eq("business_id", business.id)
+      .eq("status", "active")
+      .order("full_name", { ascending: true }),
   ]);
 
   const products = ((productRows || []) as unknown[]).map((row) => {
@@ -102,6 +116,12 @@ export default async function NewSalePage() {
         <SaleForm
           combos={combos}
           currency={business.currency || "COP"}
+          customers={(customerRows || []).map((customer) => ({
+            fullName: customer.full_name,
+            id: customer.id,
+            phone: customer.phone || "",
+          }))}
+          initialCustomerId={initialCustomerId}
           products={products}
         />
       </div>

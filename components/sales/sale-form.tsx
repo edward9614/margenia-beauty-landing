@@ -112,14 +112,29 @@ function NumberField({
 export function SaleForm({
   combos,
   currency = "COP",
+  customers = [],
+  initialCustomerId = "",
   products,
 }: {
   combos: SaleCatalogCombo[];
   currency?: string;
+  customers?: { fullName: string; id: string; phone: string }[];
+  initialCustomerId?: string;
   products: SaleCatalogProduct[];
 }) {
   const formatter = moneyFormatter(currency);
-  const [form, setForm] = useState<SaleFormInput>(emptySaleForm());
+  const [form, setForm] = useState<SaleFormInput>(() => {
+    const initial = emptySaleForm();
+    const customer = customers.find((item) => item.id === initialCustomerId);
+    return customer
+      ? {
+          ...initial,
+          customerId: customer.id,
+          customerName: customer.fullName,
+          customerPhone: customer.phone,
+        }
+      : initial;
+  });
   const [currentStep, setCurrentStep] = useState(1);
   const [activeTab, setActiveTab] = useState<"combos" | "products">("products");
   const [search, setSearch] = useState("");
@@ -445,6 +460,33 @@ export function SaleForm({
 
         {currentStep === 2 && (
           <div className="grid gap-5 rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 md:grid-cols-2">
+            <Field label="Cliente guardado">
+              <select
+                value={form.customerId}
+                onChange={(event) => {
+                  const customerId = event.target.value;
+                  const customer = customers.find((item) => item.id === customerId);
+                  updateForm("customerId", customerId);
+                  if (customer) {
+                    updateForm("customerName", customer.fullName);
+                    updateForm("customerPhone", customer.phone);
+                  }
+                }}
+                className={inputClass}
+              >
+                <option value="">Venta sin cliente guardado</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.fullName}{customer.phone ? ` · ${customer.phone}` : ""}
+                  </option>
+                ))}
+              </select>
+              {!customers.length && (
+                <Link href="/app/clientes/nuevo" className="mt-2 inline-flex text-xs font-black text-[#2563EB]">
+                  Crear el primer cliente
+                </Link>
+              )}
+            </Field>
             <Field error={fieldErrors.customerName} help={salesHelp.customer} label="Nombre del cliente">
               <input
                 value={form.customerName}

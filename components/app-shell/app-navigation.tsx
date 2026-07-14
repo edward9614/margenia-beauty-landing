@@ -17,6 +17,7 @@ const navItems = [
     ],
   },
   { href: "/app/ventas", label: "Ventas", soon: false },
+  { href: "/app/clientes", label: "Clientes", soon: false },
   { href: "/app/inventario", label: "Inventario", soon: false },
   { href: "/app/caja", label: "Caja", soon: false },
   { href: "/app/reportes", label: "Reportes", soon: false },
@@ -199,7 +200,7 @@ export function MobileNavigation() {
         </div>
       )}
 
-      <div className="grid grid-cols-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur sm:grid-cols-7">
+      <div className="grid grid-cols-4 rounded-[1.5rem] border border-[#E2E8F0] bg-white/95 p-2 shadow-xl shadow-[#0F172A]/10 backdrop-blur sm:grid-cols-8">
         {navItems.map((item) => {
           const hasChildren = "children" in item && Boolean(item.children?.length);
           const isActive = hasChildren
