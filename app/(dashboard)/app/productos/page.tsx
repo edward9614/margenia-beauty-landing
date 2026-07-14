@@ -1,8 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import { ProductAnalyticsEvent } from "@/components/products/product-analytics";
+import { ProductFilters } from "@/components/products/product-filters";
 import { ProductRowActions } from "@/components/products/product-row-actions";
-import { SemanticBadge, ToneCard, semanticToneStyles, type SemanticTone } from "@/components/ui/semantic";
+import {
+  AppPageHeader,
+  BentoCard,
+  BentoGrid,
+  DashboardShell,
+  HeroSummaryCard,
+  MetricChip,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
+import type { SemanticTone } from "@/components/ui/semantic";
 import { createClient } from "@/lib/supabase/server";
 import {
   calculateVariantProfit,
@@ -63,6 +75,23 @@ function marginTone(margin: number): SemanticTone {
   if (margin < 0) return "negative";
   if (margin < 20) return "warning";
   return "positive";
+}
+
+const darkToneStyles: Record<SemanticTone, { badge: string; text: string }> = {
+  brand: { badge: "border-cyan-300/20 bg-cyan-300/10 text-cyan-100", text: "text-cyan-200" },
+  info: { badge: "border-blue-300/20 bg-blue-300/10 text-blue-100", text: "text-blue-200" },
+  negative: { badge: "border-rose-300/20 bg-rose-300/10 text-rose-100", text: "text-rose-200" },
+  neutral: { badge: "border-white/10 bg-white/[0.06] text-slate-300", text: "text-slate-300" },
+  positive: { badge: "border-emerald-300/20 bg-emerald-300/10 text-emerald-100", text: "text-emerald-200" },
+  warning: { badge: "border-amber-300/20 bg-amber-300/10 text-amber-100", text: "text-amber-200" },
+};
+
+function DarkStatusBadge({ children, tone }: { children: ReactNode; tone: SemanticTone }) {
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[0.68rem] font-black ${darkToneStyles[tone].badge}`}>
+      {children}
+    </span>
+  );
 }
 
 function productStats(product: ProductRow, currency: string) {
@@ -333,317 +362,174 @@ export default async function ProductsPage({
     0,
   );
   const totalPages = Math.max(Math.ceil((count || 0) / pageSize), 1);
+  const hasFilters = Boolean(
+    q || status !== "active" || stock !== "all" || category !== "all" || sort !== "recent",
+  );
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
       <ProductAnalyticsEvent eventName="product_module_view" />
-      <div className="w-full max-w-none space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Catálogo"
+          title="Productos"
+          description="Organiza productos, variantes, costos, precios y existencias desde un solo lugar."
+          actions={<Link href="/app/productos/nuevo" className={dashboardPrimaryActionClass}>Nuevo producto</Link>}
+        />
+
+        <div className="space-y-5 p-4 sm:p-6 lg:p-8">
+          <BentoGrid className="lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <HeroSummaryCard
+                label="Catálogo activo"
+                value={String(activeProducts.length)}
+                description="Productos listos para vender y operar dentro de Margenia."
+              >
+                <MetricChip label="Variantes" value={String(activeVariants.length)} tone="brand" />
+                <MetricChip label="Stock bajo" value={String(stockLowCount)} tone={stockLowCount ? "warning" : "success"} />
+                <MetricChip label="Moneda" value={currency} tone="default" />
+              </HeroSummaryCard>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:col-span-7">
+              <BentoCard tone="brand">
+                <p className="text-xs font-black uppercase tracking-[0.13em] text-cyan-200/70">Variantes activas</p>
+                <p className="mt-4 text-4xl font-black text-white">{activeVariants.length}</p>
+                <p className="mt-2 text-sm font-semibold text-slate-400">Presentaciones disponibles para vender</p>
+              </BentoCard>
+              <BentoCard tone={stockLowCount ? "warning" : "success"}>
+                <p className="text-xs font-black uppercase tracking-[0.13em] text-slate-400">Stock bajo</p>
+                <p className={`mt-4 text-4xl font-black ${stockLowCount ? "text-amber-200" : "text-emerald-200"}`}>{stockLowCount}</p>
+                <p className="mt-2 text-sm font-semibold text-slate-400">Variantes que necesitan atención</p>
+              </BentoCard>
+              <BentoCard className="sm:col-span-2" tone="violet">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.13em] text-violet-200/70">Valor del inventario al costo</p>
+                    <p className="mt-3 text-3xl font-black text-white sm:text-4xl">{formatter.format(inventoryCostValue)}</p>
+                  </div>
+                  <p className="max-w-xs text-sm font-semibold leading-6 text-slate-400">Capital estimado registrado en existencias activas.</p>
+                </div>
+              </BentoCard>
+            </div>
+          </BentoGrid>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-                Catálogo
-              </p>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-                Productos
-              </h1>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-                Organiza productos, variantes, costos, precios y existencias desde
-                un solo lugar.
-              </p>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-cyan-300">Control operativo</p>
+              <h2 className="mt-1 text-xl font-black text-white">Explora tu catálogo</h2>
             </div>
-            <Link
-              href="/app/productos/nuevo"
-              className="rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-base font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
-            >
-              Nuevo producto
-            </Link>
+            <p className="text-xs font-bold text-slate-500">{count || 0} {(count || 0) === 1 ? "producto en esta vista" : "productos en esta vista"}</p>
           </div>
-        </section>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            ["Productos activos", activeProducts.length, "positive"],
-            ["Variantes activas", activeVariants.length, "info"],
-            ["Stock bajo", stockLowCount, stockLowCount > 0 ? "warning" : "neutral"],
-            ["Valor inventario al costo", formatter.format(inventoryCostValue), "brand"],
-          ].map(([label, value, tone]) => (
-            <ToneCard
-              key={label}
-              tone={tone as SemanticTone}
-            >
-              <p className="text-sm font-black text-[#475569]">{label}</p>
-              <p className="mt-3 text-3xl font-black text-[#0F172A]">{value}</p>
-            </ToneCard>
-          ))}
-        </section>
+          <ProductFilters categories={categories} category={category} query={q} sort={sort} status={status} stock={stock} />
 
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm">
-          <form className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_repeat(4,minmax(150px,190px))]">
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Buscar por producto, variante, SKU o marca"
-              className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
-            />
-            <select name="status" defaultValue={status} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="active">Activos</option>
-              <option value="archived">Archivados</option>
-              <option value="all">Todos</option>
-            </select>
-            <select name="stock" defaultValue={stock} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="all">Todo stock</option>
-              <option value="normal">Normal</option>
-              <option value="low">Stock bajo</option>
-              <option value="out">Agotado</option>
-              <option value="no_control">Sin control</option>
-            </select>
-            <select name="category" defaultValue={category} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="all">Todas las categorías</option>
-              {categories.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-            <select name="sort" defaultValue={sort} className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm">
-              <option value="recent">Más recientes</option>
-              <option value="name">Nombre A-Z</option>
-              <option value="stock">Menor stock</option>
-              <option value="value">Mayor valor</option>
-              <option value="margin">Mayor margen</option>
-            </select>
-            <input type="hidden" name="page" value="1" />
-            <button className="rounded-full bg-[#0F172A] px-5 py-3 text-sm font-black text-white lg:col-start-5">
-              Aplicar
-            </button>
-          </form>
-        </section>
-
-        {error ? (
-          <section className="rounded-[2rem] border border-[#FECACA] bg-[#FEE2E2] p-6 text-[#991B1B]">
-            <h2 className="text-xl font-black">No pudimos cargar productos</h2>
-            <p className="mt-2 text-sm font-bold">
-              Revisa que la migración 002_products_catalog.sql exista en Supabase.
-            </p>
-          </section>
-        ) : !sortedProducts.length ? (
-          <section className="rounded-[2rem] border border-dashed border-[#BFDBFE] bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto grid h-28 w-28 place-items-center rounded-[2rem] bg-[#EFF6FF]">
-              <div className="h-14 w-14 rounded-2xl border-4 border-[#2563EB] bg-white" />
-            </div>
-            <h2 className="mt-6 text-2xl font-black text-[#0F172A]">
-              {q || status !== "active" || stock !== "all" || category !== "all"
-                ? "No encontramos productos"
-                : "Crea tu primer producto"}
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#475569]">
-              {q || status !== "active" || stock !== "all" || category !== "all"
-                ? "Prueba cambiar los filtros o busca con otro término."
-                : "Agrega costos, precios y existencias para comenzar a entender la rentabilidad de tu negocio."}
-            </p>
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/app/productos/nuevo"
-                className="rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-6 py-4 text-center text-sm font-black text-white"
-              >
-                Crear producto
+          {error ? (
+            <section className="rounded-2xl border border-rose-300/20 bg-rose-300/10 p-6 text-rose-100">
+              <h2 className="text-xl font-black">No pudimos cargar productos</h2>
+              <p className="mt-2 text-sm font-semibold text-rose-100/70">Revisa que la migración 002_products_catalog.sql exista en Supabase.</p>
+            </section>
+          ) : !sortedProducts.length ? (
+            <section className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] px-5 py-12 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-7 w-7"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 0v9m8-4.5-8 4.5m-8-4.5 8 4.5m0 9v-9" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg>
+              </div>
+              <h2 className="mt-4 text-xl font-black text-white">{hasFilters ? "No encontramos productos" : "Tu catálogo empieza aquí"}</h2>
+              <p className="mx-auto mt-2 max-w-lg text-sm font-semibold leading-6 text-slate-400">
+                {hasFilters ? "Prueba otros filtros o limpia la búsqueda para ampliar los resultados." : "Crea tu primer producto y conecta precios, existencias y rentabilidad desde una sola ficha."}
+              </p>
+              <Link href={hasFilters ? "/app/productos" : "/app/productos/nuevo"} className={`${dashboardPrimaryActionClass} mt-5`}>
+                {hasFilters ? "Quitar filtros" : "Crear producto"}
               </Link>
-              <Link
-                href="/app/productos"
-                className="rounded-full bg-white px-6 py-4 text-center text-sm font-black text-[#2563EB] ring-1 ring-[#BFDBFE]"
-              >
-                Limpiar filtros
-              </Link>
-            </div>
-          </section>
-        ) : (
-          <section className="overflow-hidden rounded-[2rem] border border-[#E2E8F0] bg-white shadow-sm">
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[980px] text-left text-sm">
-                <thead className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-xs uppercase tracking-[0.12em] text-[#475569]">
-                  <tr>
-                    {[
-                      "Producto",
-                      "Variante(s)",
-                      "Categoría",
-                      "Costo",
-                      "Precio",
-                      "Margen",
-                      "Existencias",
-                      "Estado",
-                      "Acciones",
-                    ].map((header) => (
-                      <th key={header} className="px-5 py-4 font-black">
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E8F0]">
-                  {sortedProducts.map((product) => {
-                    const stats = productStats(product, currency);
-                    const stock = stockStatus(product);
-                    return (
-                      <tr key={product.id} className="align-top">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#EFF6FF] text-sm font-black text-[#2563EB]">
-                              {productInitial(product.name)}
+            </section>
+          ) : (
+            <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035]">
+              <div className="hidden overflow-x-auto xl:block">
+                <table className="w-full min-w-[1120px] text-left text-sm">
+                  <thead className="border-b border-white/[0.08] bg-black/15 text-[0.68rem] font-black uppercase tracking-[0.1em] text-slate-500">
+                    <tr>{["Producto", "Variante(s)", "Categoría", "Costo", "Precio", "Margen", "Existencias", "Estado", "Acciones"].map((header) => <th key={header} className="px-4 py-4">{header}</th>)}</tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.06]">
+                    {sortedProducts.map((product) => {
+                      const stats = productStats(product, currency);
+                      const stockState = stockStatus(product);
+                      const statusTone = product.status === "archived" ? "neutral" : stockState.tone;
+                      const productMarginTone = marginTone(stats.avgMargin);
+                      return (
+                        <tr key={product.id} className="align-middle transition duration-200 hover:bg-white/[0.045]">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 text-sm font-black text-white shadow-lg shadow-cyan-950/25">{productInitial(product.name)}</span>
+                              <div className="min-w-0">
+                                <Link href={`/app/productos/${product.id}/editar`} className="block max-w-[190px] truncate font-black text-white transition hover:text-cyan-200">{product.name}</Link>
+                                <p className="mt-1 max-w-[190px] truncate text-xs font-semibold text-slate-500">{product.brand || product.product_variants?.[0]?.sku || "Sin marca ni SKU"}</p>
+                                {stats.isMeasured && <DarkStatusBadge tone="brand">Por medida</DarkStatusBadge>}
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-black text-[#0F172A]">{product.name}</p>
-                              {product.brand && (
-                                <p className="mt-1 text-xs font-bold text-[#475569]">
-                                  {product.brand}
-                                </p>
-                              )}
-                              {product.product_variants?.[0]?.sku && (
-                                <p className="mt-1 text-xs text-[#64748B]">
-                                  SKU {product.product_variants[0].sku}
-                                </p>
-                              )}
-                              {stats.isMeasured && (
-                                <span className="mt-2 inline-flex rounded-full bg-[#E0F7FA] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2]">
-                                  Por medida
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
-                          {stats.variantCount === 1
-                            ? product.product_variants?.[0]?.name
-                            : `${stats.variantCount} variantes`}
-                        </td>
-                        <td className="px-5 py-4 text-[#475569]">
-                          {product.category || "Sin categoría"}
-                        </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
-                          {stats.costLabel}
-                        </td>
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
-                          {stats.priceLabel}
-                        </td>
-                        <td className={`px-5 py-4 font-black ${semanticToneStyles[marginTone(stats.avgMargin)].text}`}>
-                          {stats.avgMargin.toFixed(1)}%
-                        </td>
-                        <td className="px-5 py-4 text-[#475569]">
-                          {product.track_inventory
-                            ? stats.stockLabel
-                            : "Sin control de stock"}
-                        </td>
-                        <td className="px-5 py-4">
-                          <SemanticBadge tone={product.status === "archived" ? "neutral" : stock.tone}>
-                            {product.status === "archived" ? "Archivado" : stock.label}
-                          </SemanticBadge>
-                        </td>
-                        <td className="px-5 py-4">
-                          <ProductRowActions
-                            editHref={`/app/productos/${product.id}/editar`}
-                            hasStock={stats.totalStock > 0}
-                            productId={product.id}
-                            status={product.status === "archived" ? "archived" : "active"}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="px-4 py-4"><p className="max-w-[150px] truncate font-bold text-slate-200">{stats.variantCount === 1 ? product.product_variants?.[0]?.name || "Principal" : `${stats.variantCount} variantes`}</p></td>
+                          <td className="px-4 py-4"><span className="inline-flex rounded-lg border border-white/[0.07] bg-white/[0.04] px-2.5 py-1.5 text-xs font-bold text-slate-400">{product.category || "Sin categoría"}</span></td>
+                          <td className="px-4 py-4 font-bold text-slate-400">{stats.costLabel}</td>
+                          <td className="px-4 py-4 font-black text-cyan-100">{stats.priceLabel}</td>
+                          <td className="px-4 py-4"><DarkStatusBadge tone={productMarginTone}>{stats.avgMargin.toFixed(1)}%</DarkStatusBadge></td>
+                          <td className={`px-4 py-4 font-black ${product.track_inventory ? darkToneStyles[statusTone].text : "text-slate-500"}`}>{product.track_inventory ? stats.stockLabel : "Sin control"}</td>
+                          <td className="px-4 py-4"><DarkStatusBadge tone={statusTone}>{product.status === "archived" ? "Archivado" : stockState.label}</DarkStatusBadge></td>
+                          <td className="px-4 py-4"><ProductRowActions appearance="dark" editHref={`/app/productos/${product.id}/editar`} hasStock={stats.totalStock > 0} productId={product.id} status={product.status === "archived" ? "archived" : "active"} /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-            <div className="grid gap-4 p-4 lg:hidden">
-              {sortedProducts.map((product) => {
-                const stats = productStats(product, currency);
-                const stock = stockStatus(product);
-                return (
-                  <article
-                    key={product.id}
-                    className="rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-lg font-black text-[#0F172A]">{product.name}</p>
-                        <p className="mt-1 text-sm text-[#475569]">
-                          {product.brand || "Sin marca"} · {product.category || "Sin categoría"}
-                        </p>
-                        {stats.isMeasured && (
-                          <span className="mt-2 inline-flex rounded-full bg-[#E0F7FA] px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-[#0891B2]">
-                            Por medida
-                          </span>
-                        )}
+              <div className="grid gap-3 p-3 xl:hidden">
+                {sortedProducts.map((product) => {
+                  const stats = productStats(product, currency);
+                  const stockState = stockStatus(product);
+                  const statusTone = product.status === "archived" ? "neutral" : stockState.tone;
+                  const productMarginTone = marginTone(stats.avgMargin);
+                  return (
+                    <article key={product.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition duration-200 hover:border-cyan-300/25 hover:bg-white/[0.055]">
+                      <div className="flex items-start gap-3">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 text-sm font-black text-white">{productInitial(product.name)}</span>
+                        <div className="min-w-0 flex-1">
+                          <Link href={`/app/productos/${product.id}/editar`} className="block truncate text-base font-black text-white">{product.name}</Link>
+                          <p className="mt-1 truncate text-sm font-semibold text-slate-500">{product.brand || "Sin marca"} · {product.category || "Sin categoría"}</p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">{stats.isMeasured && <DarkStatusBadge tone="brand">Por medida</DarkStatusBadge>}<DarkStatusBadge tone={statusTone}>{product.status === "archived" ? "Archivado" : stockState.label}</DarkStatusBadge></div>
+                        </div>
                       </div>
-                      <SemanticBadge tone={product.status === "archived" ? "neutral" : stock.tone}>
-                        {product.status === "archived" ? "Archivado" : stock.label}
-                      </SemanticBadge>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                      <p>
-                        <span className="block text-[#475569]">Variantes</span>
-                        <strong>{stats.variantCount}</strong>
-                      </p>
-                      <p>
-                        <span className="block text-[#475569]">Precio</span>
-                        <strong>{stats.priceLabel}</strong>
-                      </p>
-                      <p>
-                        <span className="block text-[#475569]">Existencias</span>
-                        <strong>
-                          {product.track_inventory ? stats.stockLabel : "Sin control"}
-                        </strong>
-                      </p>
-                      <p>
-                        <span className="block text-[#475569]">Margen</span>
-                        <strong className={semanticToneStyles[marginTone(stats.avgMargin)].text}>{stats.avgMargin.toFixed(1)}%</strong>
-                      </p>
-                    </div>
-                    <ProductRowActions
-                      editHref={`/app/productos/${product.id}/editar`}
-                      hasStock={stats.totalStock > 0}
-                      productId={product.id}
-                      status={product.status === "archived" ? "archived" : "active"}
-                      variant="block"
-                    />
-                  </article>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                      <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.07]">
+                        <ProductMobileMetric label="Costo" value={stats.costLabel} />
+                        <ProductMobileMetric label="Precio" value={stats.priceLabel} valueClass="text-cyan-100" />
+                        <ProductMobileMetric label="Existencias" value={product.track_inventory ? stats.stockLabel : "Sin control"} valueClass={darkToneStyles[statusTone].text} />
+                        <ProductMobileMetric label="Margen" value={`${stats.avgMargin.toFixed(1)}%`} valueClass={darkToneStyles[productMarginTone].text} />
+                      </div>
+                      <p className="mt-3 text-xs font-semibold text-slate-500">{stats.variantCount === 1 ? product.product_variants?.[0]?.name || "Variante principal" : `${stats.variantCount} variantes activas`}</p>
+                      <ProductRowActions appearance="dark" editHref={`/app/productos/${product.id}/editar`} hasStock={stats.totalStock > 0} productId={product.id} status={product.status === "archived" ? "archived" : "active"} variant="block" />
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
-        <div className="flex flex-col items-center justify-between gap-3 rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 sm:flex-row">
-          <Link
-            href={{
-              pathname: "/app/productos",
-              query: { ...params, page: Math.max(page - 1, 1) },
-            }}
-            className={`rounded-full px-5 py-3 text-sm font-black ring-1 ring-[#BFDBFE] ${
-              page <= 1
-                ? "pointer-events-none bg-[#F8FAFC] text-[#94A3B8]"
-                : "bg-white text-[#2563EB]"
-            }`}
-          >
-            Anterior
-          </Link>
-          <p className="text-sm font-black text-[#475569]">
-            Página {page} de {totalPages}
-          </p>
-          <Link
-            href={{
-              pathname: "/app/productos",
-              query: { ...params, page: Math.min(page + 1, totalPages) },
-            }}
-            className={`rounded-full px-5 py-3 text-sm font-black ring-1 ring-[#BFDBFE] ${
-              page >= totalPages
-                ? "pointer-events-none bg-[#F8FAFC] text-[#94A3B8]"
-                : "bg-white text-[#2563EB]"
-            }`}
-          >
-            Siguiente
-          </Link>
+          {!error && sortedProducts.length > 0 && (
+            <nav className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:flex-row" aria-label="Paginación de productos">
+              <Link href={{ pathname: "/app/productos", query: { ...params, page: Math.max(page - 1, 1) } }} className={`${dashboardSecondaryActionClass} w-full sm:w-auto ${page <= 1 ? "pointer-events-none opacity-40" : ""}`}>Anterior</Link>
+              <p className="text-sm font-black text-slate-500">Página {page} de {totalPages}</p>
+              <Link href={{ pathname: "/app/productos", query: { ...params, page: Math.min(page + 1, totalPages) } }} className={`${dashboardSecondaryActionClass} w-full sm:w-auto ${page >= totalPages ? "pointer-events-none opacity-40" : ""}`}>Siguiente</Link>
+            </nav>
+          )}
         </div>
-      </div>
+      </DashboardShell>
     </main>
+  );
+}
+
+function ProductMobileMetric({ label, value, valueClass = "text-slate-100" }: { label: string; value: string; valueClass?: string }) {
+  return (
+    <div className="min-w-0 bg-[#081524] px-3 py-3">
+      <p className="text-[0.64rem] font-black uppercase tracking-[0.09em] text-slate-600">{label}</p>
+      <p className={`mt-1 truncate text-sm font-black ${valueClass}`}>{value}</p>
+    </div>
   );
 }
