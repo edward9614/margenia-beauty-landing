@@ -11,12 +11,12 @@ import {
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { SetupChecklist } from "@/components/dashboard/setup-checklist";
 import {
   AlertsCard,
   BusinessStatusCard,
   MargeniaInsightCard,
 } from "@/components/dashboard/side-panels";
+import { DashboardShell } from "@/components/ui/dashboard-primitives";
 import {
   calculateSessionSummary,
   formatCashDifference,
@@ -159,6 +159,9 @@ export default async function AppHomePage({
   const outOfStockVariants = activeVariants.filter(
     (variant) => variant.trackInventory !== false && Number(variant.current_stock || 0) <= 0,
   );
+  const productsWithoutCost = activeVariants.filter(
+    (variant) => Number(variant.purchase_cost || 0) <= 0,
+  ).length;
   const salesTotal = typedSaleRows.reduce(
     (total, sale) => total + Number(sale.total_amount || 0),
     0,
@@ -167,6 +170,9 @@ export default async function AppHomePage({
     (total, sale) => total + Number(sale.gross_profit || 0),
     0,
   );
+  const pendingSalesCount = typedSaleRows.filter(
+    (sale) => Number(sale.balance_due || 0) > 0,
+  ).length;
   const formatter = moneyFormatter(business.currency || "COP");
   const cashSession = openCashSession as CashSessionRow | null;
   const lastCashSession = lastClosedCashSession as CashSessionRow | null;
@@ -255,36 +261,33 @@ export default async function AppHomePage({
   ];
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
-      <div className="w-full max-w-none space-y-6">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
         <DashboardHeader businessName={business.name || "Tu negocio"} />
 
-        <div className="grid min-w-0 grid-cols-12 gap-6">
-          <div className="col-span-12 min-w-0 space-y-6 xl:col-span-8">
-            <ActivationProgressCard
-              hasCombos={hasCombos}
-              hasInventory={hasInventoryActivity}
-              hasProducts={hasProducts}
-              hasSales={hasSales}
-              hasSettingsComplete={hasSettingsComplete}
-            />
-            <QuickActions hasCatalog={hasCatalog} hasProducts={hasProducts} />
+        <div className="space-y-5 p-4 sm:p-6 lg:p-8">
+          <ActivationProgressCard
+            hasCombos={hasCombos}
+            hasInventory={hasInventoryActivity}
+            hasProducts={hasProducts}
+            hasSales={hasSales}
+            hasSettingsComplete={hasSettingsComplete}
+          />
 
-            <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-              {metrics.map((metric) => (
-                <MetricCard
-                  key={metric.title}
-                  badge={metric.badge}
-                  detail={metric.detail}
-                  help={metric.help}
-                  icon={metric.icon}
-                  title={metric.title}
-                  value={metric.value}
-                  variant={metric.variant}
-                />
-              ))}
-            </section>
+          <section className="grid gap-3 sm:gap-4 lg:grid-cols-12">
+            <div className="lg:col-span-7">
+              <MetricCard {...metrics[0]} size="featured" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:col-span-5">
+              <MetricCard {...metrics[1]} className="sm:col-span-2" />
+              <MetricCard {...metrics[2]} size="compact" />
+              <MetricCard {...metrics[3]} size="compact" />
+            </div>
+          </section>
 
+          <QuickActions hasCatalog={hasCatalog} hasProducts={hasProducts} />
+
+          <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.55fr)]">
             <BusinessPerformancePanel
               currency={business.currency || "COP"}
               hasCostData={hasSales}
@@ -295,35 +298,36 @@ export default async function AppHomePage({
               points={performancePoints}
             />
             <RecentActivity items={recentActivity} />
-          </div>
+          </section>
 
-          <aside className="col-span-12 min-w-0 space-y-6 xl:col-span-4">
-            <SetupChecklist
-              hasCombos={hasCombos}
-              hasInventory={hasInventoryActivity}
-              hasProducts={hasProducts}
-              hasSales={hasSales}
-              hasSettingsComplete={hasSettingsComplete}
+          <section className={`grid gap-4 ${hasSettingsComplete ? "lg:grid-cols-2" : "lg:grid-cols-3"}`}>
+            <AlertsCard
+              cashOpen={Boolean(cashSession)}
+              lowStockCount={lowStockVariants.length}
+              outOfStockCount={outOfStockVariants.length}
+              pendingSalesCount={pendingSalesCount}
+              productsWithoutCost={productsWithoutCost}
             />
-            <BusinessStatusCard
-              business={{
-                businessType: business.business_type,
-                country: business.country,
-                currency: business.currency,
-                name: business.name,
-                primaryChannel: business.primary_channel,
-              }}
-            />
-            <AlertsCard />
             <MargeniaInsightCard
               hasCombos={hasCombos}
               hasProducts={hasProducts}
               hasSales={hasSales}
               hasSettingsComplete={hasSettingsComplete}
             />
-          </aside>
+            {!hasSettingsComplete && (
+              <BusinessStatusCard
+                business={{
+                  businessType: business.business_type,
+                  country: business.country,
+                  currency: business.currency,
+                  name: business.name,
+                  primaryChannel: business.primary_channel,
+                }}
+              />
+            )}
+            </section>
         </div>
-      </div>
+      </DashboardShell>
     </main>
   );
 }

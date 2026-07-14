@@ -57,13 +57,13 @@ export function PerformanceDateFilter({ range }: { range: PerformanceDateRange }
 
   return (
     <div className="flex w-full min-w-0 flex-wrap items-end gap-3 lg:w-auto">
-      <label className="grid w-full gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#64748B] sm:w-[220px]">
+      <label className="grid w-full gap-1.5 text-xs font-black uppercase tracking-[0.1em] text-slate-600 sm:w-[190px]">
         Periodo
         <select
           aria-label="Seleccionar periodo"
           value={period}
           onChange={(event) => handlePeriodChange(event.target.value as PerformancePeriod)}
-          className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 text-sm font-black normal-case tracking-normal text-[#0F172A] shadow-sm outline-none transition focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+          className="h-11 w-full rounded-xl border border-white/10 bg-[#091827] px-3.5 text-sm font-black normal-case tracking-normal text-slate-200 outline-none transition hover:border-white/20 focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-400/10"
         >
           {periods.map((item) => (
             <option key={item.value} value={item.value}>
@@ -75,28 +75,28 @@ export function PerformanceDateFilter({ range }: { range: PerformanceDateRange }
 
       {period === "custom" && (
         <>
-          <label className="grid w-full gap-1.5 text-xs font-black text-[#475569] sm:w-[170px]">
+          <label className="grid w-full gap-1.5 text-xs font-black text-slate-500 sm:w-[155px]">
             Desde
             <input
               type="date"
               value={from}
               onChange={(event) => setFrom(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+              className="h-11 w-full rounded-xl border border-white/10 bg-[#091827] px-3 text-sm text-slate-200 outline-none [color-scheme:dark] focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-400/10"
             />
           </label>
-          <label className="grid w-full gap-1.5 text-xs font-black text-[#475569] sm:w-[170px]">
+          <label className="grid w-full gap-1.5 text-xs font-black text-slate-500 sm:w-[155px]">
             Hasta
             <input
               type="date"
               value={to}
               onChange={(event) => setTo(event.target.value)}
-              className="h-12 w-full rounded-2xl border border-[#E2E8F0] bg-white px-3 text-sm text-[#0F172A] outline-none focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60"
+              className="h-11 w-full rounded-xl border border-white/10 bg-[#091827] px-3 text-sm text-slate-200 outline-none [color-scheme:dark] focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-400/10"
             />
           </label>
           <button
             type="button"
             onClick={applyCustomRange}
-            className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-5 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 sm:w-auto sm:min-w-[120px]"
+            className="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 text-sm font-black text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 sm:w-auto sm:min-w-[110px]"
           >
             Aplicar
           </button>
@@ -104,7 +104,7 @@ export function PerformanceDateFilter({ range }: { range: PerformanceDateRange }
       )}
 
       {range.error && (
-        <p className="w-full rounded-2xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm font-black text-[#B91C1C]">
+        <p className="w-full rounded-xl border border-rose-300/20 bg-rose-300/10 px-4 py-3 text-sm font-black text-rose-200">
           {range.error}
         </p>
       )}

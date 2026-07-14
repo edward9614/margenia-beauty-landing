@@ -3,108 +3,79 @@ import { ActionHelp } from "@/components/ui/action-help";
 import type { HelpContent } from "@/lib/help-content";
 
 type MetricVariant = "cash" | "inventory" | "profit" | "sales";
+type MetricSize = "compact" | "featured" | "standard";
 
-const variantStyles: Record<
-  MetricVariant,
-  {
-    accent: string;
-    background: string;
-    glow: string;
-    icon: string;
-    miniBarsLayer: string;
-    miniBars: string[];
-    detailWidth: string;
-    text: string;
-  }
-> = {
+const variantStyles: Record<MetricVariant, { accent: string; bars: string[]; icon: string; line: string; value: string }> = {
   cash: {
-    accent: "bg-white/14 text-white ring-white/20",
-    background: "bg-[linear-gradient(135deg,#0F172A_0%,#1D4ED8_100%)]",
-    glow: "bg-cyan-300/20",
-    icon: "bg-white/14 text-white ring-white/20",
-    miniBarsLayer: "bottom-4 right-5 opacity-80",
-    miniBars: ["h-5 bg-white/30", "h-8 bg-white/45", "h-4 bg-white/25", "h-10 bg-white/60"],
-    detailWidth: "max-w-[13rem]",
-    text: "text-white",
+    accent: "border-indigo-300/20 bg-indigo-300/10 text-indigo-200",
+    bars: ["h-4 bg-indigo-300/20", "h-7 bg-blue-300/35", "h-5 bg-cyan-300/25", "h-9 bg-indigo-300/50"],
+    icon: "border-indigo-300/20 bg-indigo-300/10 text-indigo-200",
+    line: "via-indigo-300/70",
+    value: "text-indigo-100",
   },
   inventory: {
-    accent: "bg-white/70 text-[#0369A1] ring-[#BAE6FD]",
-    background: "bg-[linear-gradient(135deg,#ECFEFF_0%,#DBEAFE_100%)]",
-    glow: "bg-[#06B6D4]/16",
-    icon: "bg-white/75 text-[#2563EB] ring-[#BFDBFE]",
-    miniBarsLayer: "bottom-5 right-3 opacity-45",
-    miniBars: ["h-7 bg-[#93C5FD]", "h-4 bg-[#67E8F9]", "h-10 bg-[#2563EB]/60", "h-6 bg-[#0EA5E9]/50"],
-    detailWidth: "max-w-[9.5rem] sm:max-w-[10.5rem]",
-    text: "text-[#0F172A]",
+    accent: "border-cyan-300/20 bg-cyan-300/10 text-cyan-200",
+    bars: ["h-5 bg-cyan-300/20", "h-3 bg-blue-300/30", "h-8 bg-cyan-300/45", "h-6 bg-blue-300/35"],
+    icon: "border-cyan-300/20 bg-cyan-300/10 text-cyan-200",
+    line: "via-cyan-300/70",
+    value: "text-cyan-100",
   },
   profit: {
-    accent: "bg-white/70 text-[#3730A3] ring-[#C4B5FD]",
-    background: "bg-[linear-gradient(135deg,#EFF6FF_0%,#EDE9FE_100%)]",
-    glow: "bg-[#7C3AED]/14",
-    icon: "bg-white/75 text-[#4F46E5] ring-[#C4B5FD]",
-    miniBarsLayer: "bottom-4 right-5 opacity-80",
-    miniBars: ["h-4 bg-[#A5B4FC]", "h-8 bg-[#7C3AED]/55", "h-11 bg-[#4F46E5]/70", "h-7 bg-[#06B6D4]/45"],
-    detailWidth: "max-w-[13rem]",
-    text: "text-[#0F172A]",
+    accent: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+    bars: ["h-4 bg-emerald-300/20", "h-7 bg-cyan-300/25", "h-10 bg-emerald-300/45", "h-6 bg-teal-300/35"],
+    icon: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+    line: "via-emerald-300/70",
+    value: "text-emerald-100",
   },
   sales: {
-    accent: "bg-white/18 text-white ring-white/25",
-    background: "bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)]",
-    glow: "bg-white/18",
-    icon: "bg-white/18 text-white ring-white/25",
-    miniBarsLayer: "bottom-4 right-5 opacity-80",
-    miniBars: ["h-6 bg-white/35", "h-10 bg-white/55", "h-8 bg-white/40", "h-12 bg-white/70"],
-    detailWidth: "max-w-[13rem]",
-    text: "text-white",
+    accent: "border-cyan-200/20 bg-white/10 text-cyan-100",
+    bars: ["h-8 bg-white/15", "h-14 bg-cyan-200/30", "h-11 bg-blue-200/25", "h-20 bg-cyan-100/45"],
+    icon: "border-white/15 bg-white/10 text-white",
+    line: "via-cyan-200/80",
+    value: "text-white",
   },
 };
 
 export function MetricCard({
   badge = "Sin datos",
+  className = "",
   detail,
   help,
   icon,
+  size = "standard",
   title,
   value = "—",
   variant = "sales",
 }: {
   badge?: string;
+  className?: string;
   detail: string;
   help?: HelpContent;
   icon: ReactNode;
+  size?: MetricSize;
   title: string;
   value?: string | number;
   variant?: MetricVariant;
 }) {
   const styles = variantStyles[variant];
-  const isDark = variant === "cash" || variant === "sales";
+  const featured = size === "featured";
+  const compact = size === "compact";
 
   return (
-    <article className={`relative min-h-[184px] overflow-hidden rounded-[1.75rem] p-5 shadow-lg shadow-[#0F172A]/8 ${styles.background}`}>
-      <div className={`pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full blur-2xl ${styles.glow}`} />
-      <div className={`pointer-events-none absolute flex h-16 items-end gap-1.5 ${styles.miniBarsLayer}`} aria-hidden="true">
-        {styles.miniBars.map((barClass, index) => (
-          <span key={index} className={`w-2.5 rounded-full ${barClass}`} />
-        ))}
-      </div>
+    <article className={`relative h-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] p-5 backdrop-blur-sm transition duration-200 hover:border-white/20 hover:bg-white/[0.065] ${featured ? "min-h-[320px] bg-[linear-gradient(145deg,rgba(37,99,235,0.35),rgba(6,182,212,0.12)_60%,rgba(255,255,255,0.04))] sm:p-7" : compact ? "min-h-[166px]" : "min-h-[190px] sm:p-6"} ${className}`}>
+      <div aria-hidden="true" className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${styles.line} to-transparent`} />
+      <div aria-hidden="true" className={`pointer-events-none absolute bottom-5 right-5 flex items-end gap-1.5 ${featured ? "h-24 opacity-90" : "h-12 opacity-55"}`}>{styles.bars.map((bar, index) => <span key={index} className={`${featured ? "w-3" : "w-2"} rounded-full ${bar}`} />)}</div>
 
       <div className="relative z-10 flex items-start justify-between gap-4">
-        <div className={`grid h-11 w-11 place-items-center rounded-2xl ring-1 ${styles.icon}`}>
-          {icon}
-        </div>
-        <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.08em] ring-1 ${styles.accent}`}>
-          {badge}
-        </span>
+        <div className={`grid h-11 w-11 place-items-center rounded-xl border ${styles.icon}`}>{icon}</div>
+        <span className={`rounded-full border px-2.5 py-1 text-[0.64rem] font-black uppercase tracking-[0.08em] ${styles.accent}`}>{badge}</span>
       </div>
-
-      <div className="relative z-10 mt-6 flex items-center gap-2">
-        <p className={`text-sm font-black ${isDark ? "text-white/82" : "text-[#475569]"}`}>{title}</p>
+      <div className={`relative z-10 flex items-center gap-2 ${featured ? "mt-10" : "mt-6"}`}>
+        <p className="text-sm font-black text-slate-400">{title}</p>
         {help && <ActionHelp help={help} />}
       </div>
-      <p className={`relative z-10 mt-2 text-4xl font-black tracking-tight sm:text-[2.55rem] ${styles.text}`}>{value}</p>
-      <p className={`relative z-10 mt-3 ${styles.detailWidth} text-sm font-bold leading-5 ${isDark ? "text-white/78" : "text-[#475569]"}`}>
-        {detail}
-      </p>
+      <p className={`relative z-10 mt-2 font-black tracking-normal ${featured ? "max-w-[80%] text-5xl sm:text-6xl" : compact ? "max-w-[78%] text-3xl" : "max-w-[82%] text-4xl"} ${styles.value}`}>{value}</p>
+      <p className={`relative z-10 mt-3 max-w-[75%] text-sm font-semibold leading-5 ${featured ? "text-slate-300" : "text-slate-500"}`}>{detail}</p>
     </article>
   );
 }

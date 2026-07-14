@@ -44,33 +44,33 @@ export function QuickActions({
   ];
 
   return (
-    <section className="rounded-3xl border border-[#E2E8F0] bg-white p-4 shadow-sm sm:p-5">
+    <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-3 backdrop-blur-sm sm:p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-black text-[#0F172A]">Acciones rápidas</h2>
+            <h2 className="text-base font-black text-white">Acciones rápidas</h2>
             <HelpTooltip
               title="Acciones rápidas"
               content="Accesos directos para registrar las operaciones más comunes de tu negocio."
               example="Crear producto, registrar venta o revisar reportes."
             />
           </div>
-          <p className="mt-1 text-sm font-bold text-[#64748B]">
+          <p className="mt-1 text-xs font-semibold text-slate-500">
             {hasOperationalBase
               ? "Atajos para operar tu negocio."
               : "Empieza creando tu primer producto o revisa tus reportes."}
           </p>
         </div>
       </div>
-      <div className="-mx-1 mt-4 flex snap-x gap-3 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible">
+      <div className="-mx-1 mt-3 flex snap-x gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible">
         {actions.map((action) => (
           <Link
             key={action.title}
             href={action.href}
             title={action.title}
-            className="inline-flex h-11 shrink-0 snap-start items-center gap-2 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm font-black text-[#0F172A] transition hover:border-[#BFDBFE] hover:bg-[#EFF6FF] hover:text-[#2563EB] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#BFDBFE]/70"
+            className="inline-flex h-10 shrink-0 snap-start items-center gap-2 rounded-xl border border-white/[0.08] bg-black/15 px-3.5 text-sm font-black text-slate-300 transition duration-200 hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
           >
-            <span className="grid h-7 w-7 place-items-center rounded-xl bg-white text-[#2563EB] shadow-sm ring-1 ring-[#E2E8F0]">
+            <span className="grid h-7 w-7 place-items-center rounded-lg border border-cyan-300/15 bg-cyan-300/10 text-cyan-200">
               {action.icon}
             </span>
             {action.label}

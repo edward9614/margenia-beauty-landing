@@ -73,23 +73,15 @@ function EmptyPerformanceState({
   title: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[1.5rem] border border-dashed border-[#E2E8F0] bg-[#F8FAFC] p-5 sm:p-6">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-70"
-        aria-hidden="true"
-      >
-        <div className="absolute left-6 top-6 h-16 w-16 rounded-full bg-[#E0F7FA]" />
-        <div className="absolute right-8 top-10 h-24 w-24 rounded-full bg-[#EFF6FF]" />
-        <div className="absolute bottom-8 left-1/2 h-2 w-44 -translate-x-1/2 rounded-full bg-[#E2E8F0]" />
-      </div>
-
-      <div className="relative mx-auto flex min-h-56 max-w-xl flex-col items-center justify-center text-center">
-        <h3 className="mt-5 text-xl font-black text-[#0F172A]">{title}</h3>
-        <p className="mt-3 text-sm leading-6 text-[#475569]">{text}</p>
+    <div className="rounded-2xl border border-dashed border-white/10 bg-black/10 p-5 sm:p-6">
+      <div className="mx-auto flex min-h-52 max-w-xl flex-col items-center justify-center text-center">
+        <div className="grid h-12 w-12 place-items-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 text-lg font-black text-cyan-200">+</div>
+        <h3 className="mt-4 text-xl font-black text-white">{title}</h3>
+        <p className="mt-3 text-sm font-semibold leading-6 text-slate-500">{text}</p>
 
         <Link
           href="/app/ventas/nueva"
-          className="mt-5 rounded-full bg-[linear-gradient(135deg,#2563EB_0%,#06B6D4_100%)] px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
+          className="mt-5 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-950/30 transition hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
         >
           Nueva venta
         </Link>
@@ -168,17 +160,17 @@ function PerformanceChart({
   const tooltip = tooltipPosition();
 
   return (
-    <div className="rounded-[1.5rem] border border-[#E2E8F0] bg-[#F8FAFC] p-4 sm:p-5">
+    <div className="rounded-2xl border border-white/[0.08] bg-black/15 p-4 sm:p-5">
       <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-[#2563EB]">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-cyan-300">
             Total del periodo
           </p>
-          <p className="mt-1 text-2xl font-black text-[#0F172A]">
+          <p className="mt-1 text-2xl font-black text-white">
             {formatCurrency(totalValue, currency)}
           </p>
         </div>
-        <p className="text-sm font-bold text-[#475569]">
+        <p className="text-sm font-semibold text-slate-500">
           Días con movimiento: {points.filter((point) => point.saleCount > 0).length}
         </p>
       </div>
@@ -187,18 +179,18 @@ function PerformanceChart({
         <div className="relative" style={{ width: chartWidth }}>
         {activePoint && (
           <div
-            className="pointer-events-none absolute z-10 w-[244px] rounded-2xl border border-[#E2E8F0] bg-white p-3 text-left text-xs shadow-xl shadow-[#0F172A]/10"
+            className="pointer-events-none absolute z-20 w-[244px] rounded-xl border border-cyan-300/20 bg-[#07111F]/95 p-3 text-left text-xs text-slate-300 shadow-xl shadow-black/30 backdrop-blur-xl"
             style={{ left: tooltip.left, top: tooltip.top }}
           >
-            <p className="font-black text-[#0F172A]">{activePoint.point.label}</p>
+            <p className="font-black text-white">{activePoint.point.label}</p>
             {activePoint.point.saleCount > 0 ? (
-              <div className="mt-2 space-y-1 font-bold text-[#475569]">
+              <div className="mt-2 space-y-1 font-bold text-slate-400">
                 <p>Ventas: {formatCurrency(activePoint.point.sales, currency)}</p>
                 <p>Utilidad: {formatCurrency(activePoint.point.grossProfit, currency)}</p>
                 <p>{formatSaleCount(activePoint.point.saleCount)}</p>
               </div>
             ) : (
-              <p className="mt-2 font-bold text-[#64748B]">Sin movimiento</p>
+              <p className="mt-2 font-bold text-slate-500">Sin movimiento</p>
             )}
           </div>
         )}
@@ -225,7 +217,7 @@ function PerformanceChart({
             x2={chartWidth - paddingX}
             y1={zeroY}
             y2={zeroY}
-            stroke="#CBD5E1"
+            stroke="#334155"
             strokeDasharray="5 6"
             strokeWidth="1"
           />
@@ -269,9 +261,9 @@ function PerformanceChart({
                   width={barWidth}
                   height={barHeight}
                   rx="8"
-                  fill={hasMovement ? `url(#${gradientId})` : "#CBD5E1"}
+                  fill={hasMovement ? `url(#${gradientId})` : "#334155"}
                   opacity={hasMovement ? 1 : 0.75}
-                  stroke={isBest ? "#0F172A" : "transparent"}
+                  stroke={isBest ? "#67E8F9" : "transparent"}
                   strokeWidth={isBest ? 1.5 : 0}
                 />
                 {hasMovement && (
@@ -287,7 +279,7 @@ function PerformanceChart({
                     x={x}
                     y={chartHeight - 12}
                     textAnchor="middle"
-                    className="fill-[#475569] text-[11px] font-bold"
+                    className="fill-slate-500 text-[11px] font-bold"
                   >
                     {point.label.replace(" de ", " ")}
                   </text>
@@ -334,14 +326,14 @@ export function BusinessPerformancePanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+    <section className="h-full rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 lg:max-w-sm xl:max-w-md">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-black text-[#0F172A]">{config.title}</h2>
+            <h2 className="text-xl font-black text-white">{config.title}</h2>
             <ActionHelp help={dashboardHelp.performance} />
           </div>
-          <p className="mt-2 text-sm leading-6 text-[#475569]">{config.intro}</p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{config.intro}</p>
         </div>
 
         <div className="flex w-full flex-wrap items-end gap-3 lg:max-w-[760px] lg:justify-end">
@@ -349,7 +341,7 @@ export function BusinessPerformancePanel({
           <div
             role="tablist"
             aria-label="Métrica de rendimiento"
-            className="grid w-full grid-cols-2 rounded-full border border-[#E2E8F0] bg-[#F8FAFC] p-1 sm:w-fit"
+            className="grid w-full grid-cols-2 rounded-xl border border-white/10 bg-black/20 p-1 sm:w-fit"
           >
             <button
               type="button"
@@ -358,10 +350,10 @@ export function BusinessPerformancePanel({
               aria-controls="performance-sales-panel"
               id="performance-sales-tab"
               onClick={() => changeView("sales")}
-              className={`rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
+              className={`rounded-lg px-4 py-2.5 text-sm font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
                 view === "sales"
-                  ? "border border-[#BFDBFE] bg-white text-[#2563EB] shadow-sm"
-                  : "text-[#475569] hover:text-[#2563EB]"
+                  ? "bg-white text-slate-950 shadow-sm"
+                  : "text-slate-500 hover:bg-white/[0.05] hover:text-white"
               }`}
             >
               Ventas
@@ -373,10 +365,10 @@ export function BusinessPerformancePanel({
               aria-controls="performance-profit-panel"
               id="performance-profit-tab"
               onClick={() => changeView("profit")}
-              className={`rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#BFDBFE]/70 ${
+              className={`rounded-lg px-4 py-2.5 text-sm font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
                 view === "profit"
-                  ? "border border-[#BFDBFE] bg-white text-[#2563EB] shadow-sm"
-                  : "text-[#475569] hover:text-[#2563EB]"
+                  ? "bg-white text-slate-950 shadow-sm"
+                  : "text-slate-500 hover:bg-white/[0.05] hover:text-white"
               }`}
             >
               Utilidad
@@ -441,9 +433,9 @@ export function BusinessPerformancePanel({
 
 function SummaryPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3">
-      <p className="text-xs font-black uppercase tracking-[0.1em] text-[#64748B]">{label}</p>
-      <p className="mt-1 text-sm font-black text-[#0F172A]">{value}</p>
+    <div className="rounded-xl border border-white/[0.08] bg-black/15 px-4 py-3">
+      <p className="text-xs font-black uppercase tracking-[0.1em] text-slate-600">{label}</p>
+      <p className="mt-1 text-sm font-black text-slate-200">{value}</p>
     </div>
   );
 }
