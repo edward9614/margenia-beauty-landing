@@ -52,10 +52,14 @@ export function SidebarNavigation({
   const pathname = usePathname();
   const [hoveredMenu, setHoveredMenu] = useState("");
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
+  const productsMenuExpanded =
+    pathname.startsWith("/app/productos") ||
+    pathname.startsWith("/app/combos") ||
+    Boolean(openMenus.Productos);
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col overflow-y-auto border-r border-white/[0.07] bg-[linear-gradient(180deg,#020617_0%,#06111F_52%,#071827_100%)] text-slate-100 shadow-[14px_0_40px_rgba(2,6,23,0.08)] lg:flex">
-      <div className="border-b border-white/[0.07] px-5 py-5">
+      <div className="shrink-0 border-b border-white/[0.07] px-5 py-5">
         <Link
           href="/"
           className="flex min-h-14 items-center rounded-xl bg-white px-3.5 py-2.5 shadow-[0_12px_30px_rgba(2,6,23,0.18)] ring-1 ring-white/80 transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 [&_img]:max-w-full"
@@ -66,16 +70,33 @@ export function SidebarNavigation({
         <p className="mt-3 px-1 text-[0.64rem] font-black uppercase tracking-[0.18em] text-slate-600">Centro de control</p>
       </div>
 
-      <div className="mx-4 mt-5 overflow-hidden rounded-2xl border border-cyan-300/15 bg-white/[0.045] p-4 backdrop-blur-sm">
+      <div
+        className={`mx-4 shrink-0 overflow-hidden rounded-2xl border border-cyan-300/15 bg-white/[0.045] backdrop-blur-sm transition-[margin,padding] duration-200 ${
+          productsMenuExpanded ? "mt-3 px-3.5 py-3" : "mt-5 p-4"
+        }`}
+      >
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.7)]" />
           <p className="text-[0.65rem] font-black uppercase tracking-[0.15em] text-cyan-300">Negocio activo</p>
         </div>
-        <p className="mt-3 truncate text-base font-black text-white">{businessName || "Tu negocio"}</p>
-        <p className="mt-1 text-xs font-semibold text-slate-500">Base privada de trabajo</p>
+        <p className={`${productsMenuExpanded ? "mt-2 text-sm" : "mt-3 text-base"} truncate font-black leading-tight text-white transition-all duration-200`}>
+          {businessName || "Tu negocio"}
+        </p>
+        <div
+          aria-hidden={productsMenuExpanded}
+          className={`grid transition-[grid-template-rows,opacity,margin] duration-200 ${
+            productsMenuExpanded
+              ? "mt-0 grid-rows-[0fr] opacity-0"
+              : "mt-1 grid-rows-[1fr] opacity-100"
+          }`}
+        >
+          <p className="overflow-hidden text-xs font-semibold leading-4 text-slate-500">
+            Base privada de trabajo
+          </p>
+        </div>
       </div>
 
-      <nav className="mt-6 space-y-1 px-4" aria-label="Navegación principal">
+      <nav className={`shrink-0 space-y-1 px-4 transition-[margin] duration-200 ${productsMenuExpanded ? "mt-4" : "mt-6"}`} aria-label="Navegación principal">
         <p className="mb-2 px-3 text-[0.64rem] font-black uppercase tracking-[0.18em] text-slate-600">Operación</p>
         {navItems.map((item) => {
           const hasChildren = "children" in item && Boolean(item.children?.length);
@@ -148,7 +169,7 @@ export function SidebarNavigation({
         })}
       </nav>
 
-      <div className="mx-4 mb-4 mt-auto rounded-2xl border border-white/[0.08] bg-white/[0.04] p-3.5 backdrop-blur-sm">
+      <div className="mx-4 mb-4 mt-auto shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-3.5 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 text-sm font-black text-cyan-200">{userInitial(userEmail)}</span>
           <div className="min-w-0 flex-1"><p className="text-[0.64rem] font-black uppercase tracking-[0.13em] text-slate-600">Sesión activa</p><p className="mt-1 truncate text-xs font-bold text-slate-300">{userEmail || "Usuario de Margenia"}</p></div>
