@@ -2,32 +2,65 @@ import {
   getPaymentMethodLabel,
   type CashTimelineItem,
 } from "@/lib/cash-register";
-import {
-  semanticToneStyles,
-  UsageProgressBar as SemanticUsageProgressBar,
-  type SemanticTone,
-} from "@/components/ui/semantic";
 
 type Tone = "amber" | "blue" | "green" | "red" | "slate";
 
-const toneMap: Record<Tone, SemanticTone> = {
-  amber: "warning",
-  blue: "info",
-  green: "positive",
-  red: "negative",
-  slate: "neutral",
+const glowStyles: Record<Tone, string> = {
+  amber: "bg-amber-300/10",
+  blue: "bg-cyan-300/10",
+  green: "bg-emerald-300/10",
+  red: "bg-rose-300/10",
+  slate: "bg-slate-300/10",
 };
 
-const glowStyles: Record<Tone, string> = {
-  amber: "bg-[#F59E0B]/10",
-  blue: "bg-[#2563EB]/10",
-  green: "bg-[#16A34A]/10",
-  red: "bg-[#EF4444]/10",
-  slate: "bg-[#64748B]/10",
+const darkToneStyles: Record<
+  Tone,
+  { badge: string; border: string; icon: string; meter: string; soft: string; text: string }
+> = {
+  amber: {
+    badge: "bg-amber-300/10 text-amber-200 ring-amber-300/20",
+    border: "border-l-amber-300/70",
+    icon: "bg-amber-300/10 text-amber-200 ring-amber-300/20",
+    meter: "bg-gradient-to-r from-amber-400 to-orange-300",
+    soft: "bg-amber-300/[0.055]",
+    text: "text-amber-200",
+  },
+  blue: {
+    badge: "bg-cyan-300/10 text-cyan-200 ring-cyan-300/20",
+    border: "border-l-cyan-300/70",
+    icon: "bg-cyan-300/10 text-cyan-200 ring-cyan-300/20",
+    meter: "bg-gradient-to-r from-blue-500 to-cyan-300",
+    soft: "bg-cyan-300/[0.055]",
+    text: "text-cyan-200",
+  },
+  green: {
+    badge: "bg-emerald-300/10 text-emerald-200 ring-emerald-300/20",
+    border: "border-l-emerald-300/70",
+    icon: "bg-emerald-300/10 text-emerald-200 ring-emerald-300/20",
+    meter: "bg-gradient-to-r from-emerald-500 to-emerald-300",
+    soft: "bg-emerald-300/[0.055]",
+    text: "text-emerald-200",
+  },
+  red: {
+    badge: "bg-rose-300/10 text-rose-200 ring-rose-300/20",
+    border: "border-l-rose-300/70",
+    icon: "bg-rose-300/10 text-rose-200 ring-rose-300/20",
+    meter: "bg-gradient-to-r from-rose-500 to-red-300",
+    soft: "bg-rose-300/[0.055]",
+    text: "text-rose-200",
+  },
+  slate: {
+    badge: "bg-white/[0.06] text-slate-300 ring-white/10",
+    border: "border-l-slate-400/60",
+    icon: "bg-white/[0.06] text-slate-300 ring-white/10",
+    meter: "bg-slate-500",
+    soft: "bg-white/[0.035]",
+    text: "text-slate-300",
+  },
 };
 
 function toneStyles(tone: Tone) {
-  return semanticToneStyles[toneMap[tone]];
+  return darkToneStyles[tone];
 }
 
 function MiniIcon({ kind }: { kind: "cash" | "difference" | "out" | "sale" }) {
@@ -97,7 +130,7 @@ export function CashSummaryCard({
   const styles = toneStyles(tone);
 
   return (
-    <div className={`group relative overflow-hidden rounded-[1.6rem] border border-[#E2E8F0] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0F172A]/8`}>
+    <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] p-5 backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.065]">
       <div className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full blur-2xl ${glowStyles[tone]}`} />
       <div className="relative flex items-start justify-between gap-4">
         <div className={`grid h-12 w-12 place-items-center rounded-2xl ring-1 ${styles.icon}`}>
@@ -107,10 +140,10 @@ export function CashSummaryCard({
           Caja
         </span>
       </div>
-      <p className="relative mt-5 text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">
+      <p className="relative mt-5 text-xs font-black uppercase tracking-[0.12em] text-slate-500">
         {label}
       </p>
-      <p className="relative mt-2 text-2xl font-black tracking-tight text-[#0F172A]">
+      <p className="relative mt-2 text-2xl font-black tracking-normal text-white">
         {value}
       </p>
       <div className={`relative mt-4 h-1.5 overflow-hidden rounded-full ${styles.soft}`}>
@@ -128,7 +161,12 @@ export function UsageProgressBar({
   tone?: Tone;
 }) {
   return (
-    <SemanticUsageProgressBar percentage={percentage} tone={toneMap[tone]} />
+    <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
+      <span
+        className={`block h-full rounded-full ${toneStyles(tone).meter} transition-all duration-500`}
+        style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }}
+      />
+    </div>
   );
 }
 
@@ -153,26 +191,26 @@ export function PaymentMethodUsageCard({
   const styles = toneStyles(tone);
 
   return (
-    <div className={`rounded-2xl border p-4 transition duration-300 hover:-translate-y-0.5 ${amount > 0 ? "border-[#BFDBFE] bg-white shadow-sm" : "border-[#E2E8F0] bg-[#F8FAFC] opacity-75"}`}>
+    <div className={`rounded-2xl border p-4 transition duration-300 hover:-translate-y-0.5 ${amount > 0 ? "border-white/10 bg-white/[0.045] hover:border-cyan-300/25" : "border-white/[0.07] bg-white/[0.025] opacity-60"}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-[#0F172A]">{getPaymentMethodLabel(paymentMethod)}</p>
+            <p className="text-sm font-black text-white">{getPaymentMethodLabel(paymentMethod)}</p>
             {isTop && (
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] ring-1 ${styles.badge}`}>
                 Más usado
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs font-bold text-[#64748B]">
+          <p className="mt-1 text-xs font-semibold text-slate-500">
             Ventas {formatter.format(sales)} · Salidas {formatter.format(manualOut)}
           </p>
         </div>
         <p className={`text-sm font-black ${styles.text}`}>{Math.round(percentage)}%</p>
       </div>
-      <p className="mt-4 text-xl font-black text-[#0F172A]">{formatter.format(amount)}</p>
+      <p className="mt-4 text-xl font-black text-white">{formatter.format(amount)}</p>
       <div className="mt-3">
-        <SemanticUsageProgressBar percentage={percentage} tone={toneMap[tone]} />
+        <UsageProgressBar percentage={percentage} tone={tone} />
       </div>
     </div>
   );
@@ -202,23 +240,23 @@ export function CashMovementItem({
   const sign = item.direction === "in" ? "+" : "-";
 
   return (
-    <div className={`rounded-2xl border border-[#E2E8F0] border-l-4 ${styles.border} ${styles.soft} p-4 transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-sm`}>
+    <div className={`rounded-2xl border border-white/[0.08] border-l-4 ${styles.border} ${styles.soft} p-4 transition duration-300 hover:-translate-y-0.5 hover:border-white/15 hover:bg-white/[0.07]`}>
       <div className="grid gap-3 md:grid-cols-[minmax(0,1.3fr)_0.8fr_0.8fr_auto] md:items-center">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <MovementTypeBadge item={item} />
-            <p className="truncate font-black text-[#0F172A]">{item.title}</p>
+            <p className="truncate font-black text-white">{item.title}</p>
           </div>
-          <p className="mt-1 text-xs font-bold text-[#64748B]">{formatDateTime(item.occurredAt)}</p>
+          <p className="mt-1 text-xs font-semibold text-slate-500">{formatDateTime(item.occurredAt)}</p>
           {(item.description || item.category) && (
-            <p className="mt-2 line-clamp-2 text-xs font-bold text-[#475569]">
+            <p className="mt-2 line-clamp-2 text-xs font-semibold text-slate-400">
               {item.category ? `${item.category} · ` : ""}
               {item.description}
             </p>
           )}
         </div>
-        <p className="text-sm font-bold text-[#475569]">{getPaymentMethodLabel(item.method)}</p>
-        <p className="text-sm font-bold text-[#475569]">{item.reference}</p>
+        <p className="text-sm font-semibold text-slate-400">{getPaymentMethodLabel(item.method)}</p>
+        <p className="text-sm font-semibold text-slate-400">{item.reference}</p>
         <p className={`text-right text-lg font-black ${styles.text}`}>
           {sign} {formatter.format(item.amount)}
         </p>

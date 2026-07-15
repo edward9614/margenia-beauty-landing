@@ -5,6 +5,11 @@ import { useMemo, useState, useTransition } from "react";
 import { closeCashSession } from "@/app/(dashboard)/app/caja/actions";
 import { FieldLabel } from "@/components/ui/field-label";
 import {
+  dashboardFieldClass,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
+import {
   emptyCloseCashSession,
   getPaymentMethodLabel,
   validateCloseCashSession,
@@ -18,8 +23,7 @@ import { calculateSessionSummary } from "@/lib/cash-register";
 import { cashHelp } from "@/lib/help-content";
 import { moneyFormatter, sanitizeNumericInput, toSafeNumber } from "@/lib/products/product-utils";
 
-const inputClass =
-  "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
+const inputClass = `mt-2 ${dashboardFieldClass}`;
 
 export function CloseCashForm({
   currency = "COP",
@@ -95,28 +99,28 @@ export function CloseCashForm({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 backdrop-blur-sm sm:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2563EB]">Caja</p>
-            <h1 className="mt-2 text-3xl font-black text-[#0F172A]">Cerrar caja</h1>
-            <p className="mt-2 text-sm font-bold leading-6 text-[#475569]">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">Caja</p>
+            <h1 className="mt-2 text-3xl font-black text-white">Cerrar caja</h1>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-400">
               Revisa lo esperado, confirma lo contado y guarda el cierre del día.
             </p>
           </div>
-          <Link href="/app/caja" className="rounded-full border border-[#BFDBFE] bg-white px-5 py-3 text-sm font-black text-[#2563EB]">
+          <Link href="/app/caja" className={dashboardSecondaryActionClass}>
             Volver
           </Link>
         </div>
 
         {error && (
-          <div className="mt-5 rounded-2xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-sm font-bold text-[#991B1B]">
+          <div className="mt-5 rounded-2xl border border-rose-300/20 bg-rose-300/10 px-4 py-3 text-sm font-bold text-rose-100">
             {error}
           </div>
         )}
 
-        <div className="mt-6 rounded-[1.5rem] bg-[#F8FAFC] p-4">
-          <FieldLabel help={cashHelp.expectedCash} label="Resumen esperado" />
+        <div className="mt-6 rounded-2xl border border-white/[0.08] bg-black/15 p-4">
+          <FieldLabel appearance="dark" help={cashHelp.expectedCash} label="Resumen esperado" />
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {[
               ["Saldo inicial", formatter.format(toSafeNumber(session.opening_cash_amount))],
@@ -124,16 +128,16 @@ export function CloseCashForm({
               ["Ingresos manuales", formatter.format(summary.totalManualIn)],
               ["Salidas manuales", formatter.format(summary.totalManualOut)],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-2xl bg-white p-4 ring-1 ring-[#E2E8F0]">
-                <p className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">{label}</p>
-                <p className="mt-2 text-xl font-black text-[#0F172A]">{value}</p>
+              <div key={label} className="rounded-2xl bg-white/[0.045] p-4 ring-1 ring-white/10">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">{label}</p>
+                <p className="mt-2 text-xl font-black text-white">{value}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="mt-6">
-          <FieldLabel help={cashHelp.countedAmount} label="Conteo por método de pago" required />
+          <FieldLabel appearance="dark" help={cashHelp.countedAmount} label="Conteo por método de pago" required />
           <div className="mt-3 space-y-3">
             {form.counts.map((count, index) => {
               const expected =
@@ -141,17 +145,17 @@ export function CloseCashForm({
               const difference = toSafeNumber(count.countedAmount) - expected;
 
               return (
-                <div key={count.paymentMethod} className="grid gap-3 rounded-2xl border border-[#E2E8F0] p-4 md:grid-cols-[1fr_1fr_1fr] md:items-end">
+                <div key={count.paymentMethod} className="grid gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4 transition hover:border-white/15 hover:bg-white/[0.045] md:grid-cols-[1fr_1fr_1fr] md:items-end">
                   <div>
-                    <p className="text-sm font-black text-[#0F172A]">
+                    <p className="text-sm font-black text-white">
                       {getPaymentMethodLabel(count.paymentMethod)}
                     </p>
-                    <p className="mt-1 text-xs font-bold text-[#475569]">
+                    <p className="mt-1 text-xs font-semibold text-slate-400">
                       Esperado: {formatter.format(expected)}
                     </p>
                   </div>
                   <label className="block">
-                    <span className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">
+                    <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
                       Contado
                     </span>
                     <input
@@ -163,10 +167,10 @@ export function CloseCashForm({
                   </label>
                   <div className={`rounded-2xl px-4 py-3 text-sm font-black ${
                     difference === 0
-                      ? "bg-[#DCFCE7] text-[#166534]"
+                      ? "bg-emerald-300/10 text-emerald-200 ring-1 ring-emerald-300/20"
                       : difference > 0
-                        ? "bg-[#EFF6FF] text-[#1D4ED8]"
-                        : "bg-[#FEF2F2] text-[#991B1B]"
+                        ? "bg-cyan-300/10 text-cyan-200 ring-1 ring-cyan-300/20"
+                        : "bg-rose-300/10 text-rose-200 ring-1 ring-rose-300/20"
                   }`}>
                     {difference === 0 ? "Cuadra" : difference > 0 ? "Sobra" : "Falta"} · {formatter.format(Math.abs(difference))}
                   </div>
@@ -177,7 +181,7 @@ export function CloseCashForm({
         </div>
 
         <label className="mt-6 block">
-          <span className="text-sm font-black text-[#0F172A]">Notas de cierre</span>
+          <span className="text-sm font-black text-slate-100">Notas de cierre</span>
           <textarea
             value={form.closingNotes}
             onChange={(event) => setForm((current) => ({ ...current, closingNotes: event.target.value }))}
@@ -189,30 +193,30 @@ export function CloseCashForm({
           type="button"
           onClick={submit}
           disabled={isPending}
-          className="mt-6 w-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-4 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          className={`${dashboardPrimaryActionClass} mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60`}
         >
           {isPending ? "Cerrando..." : "Cerrar caja"}
         </button>
       </section>
 
-      <aside className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 xl:sticky xl:top-6 xl:self-start">
-        <FieldLabel help={cashHelp.difference} label="Diferencias" />
+      <aside className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 backdrop-blur-sm sm:p-6 xl:sticky xl:top-6 xl:self-start">
+        <FieldLabel appearance="dark" help={cashHelp.difference} label="Diferencias" />
         <div className="mt-5 space-y-4">
-          <div className="rounded-2xl bg-[#0F172A] p-5 text-white">
+          <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.08] p-5 text-white">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-white/60">Total esperado</p>
             <p className="mt-2 text-3xl font-black">{formatter.format(summary.expectedTotal)}</p>
           </div>
-          <div className="rounded-2xl bg-[#EFF6FF] p-5">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#2563EB]">Total contado</p>
-            <p className="mt-2 text-3xl font-black text-[#0F172A]">{formatter.format(countedTotal)}</p>
+          <div className="rounded-2xl border border-blue-300/20 bg-blue-300/[0.08] p-5">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-blue-200">Total contado</p>
+            <p className="mt-2 text-3xl font-black text-white">{formatter.format(countedTotal)}</p>
           </div>
-          <div className="rounded-2xl border border-[#E2E8F0] p-5">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#64748B]">Diferencia total</p>
-            <p className="mt-2 text-3xl font-black text-[#0F172A]">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Diferencia total</p>
+            <p className="mt-2 text-3xl font-black text-white">
               {formatter.format(countedTotal - summary.expectedTotal)}
             </p>
           </div>
-          <p className="rounded-2xl bg-[#F8FAFC] p-4 text-sm font-bold leading-6 text-[#475569]">
+          <p className="rounded-2xl bg-white/[0.035] p-4 text-sm font-semibold leading-6 text-slate-400 ring-1 ring-white/[0.07]">
             Margenia guardará este cierre para que luego puedas revisar reportes e historial.
           </p>
         </div>

@@ -6,6 +6,13 @@ import {
   PaymentMethodUsageCard,
 } from "@/components/cash-register/cash-dashboard-widgets";
 import {
+  AppPageHeader,
+  DashboardEmptyState,
+  DashboardShell,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
+import {
   buildCashTimeline,
   calculateSessionSummary,
   formatCashDifference,
@@ -110,41 +117,37 @@ export default async function CashRegisterPage() {
   const lastDifference = Number(lastClosed?.total_difference_amount || 0);
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-6 xl:px-10">
-      <div className="space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2563EB]">
-                Caja
-              </p>
-              <h1 className="mt-2 text-3xl font-black text-[#0F172A]">
-                {session ? "Caja abierta" : "Caja sin abrir"}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-[#475569]">
-                {session
-                  ? `Abierta desde ${formatDateTime(session.opened_at)}. Controla ventas cobradas, ingresos, salidas y cierre.`
-                  : "Abre caja para empezar a controlar ingresos, salidas y cierre del día."}
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Caja"
+          title={session ? "Caja abierta" : "Caja sin abrir"}
+          description={
+            session
+              ? `Abierta desde ${formatDateTime(session.opened_at)}. Controla ventas cobradas, ingresos, salidas y cierres.`
+              : "Abre caja para empezar a controlar ingresos, salidas y cierres del día."
+          }
+          actions={
+            <>
               {session ? (
                 <>
-                  <Link href="/app/caja/movimiento" className="rounded-full border border-[#BFDBFE] bg-white px-5 py-3 text-center text-sm font-black text-[#2563EB]">
+                  <Link href="/app/caja/movimiento" className={dashboardSecondaryActionClass}>
                     Registrar movimiento
                   </Link>
-                  <Link href="/app/caja/cierre" className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-5 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20">
+                  <Link href="/app/caja/cierre" className={dashboardPrimaryActionClass}>
                     Cerrar caja
                   </Link>
                 </>
               ) : (
-                <Link href="/app/caja/abrir" className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-5 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20">
+                <Link href="/app/caja/abrir" className={dashboardPrimaryActionClass}>
                   Abrir caja
                 </Link>
               )}
-            </div>
-          </div>
-        </section>
+            </>
+          }
+        />
+
+        <div className="space-y-5 p-4 sm:p-6 lg:p-8">
 
         {summary && session ? (
           <>
@@ -176,15 +179,15 @@ export default async function CashRegisterPage() {
             </section>
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-              <div className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <h2 className="text-xl font-black text-[#0F172A]">Movimientos de la caja</h2>
-                    <p className="mt-1 text-sm font-bold text-[#475569]">
+                    <h2 className="text-xl font-black text-white">Movimientos de la caja</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-400">
                       Ventas cobradas y movimientos manuales de esta sesión.
                     </p>
                   </div>
-                  <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-[#2563EB]">
+                  <span className="rounded-full bg-cyan-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-cyan-200 ring-1 ring-cyan-300/20">
                     {timeline.length} movimiento{timeline.length === 1 ? "" : "s"}
                   </span>
                 </div>
@@ -201,9 +204,9 @@ export default async function CashRegisterPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-[1.5rem] border border-dashed border-[#BFDBFE] bg-[#F8FAFC] p-6 text-center">
-                      <p className="text-base font-black text-[#0F172A]">Aún no hay movimientos en esta caja</p>
-                      <p className="mt-2 text-sm font-bold leading-6 text-[#475569]">
+                    <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] p-6 text-center">
+                      <p className="text-base font-black text-white">Aún no hay movimientos en esta caja</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-slate-400">
                         Cuando registres ventas, ingresos o salidas, aparecerán aquí con su color y método de pago.
                       </p>
                     </div>
@@ -211,15 +214,15 @@ export default async function CashRegisterPage() {
                 </div>
               </div>
 
-              <aside className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6 xl:sticky xl:top-6 xl:self-start">
+              <aside className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6 xl:sticky xl:top-6 xl:self-start">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-black text-[#0F172A]">Por método de pago</h2>
-                    <p className="mt-1 text-sm font-bold text-[#475569]">
+                    <h2 className="text-xl font-black text-white">Por método de pago</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-400">
                       Participación del dinero esperado.
                     </p>
                   </div>
-                  <span className="rounded-full bg-[#F8FAFC] px-2.5 py-1 text-xs font-black text-[#64748B]">
+                  <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-xs font-black text-slate-300 ring-1 ring-white/10">
                     {formatter.format(methodTotal)}
                   </span>
                 </div>
@@ -240,33 +243,40 @@ export default async function CashRegisterPage() {
               </aside>
             </section>
           </>
-        ) : null}
+        ) : (
+          <DashboardEmptyState
+            actionHref="/app/caja/abrir"
+            actionLabel="Abrir caja"
+            title="Tu caja está lista para comenzar"
+            description="Define el saldo inicial y Margenia reunirá ventas cobradas, ingresos y salidas en una sola sesión."
+          />
+        )}
 
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-black text-[#0F172A]">Historial de caja</h2>
-              <p className="mt-1 text-sm font-bold text-[#475569]">Últimas sesiones abiertas o cerradas.</p>
+              <h2 className="text-xl font-black text-white">Historial de caja</h2>
+              <p className="mt-1 text-sm font-semibold text-slate-400">Últimas sesiones abiertas o cerradas.</p>
             </div>
           </div>
-          <div className="mt-5 overflow-hidden rounded-2xl border border-[#E2E8F0]">
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.08]">
             {(recentSessions || []).length ? (
-              <div className="divide-y divide-[#E2E8F0]">
+              <div className="divide-y divide-white/[0.07]">
                 {((recentSessions || []) as CashSessionRow[]).map((item) => (
                   <Link
                     key={item.id}
                     href={`/app/caja/sesiones/${item.id}`}
-                    className="grid gap-3 p-4 transition hover:bg-[#F8FAFC] md:grid-cols-[1fr_1fr_1fr_1fr] md:items-center"
+                    className="grid gap-3 p-4 transition hover:bg-white/[0.055] md:grid-cols-[1fr_1fr_1fr_1fr] md:items-center"
                   >
                     <div>
-                      <p className="font-black text-[#0F172A]">{item.session_code}</p>
-                      <p className="text-xs font-bold text-[#64748B]">{formatDateTime(item.opened_at)}</p>
+                      <p className="font-black text-white">{item.session_code}</p>
+                      <p className="text-xs font-semibold text-slate-500">{formatDateTime(item.opened_at)}</p>
                     </div>
-                    <p className="text-sm font-bold text-[#475569]">{getCashSessionStatusLabel(item.status)}</p>
-                    <p className="text-sm font-bold text-[#475569]">
+                    <p className="text-sm font-semibold text-slate-300">{getCashSessionStatusLabel(item.status)}</p>
+                    <p className="text-sm font-semibold text-slate-400">
                       Esperado {formatter.format(toSafeNumber(item.expected_total_amount))}
                     </p>
-                    <p className="text-sm font-black text-[#0F172A]">
+                    <p className="text-sm font-black text-white">
                       {item.status === "closed"
                         ? `${formatCashDifference(item.total_difference_amount)} ${formatter.format(Math.abs(Number(item.total_difference_amount || 0)))}`
                         : "Pendiente de cierre"}
@@ -275,13 +285,14 @@ export default async function CashRegisterPage() {
                 ))}
               </div>
             ) : (
-              <p className="p-5 text-sm font-bold text-[#475569]">
+              <p className="p-5 text-sm font-semibold text-slate-400">
                 Aún no tienes sesiones de caja.
               </p>
             )}
           </div>
         </section>
-      </div>
+        </div>
+      </DashboardShell>
     </main>
   );
 }

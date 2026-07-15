@@ -760,7 +760,7 @@ export function SettingsForms({
   }, [initialBusiness]);
 
   return (
-    <div className="space-y-6">
+    <div className="settings-premium space-y-5">
       <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-3 shadow-sm">
         <div className="flex gap-2 overflow-x-auto">
           {tabs.map((tab) => (

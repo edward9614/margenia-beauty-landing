@@ -5,6 +5,11 @@ import { useMemo, useState, useTransition } from "react";
 import { createCashMovement } from "@/app/(dashboard)/app/caja/actions";
 import { FieldLabel } from "@/components/ui/field-label";
 import {
+  dashboardFieldClass,
+  dashboardPrimaryActionClass,
+  dashboardSecondaryActionClass,
+} from "@/components/ui/dashboard-primitives";
+import {
   cashMovementTypes,
   cashPaymentMethods,
   emptyCashMovement,
@@ -15,8 +20,7 @@ import {
 import { cashHelp } from "@/lib/help-content";
 import { sanitizeNumericInput } from "@/lib/products/product-utils";
 
-const inputClass =
-  "mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#0F172A] shadow-sm outline-none transition placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-4 focus:ring-[#BFDBFE]/60";
+const inputClass = `mt-2 ${dashboardFieldClass}`;
 
 export function CashMovementForm() {
   const [form, setForm] = useState<CashMovementInput>(emptyCashMovement());
@@ -72,35 +76,35 @@ export function CashMovementForm() {
   }
 
   return (
-    <section className="mx-auto max-w-3xl rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+    <section className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.045] p-5 backdrop-blur-sm sm:p-7">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="inline-flex items-center gap-2">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2563EB]">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-300">
               Caja
             </p>
           </div>
-          <h1 className="mt-2 text-3xl font-black text-[#0F172A]">
+          <h1 className="mt-2 text-3xl font-black text-white">
             Registrar movimiento de caja
           </h1>
-          <p className="mt-2 text-sm font-bold leading-6 text-[#475569]">
+          <p className="mt-2 text-sm font-semibold leading-6 text-slate-400">
             Registra ingresos o salidas que no vienen directamente de una venta.
           </p>
         </div>
-        <Link href="/app/caja" className="rounded-full border border-[#BFDBFE] bg-white px-5 py-3 text-sm font-black text-[#2563EB]">
+        <Link href="/app/caja" className={dashboardSecondaryActionClass}>
           Volver
         </Link>
       </div>
 
       {error && (
-        <div className="mt-5 rounded-2xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3 text-sm font-bold text-[#991B1B]">
+        <div className="mt-5 rounded-2xl border border-rose-300/20 bg-rose-300/10 px-4 py-3 text-sm font-bold text-rose-100">
           {error}
         </div>
       )}
 
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         <div className="md:col-span-2">
-          <FieldLabel help={cashHelp.movement} label="Tipo" required />
+          <FieldLabel appearance="dark" help={cashHelp.movement} label="Tipo" required />
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             {[
               { help: cashHelp.income, label: "Ingreso", value: "in" as const },
@@ -112,8 +116,10 @@ export function CashMovementForm() {
                 onClick={() => changeDirection(option.value)}
                 className={`rounded-2xl border px-4 py-4 text-left transition ${
                   form.direction === option.value
-                    ? "border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8] ring-4 ring-[#BFDBFE]/50"
-                    : "border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F8FAFC]"
+                    ? option.value === "in"
+                      ? "border-emerald-300/40 bg-emerald-300/10 text-emerald-100 ring-4 ring-emerald-300/5"
+                      : "border-rose-300/40 bg-rose-300/10 text-rose-100 ring-4 ring-rose-300/5"
+                    : "border-white/10 bg-white/[0.035] text-slate-400 hover:border-white/20 hover:bg-white/[0.06]"
                 }`}
               >
                 <span className="flex items-center gap-2 text-sm font-black">
@@ -125,7 +131,7 @@ export function CashMovementForm() {
         </div>
 
         <label className="block">
-          <span className="text-sm font-black text-[#0F172A]">Motivo</span>
+          <span className="text-sm font-black text-slate-100">Motivo</span>
           <select
             value={form.movementType}
             onChange={(event) => updateForm("movementType", event.target.value as CashMovementInput["movementType"])}
@@ -140,7 +146,7 @@ export function CashMovementForm() {
         </label>
 
         <label className="block">
-          <FieldLabel help={cashHelp.paymentMethod} label="Método de pago" required />
+          <FieldLabel appearance="dark" help={cashHelp.paymentMethod} label="Método de pago" required />
           <select
             value={form.paymentMethod}
             onChange={(event) => updateForm("paymentMethod", event.target.value as CashMovementInput["paymentMethod"])}
@@ -155,7 +161,7 @@ export function CashMovementForm() {
         </label>
 
         <label className="block">
-          <span className="text-sm font-black text-[#0F172A]">Valor</span>
+          <span className="text-sm font-black text-slate-100">Valor</span>
           <input
             inputMode="decimal"
             value={form.amount}
@@ -164,14 +170,14 @@ export function CashMovementForm() {
             className={`${inputClass} ${fieldErrors.amount ? "border-[#EF4444]" : ""}`}
           />
           {fieldErrors.amount && (
-            <span className="mt-1 block text-xs font-bold text-[#DC2626]">
+            <span className="mt-1 block text-xs font-bold text-rose-300">
               {fieldErrors.amount}
             </span>
           )}
         </label>
 
         <label className="block">
-          <span className="text-sm font-black text-[#0F172A]">Fecha/hora opcional</span>
+          <span className="text-sm font-black text-slate-100">Fecha/hora opcional</span>
           <input
             type="datetime-local"
             value={form.occurredAt}
@@ -181,7 +187,7 @@ export function CashMovementForm() {
         </label>
 
         <label className="block">
-          <span className="text-sm font-black text-[#0F172A]">Categoría opcional</span>
+          <span className="text-sm font-black text-slate-100">Categoría opcional</span>
           <input
             value={form.category}
             onChange={(event) => updateForm("category", event.target.value)}
@@ -191,7 +197,7 @@ export function CashMovementForm() {
         </label>
 
         <label className="block md:col-span-2">
-          <span className="text-sm font-black text-[#0F172A]">Descripción</span>
+          <span className="text-sm font-black text-slate-100">Descripción</span>
           <textarea
             value={form.description}
             onChange={(event) => updateForm("description", event.target.value)}
@@ -205,7 +211,7 @@ export function CashMovementForm() {
         type="button"
         onClick={submit}
         disabled={isPending}
-        className="mt-6 w-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-4 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+        className={`${dashboardPrimaryActionClass} mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60`}
       >
         {isPending ? "Guardando..." : "Guardar movimiento"}
       </button>

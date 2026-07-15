@@ -6,6 +6,12 @@ import {
   type SemanticTone,
 } from "@/components/ui/semantic";
 import { ExcelDownloadButton } from "@/components/reports/excel-download-button";
+import {
+  AppPageHeader,
+  DashboardShell,
+  dashboardFieldClass,
+  dashboardPrimaryActionClass,
+} from "@/components/ui/dashboard-primitives";
 import { moneyFormatter, toSafeNumber } from "@/lib/products/product-utils";
 import { createClient } from "@/lib/supabase/server";
 
@@ -147,6 +153,15 @@ type ChartItem = {
   label: string;
   tone?: SemanticTone;
   value: number;
+};
+
+const reportToneText: Record<SemanticTone, string> = {
+  brand: "text-cyan-200",
+  info: "text-blue-200",
+  negative: "text-rose-200",
+  neutral: "text-slate-300",
+  positive: "text-emerald-200",
+  warning: "text-amber-200",
 };
 
 const tabs: { id: ReportTab; label: string }[] = [
@@ -509,15 +524,15 @@ function ReportMetricCard({
   value: string;
 }) {
   return (
-    <article className={`rounded-[1.5rem] border border-[#E2E8F0] border-l-4 ${semanticToneStyles[tone].border} bg-white p-5 shadow-sm`}>
+    <article className={`rounded-2xl border border-white/10 border-l-4 ${semanticToneStyles[tone].border} bg-white/[0.045] p-5 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.065]`}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-black text-[#475569]">{label}</p>
+        <p className="text-sm font-black text-slate-400">{label}</p>
         {typeof trend !== "undefined" && (
           <SemanticBadge tone={trendTone(trend)}>{trendLabel(trend)}</SemanticBadge>
         )}
       </div>
-      <p className="mt-3 text-2xl font-black text-[#0F172A]">{value}</p>
-      {detail && <p className="mt-2 text-sm font-bold text-[#64748B]">{detail}</p>}
+      <p className="mt-3 text-2xl font-black text-white">{value}</p>
+      {detail && <p className="mt-2 text-sm font-semibold text-slate-500">{detail}</p>}
     </article>
   );
 }
@@ -532,10 +547,10 @@ function ReportSection({
   title: string;
 }) {
   return (
-    <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm transition duration-200 hover:border-white/15 sm:p-6">
       <div className="mb-5">
-        <h2 className="text-xl font-black text-[#0F172A]">{title}</h2>
-        {description && <p className="mt-2 text-sm leading-6 text-[#475569]">{description}</p>}
+        <h2 className="text-xl font-black text-white">{title}</h2>
+        {description && <p className="mt-2 text-sm font-semibold leading-6 text-slate-400">{description}</p>}
       </div>
       {children}
     </section>
@@ -544,9 +559,10 @@ function ReportSection({
 
 function ReportEmptyState({ text, title }: { text: string; title: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-6 text-center">
-      <p className="text-lg font-black text-[#0F172A]">{title}</p>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#475569]">{text}</p>
+    <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.025] p-7 text-center">
+      <div className="mx-auto grid h-11 w-11 place-items-center rounded-xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">↗</div>
+      <p className="mt-4 text-lg font-black text-white">{title}</p>
+      <p className="mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-400">{text}</p>
     </div>
   );
 }
@@ -577,12 +593,12 @@ function MiniBarChart({
         return (
           <div key={item.label}>
             <div className="mb-1 flex items-center justify-between gap-3">
-              <p className="truncate text-sm font-black text-[#0F172A]">{item.label}</p>
-              <p className="shrink-0 text-sm font-bold text-[#475569]">
+              <p className="truncate text-sm font-black text-slate-200">{item.label}</p>
+              <p className="shrink-0 text-sm font-semibold text-slate-400">
                 {formatter ? formatter(item.value) : item.value.toLocaleString("es-CO")}
               </p>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[#E2E8F0]">
+            <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
               <div
                 className={`h-full rounded-full ${semanticToneStyles[tone].meter}`}
                 style={{ width: `${Math.max(4, (item.value / maxValue) * 100)}%` }}
@@ -607,17 +623,17 @@ function TopItemsTable({
   }
 
   return (
-    <div className="divide-y divide-[#E2E8F0] overflow-hidden rounded-[1.5rem] border border-[#E2E8F0]">
+    <div className="divide-y divide-white/[0.07] overflow-hidden rounded-2xl border border-white/[0.08]">
       {items.map((item, index) => (
-        <div key={`${item.label}-${index}`} className="grid gap-2 bg-white p-4 sm:grid-cols-[2rem_minmax(0,1fr)_auto] sm:items-center">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-[#EFF6FF] text-xs font-black text-[#2563EB]">
+        <div key={`${item.label}-${index}`} className="grid gap-2 bg-white/[0.025] p-4 transition hover:bg-white/[0.055] sm:grid-cols-[2rem_minmax(0,1fr)_auto] sm:items-center">
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-cyan-300/10 text-xs font-black text-cyan-200 ring-1 ring-cyan-300/20">
             {index + 1}
           </span>
           <div className="min-w-0">
-            <p className="truncate font-black text-[#0F172A]">{item.label}</p>
-            {item.detail && <p className="mt-1 text-sm font-bold text-[#64748B]">{item.detail}</p>}
+            <p className="truncate font-black text-white">{item.label}</p>
+            {item.detail && <p className="mt-1 text-sm font-semibold text-slate-500">{item.detail}</p>}
           </div>
-          <p className={`font-black ${semanticToneStyles[item.tone || "neutral"].text}`}>{item.value}</p>
+          <p className={`font-black ${reportToneText[item.tone || "neutral"]}`}>{item.value}</p>
         </div>
       ))}
     </div>
@@ -634,35 +650,35 @@ function FiltersBar({
   range: ReportRange;
 }) {
   return (
-    <form action="/app/reportes" className="rounded-[2rem] border border-[#E2E8F0] bg-white p-4 shadow-sm">
+    <form action="/app/reportes" className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-sm">
       <div className="grid gap-3 md:grid-cols-5">
         <label className="block">
-          <span className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">Periodo</span>
-          <select name="period" defaultValue={range.period} className="mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-bold text-[#0F172A]">
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Periodo</span>
+          <select name="period" defaultValue={range.period} className={`mt-2 ${dashboardFieldClass}`}>
             {periodOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">Desde</span>
-          <input name="from" type="date" defaultValue={range.from} className="mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-bold text-[#0F172A]" />
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Desde</span>
+          <input name="from" type="date" defaultValue={range.from} className={`mt-2 ${dashboardFieldClass}`} />
         </label>
         <label className="block">
-          <span className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">Hasta</span>
-          <input name="to" type="date" defaultValue={range.to} className="mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-bold text-[#0F172A]" />
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Hasta</span>
+          <input name="to" type="date" defaultValue={range.to} className={`mt-2 ${dashboardFieldClass}`} />
         </label>
         <label className="block">
-          <span className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">Canal</span>
-          <select name="channel" defaultValue={channel} className="mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-bold text-[#0F172A]">
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Canal</span>
+          <select name="channel" defaultValue={channel} className={`mt-2 ${dashboardFieldClass}`}>
             {channelOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-black uppercase tracking-[0.12em] text-[#64748B]">Pago</span>
-          <select name="payment_method" defaultValue={paymentMethod} className="mt-2 w-full rounded-2xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm font-bold text-[#0F172A]">
+          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Pago</span>
+          <select name="payment_method" defaultValue={paymentMethod} className={`mt-2 ${dashboardFieldClass}`}>
             {paymentMethodOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
@@ -670,10 +686,10 @@ function FiltersBar({
         </label>
       </div>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-bold text-[#64748B]">
+        <p className="text-sm font-semibold text-slate-400">
           Analizando del {formatDateLabel(range.startDate)} al {formatDateLabel(range.endDate)}.
         </p>
-        <button className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110">
+        <button className={dashboardPrimaryActionClass}>
           Aplicar filtros
         </button>
       </div>
@@ -689,7 +705,7 @@ function TabsNav({
   filters: { channel: string; from: string; paymentMethod: string; period: string; to: string };
 }) {
   return (
-    <nav className="rounded-[2rem] border border-[#E2E8F0] bg-white p-3 shadow-sm" aria-label="Reportes">
+    <nav className="rounded-2xl border border-white/10 bg-black/20 p-2" aria-label="Reportes">
       <div className="flex gap-2 overflow-x-auto">
         {tabs.map((tab) => (
           <Link
@@ -697,8 +713,8 @@ function TabsNav({
             href={reportHref(tab.id, filters)}
             className={`shrink-0 rounded-2xl px-4 py-3 text-sm font-black transition ${
               activeTab === tab.id
-                ? "bg-[#0F172A] text-white"
-                : "text-[#475569] hover:bg-[#EFF6FF] hover:text-[#2563EB]"
+                ? "bg-white text-slate-950 shadow-sm"
+                : "text-slate-400 hover:bg-white/[0.06] hover:text-white"
             }`}
           >
             {tab.label}
@@ -961,32 +977,26 @@ export default async function ReportsPage({
   };
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
-      <div className="w-full max-w-none space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-                Inteligencia del negocio
-              </p>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-                Reportes
-              </h1>
-              <p className="mt-3 max-w-4xl text-base leading-7 text-[#475569]">
-                Analiza ventas, utilidad, caja, inventario y pagos para tomar mejores decisiones.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Inteligencia del negocio"
+          title="Reportes"
+          description="Analiza ventas, utilidad, caja, inventario y pagos para tomar mejores decisiones."
+          actions={
+            <>
               <ExcelDownloadButton activeTab={activeTab} />
               <Link
                 href="/app/ventas/nueva"
-                className="rounded-full bg-gradient-to-r from-[#2563EB] to-[#06B6D4] px-6 py-3 text-center text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
+                className={dashboardPrimaryActionClass}
               >
                 Registrar venta
               </Link>
-            </div>
-          </div>
-        </section>
+            </>
+          }
+        />
+
+        <div className="w-full max-w-none space-y-5 p-4 sm:p-6 lg:p-8">
 
         <FiltersBar channel={channel} paymentMethod={paymentMethod} range={range} />
         <TabsNav activeTab={activeTab} filters={filters} />
@@ -1066,7 +1076,7 @@ export default async function ReportsPage({
         {activeTab === "rentabilidad" && (
           <div className="space-y-6">
             {productsWithoutCost > 0 && (
-              <div className="rounded-[1.5rem] border border-[#FDE68A] bg-[#FFFBEB] p-4 text-sm font-bold text-[#92400E]">
+              <div className="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm font-bold text-amber-100">
                 Hay productos sin costo registrado. La utilidad puede no ser precisa.
               </div>
             )}
@@ -1244,7 +1254,8 @@ export default async function ReportsPage({
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </DashboardShell>
     </main>
   );
 }

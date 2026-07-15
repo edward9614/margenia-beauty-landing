@@ -57,7 +57,7 @@ export function ExcelDownloadButton({ activeTab }: ExcelDownloadButtonProps) {
         type="button"
         onClick={handleDownload}
         disabled={isGenerating}
-        className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#2563EB] shadow-sm ring-1 ring-[#BFDBFE] transition hover:bg-[#EFF6FF] disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-5 py-2.5 text-sm font-black text-slate-100 backdrop-blur transition duration-200 hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
       >
         <svg
           className="h-4 w-4"
@@ -76,7 +76,7 @@ export function ExcelDownloadButton({ activeTab }: ExcelDownloadButtonProps) {
         {isGenerating ? "Generando Excel..." : "Descargar Excel"}
       </button>
       {error && (
-        <p className="max-w-xs text-sm font-bold text-[#B91C1C]" role="alert">
+        <p className="max-w-xs text-sm font-bold text-rose-300" role="alert">
           {error}
         </p>
       )}

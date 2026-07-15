@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { CloseCashForm } from "@/components/cash-register/close-cash-form";
+import { DashboardShell } from "@/components/ui/dashboard-primitives";
 import type { CashMovementRow, CashSalePaymentRow, CashSessionRow } from "@/lib/cash-register";
 import { createClient } from "@/lib/supabase/server";
 
@@ -56,13 +57,15 @@ export default async function CloseCashPage() {
   ]);
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 xl:px-10">
-      <CloseCashForm
-        currency={business.currency || "COP"}
-        movements={(movementRows || []) as CashMovementRow[]}
-        payments={(paymentRows || []) as unknown as CashSalePaymentRow[]}
-        session={session}
-      />
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell className="p-4 sm:p-6 lg:p-8">
+        <CloseCashForm
+          currency={business.currency || "COP"}
+          movements={(movementRows || []) as CashMovementRow[]}
+          payments={(paymentRows || []) as unknown as CashSalePaymentRow[]}
+          session={session}
+        />
+      </DashboardShell>
     </main>
   );
 }

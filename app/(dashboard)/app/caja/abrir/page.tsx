@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { OpenCashForm } from "@/components/cash-register/open-cash-form";
+import { DashboardShell } from "@/components/ui/dashboard-primitives";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function OpenCashPage() {
@@ -36,8 +37,10 @@ export default async function OpenCashPage() {
   }
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 xl:px-10">
-      <OpenCashForm />
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell className="p-4 sm:p-6 lg:p-8">
+        <OpenCashForm />
+      </DashboardShell>
     </main>
   );
 }

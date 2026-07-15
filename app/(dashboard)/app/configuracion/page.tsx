@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { SettingsForms } from "@/components/settings/settings-forms";
+import { AppPageHeader, DashboardShell } from "@/components/ui/dashboard-primitives";
 import type { BusinessSettings, UserPreferenceSettings } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
 
@@ -122,26 +123,21 @@ export default async function SettingsPage() {
   };
 
   return (
-    <main className="w-full px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10">
-      <div className="w-full max-w-none space-y-6">
-        <section className="rounded-[2rem] border border-[#E2E8F0] bg-white p-5 shadow-sm sm:p-7">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-[#2563EB]">
-            Configuración
-          </p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0F172A] sm:text-4xl">
-            Configuración
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-[#475569]">
-            Administra los datos de tu negocio, cuenta, seguridad y preferencias.
-          </p>
-        </section>
-
-        <SettingsForms
-          initialBusiness={initialBusiness}
-          initialPreferences={initialPreferences}
-          userEmail={user.email || "Correo no disponible"}
+    <main className="w-full px-3 py-3 sm:px-5 sm:py-5 lg:px-7 xl:px-9">
+      <DashboardShell>
+        <AppPageHeader
+          eyebrow="Configuración"
+          title="Configuración"
+          description="Administra los datos de tu negocio, cuenta, seguridad y preferencias."
         />
-      </div>
+        <div className="p-4 sm:p-6 lg:p-8">
+          <SettingsForms
+            initialBusiness={initialBusiness}
+            initialPreferences={initialPreferences}
+            userEmail={user.email || "Correo no disponible"}
+          />
+        </div>
+      </DashboardShell>
     </main>
   );
 }
